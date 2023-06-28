@@ -137,3 +137,201 @@ import App from "./car/Complex";
 ReactDOM.render(<App/>, document.getElementById("root"))
 ```
 
+### 3.4 组件样式
+
+- 推荐行内样式，这样就是把css，html，js完整的包含在同一个组件中
+
+#### 内部
+
+```js
+import React from "react";
+
+class App extends React.Component {
+    render() {
+        let name = "erick";
+        let nameStyle = {background: "red", fontSize: "100px"} // 驼峰样式
+        return (
+            <div>
+                <div style={{background: "yellow"}}>
+                    {10 + 20}
+                </div>
+
+                <div style={nameStyle}>
+                    {name}
+                </div>
+
+                <div>
+                    {10 > 20 ? "aaa" : "bbb"}
+                </div>
+            </div>
+        )
+    }
+}
+
+export default App
+```
+
+#### 外部css
+
+```css
+.erick {
+    background: blue;
+    font-size: 100px;
+}
+```
+
+```js
+import React from "react";
+import '../css/Car.css'
+
+class HuaweiPhone extends React.Component {
+    render() {
+       // 按照css样式来处理
+        return <div className="erick">Huawei Phone</div>
+    }
+}
+
+export default HuaweiPhone;
+```
+
+## 4. 事件
+
+- React并不会真正的绑定事件到每一个具体的元素上，而是采用事件代理的模式
+
+ ### 4.1 基本事件
+
+```js
+import React from "react";
+
+class ErickEvent extends React.Component {
+
+    render() {
+        return (
+            <div>
+                <input/>
+                <button onClick={this.sayHello}>确认</button>
+
+                <br/>
+
+                <button onMouseOver={() => {
+                    console.log("重置")
+                }}>重置
+                </button>
+            </div>
+        )
+    }
+
+    sayHello() {
+        console.log("hello")
+    };
+}
+
+export default ErickEvent
+```
+
+### 4.2 ref
+
+- 获取到输入框的值
+
+```js
+import React from "react";
+
+class ErickEvent extends React.Component {
+
+    erickRef = React.createRef();
+
+    render() {
+        return (
+            <div>
+                <input ref={this.erickRef}/>
+                <button onClick={() => {
+                    console.log("hello")
+                    console.log(this.erickRef.current) // 拿到对应的DOM节点
+                    console.log(this.erickRef.current.value)//拿到对应的DOM的value
+                }}>确认
+                </button>
+
+                <br/>
+            </div>
+        )
+    }
+}
+
+export default ErickEvent
+```
+
+## 5. 状态
+
+### 5.1 基本使用
+
+```js
+import React from "react";
+
+class ErickEvent extends React.Component {
+
+    // 名字必须为state
+    state = {
+        collect: "收藏",
+        unCollect: "取消收藏",
+        flag: true
+    }
+
+    render() {
+        return (
+            <div>
+                <h1>欢迎你</h1>
+                <button onClick={() => {
+                    this.setState({
+                        flag: !this.state.flag
+                    })
+                }}>{this.state.flag ? this.state.collect : this.state.unCollect}
+                </button>
+
+                <br/>
+            </div>
+        )
+    }
+}
+
+export default ErickEvent
+```
+
+### 5.2 列表展示
+
+```js
+import React, {Component} from 'react';
+
+class SecondEvent extends Component {
+
+    state = {
+        /*理想的key值应该和属性的id保持一直*/
+        list: [
+            {
+                id: "001", data: "111"
+            },
+            {
+                id: "002", data: "222"
+            },
+            {
+                id: "003", data: "333"
+            }
+        ]
+    }
+
+    render() {
+
+        /*建议每个元素都有自己唯一的key,方便虚拟DOM来进行判断比较：diff算法*/
+        let newList = this.state.list.map(item => <li key={item.id}>{item.data}</li>)
+
+        return (<div>
+            <ul>
+                {newList}
+            </ul>
+        </div>);
+    }
+}
+
+export default SecondEvent;
+```
+
+### 5.3 Todo-List
