@@ -213,8 +213,8 @@
 | ----------- | -------- | ------------------------------------------------------------ |
 | font-family | 字体样式 |                                                              |
 | font-size   | 字体大小 | px                                                           |
-| font-weight | 字体粗细 | normal:                正常，相当于400<br/>bold:                    加粗，相当于700<br/>bolder:                 特粗<br/>lighter:                 细体<br/>number:               100-900，整百， **Recmmended** |
-| font-style  | 字体样式 | normal:             正常<br/>italic:                 倾斜    |
+| font-weight | 字体粗细 | normal:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;正常，相当于400<br/>bold: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;加粗，相当于700<br/>bolder: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 特粗<br/>lighter:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;细体<br/>number: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;100-900，整百， **Recmmended** |
+| font-style  | 字体样式 | normal:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;正常<br/>italic: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;倾斜 |
 
 ```css
     <style>
@@ -253,8 +253,8 @@
 
 | 标签            | Desc                            | Value                                                        |
 | --------------- | ------------------------------- | ------------------------------------------------------------ |
-| color           | 文本颜色                        | 英文：               red，blue等<br/>十六进制：        #0e1b6d    **Recommended**           IDEA可根据取色器来识别<br/>rgb:                     rgb(200,0,0)                  IDEA可根据取色器来识别<br/><img src="https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230702233825002.png" style="zoom:33%;" /> |
-| text-align      | 对齐文本<br>**<u>针对盒子</u>** | center:       <br/>left:             default value<br/>right |
-| text-decoration | 文本装饰                        | none:                    **Recommended**， 用来删除本来带删除线的文本<br/>underline：          下划线<br/>overline：            上划线<br/>line-through:         删除线 |
+| color           | 文本颜色                        | 英文：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; red，blue等<br/>十六进制：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#0e1b6d    **Recommended**           IDEA可根据取色器来识别<br/>rgb: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb(200,0,0)                  IDEA可根据取色器来识别<br/><img src="https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230702233825002.png" style="zoom:33%;" /> |
+| text-align      | 对齐文本<br>**<u>针对盒子</u>** | center: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>left: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default value<br/>right |
+| text-decoration | 文本装饰                        | none: &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Recommended**， 用来删除本来带删除线的文本<br/>underline:  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;下划线<br/>overline： &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;上划线<br/>line-through:  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 删除线 |
 |                 |                                 |                                                              |
 
