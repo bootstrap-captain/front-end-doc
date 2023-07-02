@@ -1,3 +1,5 @@
+
+
 # 简介
 
 ## 1. 网页
@@ -412,6 +414,89 @@ shuzhan<br/>
     爱好： rap<input type="checkbox" name="hobby" checked="checked">
           basketball<input type="checkbox" name="hobby">
           music<input type="checkbox" name="hobby"><br/>
+</form>
+```
+
+### 5.3 input-type
+
+#### submit
+
+- 是用来提交整个form表单的数据
+
+#### button
+
+- 普通按钮，用来触发某个功能
+
+#### reset
+
+- 重置整个页面
+
+#### file
+
+- 上传某个文件
+
+```html
+<form action="first.html" method="get" name="fifth">
+    姓名: <input type="text" name="username" placeholder="请输入用户名"><br/>
+    姓名: <input type="password" name="pwd" placeholder="请输入密码"><br/>
+
+    <!--value：默认提交的button名字是： submit-->
+    <!-- 1. 提交到对应页面的时候，会带上表单信息，
+             (get请求时) http://localhost:63343/html-learn/d02/first.html?username=daydreamer&pwd=123-->
+    <input type="submit" value="免费注册"><br/>
+
+    <!--value: 默认是reset，-->
+    <input type="reset" value="重置页面"><br/>
+
+    <!--提交单个数据，触发某个js功能-->
+    <input type="button" value="发送短信"><br/>
+
+    <!--file: 上传文件-->
+    <input type="file"><br/>
+</form>
+```
+
+### 5.4 label属性
+
+- 经常一起和input标签来使用
+-  用户点击文本时候，就能锁定到输入框，而不用非得点击到文本输入框或单选多选按钮，增加用户体验
+
+```html
+<form action="first.html" method="get" name="fifth">
+
+    <!--for必须和对应input框的id对应起来-->
+    <label for="usr">姓名:</label>
+    <input id="usr" type="text" name="username" placeholder="请输入用户名"><br/>
+
+    爱好: <label for="swim">swim</label><input id="swim" type="checkbox" name="hobby">
+         <label for="sing">sing</label><input id="sing" type="checkbox" name="hobby">
+         <label for="basketball">basketball</label><input id="basketball" type="checkbox" name="hobby">
+</form>
+```
+
+### 5.5 select属性
+
+```html
+<form>
+    籍贯：
+  <select>
+      <option>北京</option>
+      <!--默认属性-->
+      <option selected="selected">上海</option>
+      <option>深圳</option>
+      <option>山西</option>
+      <option>福建</option>
+  </select>
+</form>
+```
+
+### 5.6 文本域
+
+```html
+<form>
+    <!--调节默认文本域的显示字体的多少，不会随着浏览器浏览页面缩放大小而改变-->
+    自我介绍:
+    <textarea cols="50" rows="10">请输入您的自我介绍</textarea>
 </form>
 ```
 
