@@ -621,7 +621,11 @@ display: inline-block
 
 ### 2.2 继承
 
-- 子标签会继承父标签的样式
+- 子标签会继承父标签的样式，子标签可以重写
+
+#### 普通属性
+
+- 继承text-， font-， line-， color这些元素开头的样式
 
 ```html
 <!DOCTYPE html>
@@ -643,6 +647,88 @@ display: inline-block
 <div>nihao
     <p>hello</p>
 </div>
+</body>
+</html>
+```
+
+#### 行高属性
+
+- 行高可以跟单位，也可以不跟单位
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        /*line-height是font-size的1.5倍*/
+        body {
+            color: pink;
+            font: 12px/1.5 'Times New Roman';
+        }
+
+        /*line-height继承父元素*/
+        div {
+            font-size: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<div>hello</div>
+<p>word</p>
+</body>
+</html>
+```
+
+### 2.3 优先级
+
+#### 基础选择器
+
+- 选择器相同，执行层叠性
+- 选择器不同，则根据**选择器权重**执行
+- a标签：浏览器默认给了一个选择器对应的样式
+
+![image-20230703224943530](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230703224943530.png)
+
+```css
+    <style>
+        div {
+            font-size: 20px !important;
+        }
+    </style>
+```
+
+#### 复合选择器
+
+- 会有权重叠加
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        /*权重为： 0,0,0,1 + 0,0,0,1 = 0,0,0,2*/
+        ul li {
+            color: red;
+        }
+
+        /*权重为： 0,0,0,1*/
+        li {
+            color: pink;
+        }
+    </style>
+</head>
+<body>
+
+<ul>
+    <li>hello</li>
+</ul>
+
 </body>
 </html>
 ```
@@ -790,6 +876,541 @@ display: inline-block
 <div class="second">
     第二个
 </div>
+
+</body>
+</html>
+```
+
+# 页面布局
+
+## 1. 盒子模型
+
+### 1.1 border
+
+#### 基本语法
+
+| 元素         | DESC     | value                                |
+| ------------ | -------- | ------------------------------------ |
+| border-width | 边框粗细 | px                                   |
+| border-style | 边框样式 | solid<br/>dashed<br/>dotted<br/>none |
+| border-color | 边框颜色 |                                      |
+
+```css
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        div {
+            width: 800px;
+            height: 400px;
+        }
+
+        .first {
+            border-color: green;
+            border-style: solid;
+            border-width: 5px;
+        }
+
+        /*复合写法：没有顺序*/
+        .second {
+            border: 5px solid rebeccapurple;
+        }
+
+        /*分别定义不同的边框*/
+        .third {
+            border-top: 5px solid gray;
+            border-left: 5px solid olivedrab;
+            border-right: 5px solid olivedrab;
+            border-bottom: 5px solid olivedrab;
+        }
+
+        /*层叠性： 就近原则， 顺序不能颠倒*/
+        .fourth {
+            border: 5px solid yellow;
+            border-top: 5px solid red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="first">
+
+</div>
+
+<div class="second">
+
+</div>
+
+<div class="third">
+
+</div>
+
+<div class="fourth">
+
+</div>
+
+</body>
+</html>
+```
+
+#### 细线表格
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        table {
+            font-size: 20px;
+            width: 500px;
+            height: 300px;
+            text-align: center;
+        }
+
+        /*所有单元格*/
+        table, th, td {
+            border-style: solid;
+            border-color: gray;
+            border-width: 1px;
+            /*合并相邻边框*/
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+
+<table cellspacing="0">
+    <thead>
+    <tr>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>住址</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>张三</td>
+        <td>20</td>
+        <td>山西</td>
+    </tr>
+    <tr>
+        <td>李四</td>
+        <td>30</td>
+        <td>背景</td>
+    </tr>
+    <tr>
+        <td>王五</td>
+        <td>24</td>
+        <td>湖南</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
+```
+
+#### 盒子大小
+
+- 边框宽度，会增大盒子：就是在盒子本身的宽高上，再加上边框高度
+- 如果盒子宽度固定：则需要用原来盒子大小减去边框
+
+```css
+    <style>
+        div {
+            width: 50px;
+            height: 50px;
+            background-color: green;
+            /*会在原来盒子的宽高基础上，再加2px的边框*/
+            border: 2px solid black;
+        }
+    </style>
+```
+
+### 1.2 padding
+
+- 内边距：内边框和盒子内容的边距
+
+#### 基本语法
+
+| 值个数                        | 含义               |
+| ----------------------------- | ------------------ |
+| padding: 50px                 | 四个都是50px       |
+| padding: 50px 20px            | 上下是50，左右是20 |
+| padding: 50px 10px 20px       | 上50，左右10，下20 |
+| padding: 10px 20px 30px 40 px | 上右下左           |
+
+```css
+    <style>
+        div {
+            width: 200px;
+            height: 100px;
+            border: gray 1px solid;
+        }
+
+        /*分开写法*/
+        .first {
+            padding-left: 20px;
+            padding-right: 30px;
+            padding-bottom: 40px;
+            padding-top: 50px;
+        }
+
+        /*简单写法*/
+        .second {
+            padding: 50px;
+        }
+
+    </style>
+```
+
+#### 盒子大小
+
+- 给盒子指定了padding后，内容和边框有了距离，同时padding撑大了盒子实际大小
+- 导航栏应用：可以不给每个盒子指定宽，而是采用内边距来自动撑大盒子
+
+![image-20230704120134309](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704120134309.png)
+
+```bash
+# 不撑开盒子的情况
+- 如果盒子本身就没有指定width 或者 height，则就不会撑开(不存在撑开的问题)
+- 场景一：盒子如果没指定宽度，加padding后，还是浏览器默认宽度
+- 场景二：盒子如果指定宽度为100%， 加padding后，浏览器就会向右边滚动屏幕
+```
+
+### 1.3 margin
+
+#### 基本使用
+
+- 外边距：盒子和盒子之间的距离，用法和padding一样
+- 默认盒子和盒子之间，距离为0
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div {
+            width: 200px;
+            height: 50px;
+        }
+
+        .first {
+            background-color: red;
+            margin-bottom: 20px;
+        }
+
+        .second{
+            background-color: gray;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="first">
+    hello
+</div>
+<div class="second">
+    word
+</div>
+</body>
+</html>
+```
+
+#### 单个块级元素水平居中
+
+- 盒子必须指定宽度，盒子左右的外边距设置为auto
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        div {
+            height: 50px;
+            background-color: green;
+            width: 1000px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+
+</div>
+
+</body>
+</html>
+```
+
+#### 嵌套元素垂直外边距塌陷
+
+- 如果存在父子盒子，二者都有外边距，会取二者中较大的值，但是父子盒子内部不会有边距
+
+![image-20230704150851287](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704150851287.png)
+
+- 解决方案一：为父元素定义上边框
+- 解决方案二：为父元素定义上内边距
+- 解决方案三：为父元素添加overflow:hidden
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .father {
+            background-color: green;
+            width: 400px;
+            height: 200px;
+            margin-top: 20px;
+            /*border-top: black 1px solid;*/
+            /*padding-top: 10px;*/
+            overflow: hidden;
+        }
+
+        .son {
+            background-color: red;
+            width: 200px;
+            height: 100px;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="father">
+    <div class="son"></div>
+</div>
+</body>
+</html>
+```
+
+### 1.4 清除内外边距
+
+- 网页元素如body，h，li等，都会默认带内外边距，并且在不同浏览器中，内外边距不同
+- 为了统一起见，需要清除内外边距
+
+```css
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+```
+
+### 1.5 圆角边框
+
+- css3新增的语法: border-radius
+- 内切圆
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        /*做一个圆形： 
+        1. 打造正方形盒子
+        2. 设置圆角边框为长宽的一半*/
+        .first {
+            height: 200px;
+            width: 200px;
+            margin-bottom: 30px;
+            background-color: red;
+            border-radius: 100px;
+        }
+
+        /*做一个长方形，但是两边是圆的*/
+        .second {
+            height: 200px;
+            width: 600px;
+            background-color: green;
+            border-radius: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="first">
+
+</div>
+
+<div class="second">
+
+</div>
+</body>
+</html>
+```
+
+### 1.6 盒子阴影
+
+- box-shadow:
+- 需求：鼠标经过时，对盒子添加阴影,    div:hover{box-shadow}
+
+![image-20230704161012663](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704161012663.png)
+
+## 2. 浮动
+
+### 2.1 分布方式
+
+- 一个标准的页面，是包含三种分布方式的
+
+#### 标准流
+
+- 普通流，文档流
+- 标签按照规定好，默认方式排列。包含块级元素，行内元素等
+- 是最基本的布局方式
+
+#### 浮动流
+
+#### 定位流
+
+### 2.2 浮动布局
+
+- 场景：多个div分布在同一行？两个div分别在同一行的左边和右边
+- 浮动：可以改变元素默认的排列方式
+- 网页布局第一准则：**多个块元素纵向排列用标准流，多个块元素横向排列用浮动** 
+- float：用于创建浮动框，将其移动到一边，直到左边缘或右边缘，及包含块或另一个浮动框的边缘
+
+![image-20230704171521742](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704171521742.png)
+
+### 2.3 浮动特性
+
+#### 脱标
+
+- 设置了浮动的元素，脱离标准普通流的控制，移动到指定位置(飞升)
+- 浮动的盒子不再保留原先的位置(图层叠加)
+
+#### 一行显示
+
+- 如果多个盒子都设置了浮动，则它们会按照属性值，在**一行内显示并且顶端对齐排列**
+- 盒子之间没有空隙
+- 如果缩放浏览器大小，则装不下的盒子，就会自动浮动到下一行
+
+#### 行内块元素特性
+
+- 任何元素都可以浮动，不管之前是什么模式的元素，添加浮动之后，都具有行内块元素的特性
+
+### 2.4 常用布局
+
+#### 多个块无间距
+
+- 为了约束浮动元素位置(不能基于浏览器对齐)，网页布局一半采取
+- 先用标准流的父元素排列上下文职，之后内部子元素采取浮动排列左右位置
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .bigBox {
+            width: 1500px;
+            height: 600px;
+            margin: 50px auto; /*大盒子居中对齐*/
+        }
+
+        .leftBox {
+            width: 1000px;
+            height: 600px;
+            float:left;
+            background-color: green;
+        }
+
+        .rightBox {
+            width: 500px;
+            height: 600px;
+            float:right;
+            background-color: red;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="bigBox">
+
+    <div class="leftBox">
+
+    </div>
+
+    <div class="rightBox">
+
+    </div>
+</div>
+
+</body>
+</html>
+```
+
+#### 多个块有间距
+
+- 可以用ul-li来做
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .box {
+            height: 300px;
+            width: 1090px;
+            background-color: gray;
+            margin: 50px auto;
+            list-style: none; /*清除掉li的样式*/
+        }
+
+        ul li {
+            height: 200px;
+            width: 250px;
+            background-color: green;
+            float: left;
+            margin-right: 30px; /*盒子间距离一定的缝隙*/
+        }
+
+        /*最后一个不要加*/
+        .last {
+            margin-right: 0!important;
+        }
+
+    </style>
+</head>
+<body>
+
+<ul class="box">
+    <li></li>
+    <li></li>
+    <li></li>
+    <li class="last"></li>
+</ul>
 
 </body>
 </html>
