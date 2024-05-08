@@ -1287,6 +1287,7 @@ display: inline-block
 - 场景：多个div分布在同一行？两个div分别在同一行的左边和右边
 - 浮动：可以改变元素默认的排列方式
 - 网页布局第一准则：**多个块元素纵向排列用标准流，多个块元素横向排列用浮动** 
+- 网页布局第二准则：**先设置盒子大小，再设置盒子的位置**
 - float：用于创建浮动框，将其移动到一边，直到左边缘或右边缘，及包含块或另一个浮动框的边缘
 
 ![image-20230704171521742](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704171521742.png)
@@ -1411,6 +1412,140 @@ display: inline-block
     <li></li>
     <li class="last"></li>
 </ul>
+
+</body>
+</html>
+```
+
+#### 浮和不浮结合
+
+- 理论上来说，所有的兄弟盒子，一个浮动，其他都要浮动
+- 第一个不浮动，剩下的浮动：则第一个独占一行，剩下的兄弟盒子另起一行进行浮动
+- **浮动的盒子只会影响浮动盒子后面的标准流，不会影响前面的标准流**
+
+### 2.5 清除浮动
+
+- 父盒子可能不能指定高度，但是又需要包含若干个子盒子。比如商品的展示页
+- 理想情况：让子盒子撑开父盒子
+
+#### 为什么要清除
+
+- 父盒子不方便给高度，但是又希望子盒子撑开父盒子
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .box {
+            background-color: gray;
+            width: 1000px;
+           /* height: 500px;*/
+            margin: 50px auto;
+        }
+
+        /*假如浮动的块有很多个，希望不要给父盒子指定高度，让子盒子来撑开父盒子
+        1. 不指定父元素高度时，又会导致父元素成为一条线*/
+        .first {
+            float: left;
+            background-color: green;
+            height: 100px;
+            width: 100px;
+        }
+
+        .second {
+            float: left;
+            background-color: red;
+            height: 100px;
+            width: 100px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="box">
+
+    <div class="first">
+
+    </div>
+
+    <div class="second">
+
+    </div>
+</div>
+
+</body>
+</html>
+```
+
+#### 清除浮动
+
+- 本质就是清除浮动元素脱离标准流造成的影响
+- 如果父盒子本身有高度，则不需要清除浮动
+- 清除浮动后，父盒子就会根据浮动的子盒子自动检测高度。父级有了高度，就不会影响下面的标准流了
+
+| 清除方式     | 做法                                                         | 缺点           | 推荐 |
+| ------------ | ------------------------------------------------------------ | -------------- | ---- |
+| 额外标签法   | 在最后一个浮动标签后面，再加一个块标签，并且用clea：both来清除 | 需要新加块标签 | N    |
+| 父：overflow | 在父元素添加overflow：hidden, auto, scroll都可以             |                |      |
+| 伪元素       |                                                              |                |      |
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .box {
+            background-color: gray;
+            width: 1000px;
+            /* height: 500px;*/
+            margin: 50px auto;
+        }
+
+        .first {
+            float: left;
+            background-color: green;
+            height: 100px;
+            width: 100px;
+        }
+
+        .second {
+            float: left;
+            background-color: red;
+            height: 100px;
+            width: 100px;
+        }
+
+        /*新增clear*/
+        .sf {
+            clear: both;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="box">
+
+    <div class="first">
+
+    </div>
+
+    <div class="second">
+
+    </div>
+    <!--新增clear-->
+    <div class="sf">
+
+    </div>
+</div>
 
 </body>
 </html>
