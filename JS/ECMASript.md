@@ -175,46 +175,41 @@ console.log(name) // 不能使用
 - 如果当前查找不到，则依次逐级查找父级作用域直到全局作用域
 - 子可访问父，父不可访问子
 
-## 3. 垃圾回收机制
+## 3. 闭包
+
+- 内层函数加外层函数的变量，一起构成了闭包
+- 并返回内层函数
+
+```js
+function outer() {
+    /*外层函数的变量*/
+    /*提升作用域，不会被垃圾回收*/
+    let a = 10;
+
+    /*内层函数*/
+  
+    /*数据私有，外部无法直接修改a*/
+    function inner() {
+        a++;
+        console.log(a)
+    }
+
+    /*返回内层函数*/
+    return inner;
+}
+
+/*返回值=内层函数*/
+const fn = outer();
+
+/*内层函数调用*/
+fn();
+```
+
+
 
 # 语法
 
-## 1. 数组
-
-```javascript
-/*1. 创建数组*/
-let arr01 = ['a','b','c']
-let arr02 = new Array();
-let arr03 = new Array(3);
-console.log(arr01[0])
-console.log(arr01.length)
-
-/*2. 反转数组*/
-arr01.reverse();
-console.log(arr01)
-
-/*3. 增删改插入*/
-arr01.push('d')                    // 尾插
-arr01.unshift('z')           // 头插
-let pop = arr01.pop();      // 尾删，返回删除的元素
-console.log(pop)
-let shift = arr01.shift();   // 头删， 返回删除的元素
-
-
-/*4. 判断是否为数组*/
-console.log(arr01 instanceof Array)
-console.log(Array.isArray(arr01))
-
-/*5. 转换为字符串*/
-let str = arr01.toString();
-console.log(str)
-
-let res = arr01.join('-');
-console.log(res)
-console.log(arr01)
-```
-
-## 2. 数据类型
+## 1. 数据类型
 
 - 弱类型语言：只有在程序运行时，根据具体的赋值结果，才会进行类型划分
 - 动态类型：变量的数据类型是可以变化的
@@ -225,7 +220,7 @@ let info = 'erick'
 console.log(typeof info)    // 得到具体的类型数据
 ```
 
-### 2.1 number
+### number
 
 ```js
 let age = 19;
@@ -244,7 +239,7 @@ console.log(isNaN(age))
 console.log(isNaN(name))
 ```
 
-### 2.2 string
+### string
 
 - length： 字符串长度
 - 拼接： + 
@@ -265,11 +260,11 @@ let name = 'erick'
 console.log(`我是${name}, 今年${age}岁了`)
 ```
 
-### 2.3 boolean
+### boolean
 
 - 可参与加法运算， true为1，false为0
 
-### 2.4 undefined
+### undefined
 
 - 声明了变量，但是没有赋值，默认值就是undefined
 
@@ -278,7 +273,7 @@ let name
 console.log(typeof name)
 ```
 
-### 2.5 null
+### null
 
 - 声明了变量，赋值了，但是赋值为null
 
@@ -288,7 +283,7 @@ console.log(name)          // null
 console.log(typeof name)   // object，本身就是一个js的内置对象
 ```
 
-### 2.6 object
+### object
 
 - 数组就是引用数据类型object
 
@@ -297,9 +292,9 @@ let arr = [1,4,6,8]
 console.log(typeof arr) // object
 ```
 
-## 3. 类型转换
+## 2. 类型转换
 
-### 3.1 转换为string
+### 2.1 转换为string
 
 ```js
 let age = 10
@@ -311,7 +306,7 @@ let age3 = age.toString()
 console.log(typeof age1 + typeof age2 + typeof age3)
 ```
 
-### 3.2 转换为number
+### 2.2 转换为number
 
 ```js
 let age1 = parseInt('18')         // 整数
@@ -325,7 +320,7 @@ console.log(age3)
 console.log(age4)
 ```
 
-### 3.3 转换为boolean
+### 2.3 转换为boolean
 
 ```js
 let flag = Boolean('1')
@@ -333,7 +328,7 @@ console.log(flag)
 console.log(typeof flag)
 ```
 
-## 4. 运算符
+## 3. 运算符
 
 - ==单纯比较值是否相等
 - ===是比较值和类型是否相等
@@ -346,13 +341,159 @@ console.log(age == age1)   // true
 console.log(age === age1)  // false
 ```
 
+## 4. Object
+
+```js
+let people = {
+    username: 'erick',
+    age: 20,
+}
+
+let keys = Object.keys(people);  // 数组
+let values = Object.values(people); // 数组
+console.log(keys)      // [ 'username', 'age' ]
+console.log(values)     // [ 'erick', 20 ]
+
+let p = {};
+Object.assign(p, people);  // 对象拷贝
+console.log(p)
+```
+
+
+
+# 数组
+
+## 1. API
+
+### 1.1 创建
+
+```js
+/*1. 创建数组*/
+let arr01 = ['a','b','c']
+let arr02 = new Array();
+let arr03 = new Array(3);
+console.log(arr01[0])
+console.log(arr01.length)
+```
+
+### 1.2 增删改查
+
+```js
+let arr01 = ['a', 'b', 'c']
+
+arr01[1] = 'y';
+arr01.push('d');                   // 尾插
+arr01.unshift('z')           // 头插
+let pop = arr01.pop();      // 尾删，返回删除的元素
+let shift = arr01.shift();   // 头删， 返回删除的元素
+```
+
+### 1.3 遍历
+
+```js
+let arr = ['red', 'green', 'pink'];
+
+/*for循环*/
+for (let i = 0; i < arr.length; i++) {
+    console.log(i);
+    console.log(arr[i]);
+}
+```
+
+```js
+let arr = ['red', 'green', 'pink'];
+
+/*foreach*/
+arr.forEach(function (item, index) {
+    console.log(item);
+    console.log(index)
+});
+```
+
+### 1.4 其他
+
+```js
+/*1. 反转数组*/
+arr01.reverse();
+console.log(arr01)
+/*2. 判断是否为数组*/
+console.log(arr01 instanceof Array)
+console.log(Array.isArray(arr01))
+
+/*3. 转换为字符串*/
+let str = arr01.toString();
+console.log(str)
+
+let res = arr01.join('-');
+console.log(res)
+console.log(arr01)
+```
+
+## 2. 解构
+
+- 将数组的元素快速批量赋值给一些列变量的简洁语法
+
+### 2.1 基本使用
+
+```js
+let arr = [1, 4, 5, 7];
+let [a, b, c, d] = arr; // 快速解构
+
+console.log(`${a}, ${b}, ${c}, ${d}`);
+```
+
+### 2.2 变量少
+
+```js
+/*变量少，数组元素多： 则从前向后解析*/
+let arr = [1, 4, 5, 7,9];
+let [a, b, c, d] = arr;
+
+console.log(`${a}, ${b}, ${c}, ${d}`)
+```
+
+```js
+/*利用剩余参数来解决： 真数组*/
+let arr = [1, 4, 5, 7, 8];
+let [a, b, ...other] = arr;
+
+console.log(`${a}, ${b}, ${other}`)
+```
+
+### 2.3 变量多
+
+```js
+/*变量多，数组元素少： 则后面的为undefined*/
+let arr = [1, 4];
+let [a, b, c, d] = arr;
+
+console.log(`${a}, ${b}, ${c}, ${d}`)
+```
+
+```js
+/*利用默认值，防止undefined*/
+let arr = [1, 4];
+let [a = -1, b = -1, c = -1, d = -1] = arr;
+
+console.log(`${a}, ${b}, ${c},${d}`)
+```
+
+### 2.4 占位
+
+- 5不会被解析
+
+```js
+let arr = [1, 4, 5, 7];
+let [a, b, , d] = arr; // 快速解构
+
+console.log(`${a}, ${b}, ${d}`);
+```
+
 # 函数
 
 ## 1. 具名函数
 
 - 具名函数的调用，可以在函数声明前或者声明后，都可以调用
-
-### 1.1 基本使用
 
 ```js
 /*无参无返回值*/
@@ -382,31 +523,6 @@ work()
 eat('apple')
 console.log(getAge())
 console.log(getName(2))
-```
-
-### 1.2 默认值
-
-- 如果调用方没有将需要的参数都传递过来，形参默认是undefined，这样后面运算时就是undefined，类似Java的空指针
-- 可以给形参默认值
-
-```js
-/*形参的默认值：undefined*/
-function getSum(a, b) {
-    return a + b;
-}
-
-/*结果： NaN*/
-console.log(getSum(2))
-```
-
-```js
-/*形参的默认值：0*/
-function getSum(a = 0, b = 0) {
-    return a + b;
-}
-
-/*结果： NaN*/
-console.log(getSum(2))
 ```
 
 ## 2. 匿名函数
@@ -467,95 +583,292 @@ console.log(sum)
 ('apple');
 ```
 
-# 类
+## 3. 箭头函数
 
-- Object
+- 是对函数表达式进行的更简短的函数写法
+- 并且不绑定this
 
-## 1. 创建
-
-### 1.1 直接创建
-
-```js
-let people = {
-    name: 'erick',
-    age: 19,
-    hobby: ['basketball', 'swim'],
-
-    // 匿名方法
-    /*无参无返回值*/
-    work: function () {
-        console.log('learning js')
-    },
-
-    /*无参有返回值*/
-    getAge: function () {
-        return 20;
-    },
-
-    /*有参无返回值*/
-    getInfo: function (height) {
-        console.log(height)
-    },
-
-    /*有参有返回值*/
-    getSum: function (a, b) {
-        return a + b;
-    }
-}
-
-console.log(people.age)
-people.work()
-console.log(people.getAge())
-people.getInfo('hehe')
-console.log(people.getSum(10, 20))
-console.log(typeof people) // object
-```
-
-### 1.2 new Object
+### 3.1 基本语法
 
 ```js
-let people = new Object();
-people.name = 'erick';
-people.age = 19;
-people.hobby = ['basketball', 'swim'];
-
-/*无参无返回值*/
-people.work = function () {
-    console.log('learning js')
+/*1.无参无返回值*/
+/*函数表达式*/
+let first = function () {
+    console.log('erick');
 }
-/*无参有返回值*/
-people.getAge = function () {
+/*箭头函数*/
+let firstHook = () => {
+    console.log('erick hook')
+}
+
+first();
+firstHook();
+
+/*2. 无参有返回值*/
+/*函数表达式*/
+let second = function () {
+    return 20;
+}
+/*箭头函数*/
+let secondHook = () => {
     return 20;
 }
 
-/*有参无返回值*/
-people.getInfo = function (height) {
-    console.log(height)
+console.log(second())
+console.log(secondHook())
+
+
+/*3. 有参无返回值*/
+/*函数表达式*/
+let third = function (a, b) {
+    console.log(a + b);
+}
+/*箭头函数*/
+let thirdHook = (a, b) => {
+    console.log(a + b)
 }
 
-/*有参有返回值*/
-people.getSum = function (a, b) {
+third(10, 20);
+thirdHook(20, 10);
+
+/*4. 有参有返回值*/
+/*函数表达式*/
+let four = function (a, b) {
+    return a + b;
+}
+/*箭头函数*/
+let fourHook = (a, b) => {
     return a + b;
 }
 
-console.log(people.age)
-people.work()
-console.log(people.getAge())
-people.getInfo('hehe')
-console.log(people.getSum(10, 20))
-console.log(typeof people) // object
+console.log(four(10, 20));
+console.log(fourHook(10, 20));
 ```
 
-## 2. 属性操作
+### 3.2 省略语法
 
-### 2.1 获取属性
+- 只有一个形参，可以省略小括号
+
+```js
+let firstHook = a => {
+    a++;
+    console.log(a)
+}
+
+firstHook(20);
+```
+
+- 函数体只有一行代码，可以省大括号
+
+```js
+// 代码为单纯的逻辑运算
+let firstHook = (a, b) => console.log(a + b);
+
+firstHook(20, 20);
+
+// 代码为返回值
+let secondHook = (a, b) => a + b;
+
+console.log(secondHook(20, 20));
+```
+
+### 3.3 返回对象
+
+```js
+let getInfo = (username, password) => {
+    return {
+        username: username, password: password
+    }
+}
+
+console.log(getInfo('admin', '123456'));
+```
+
+- 简化版
+
+```js
+let getInfo = (username, password) => ({
+    username: username, password: password
+})
+
+console.log(getInfo('admin', '123456'));
+```
+
+
+
+## 4. 函数参数
+
+### 4.1 默认值
+
+- 如果调用方没有将需要的参数都传递过来，形参默认是undefined，这样后面运算时就是undefined，类似Java的空指针
+- 可以给形参默认值
+
+```js
+/*形参的默认值：undefined*/
+function getSum(a, b) {
+    return a + b;
+}
+
+/*结果： NaN*/
+console.log(getSum(2))
+```
+
+```js
+/*形参的默认值：0*/
+function getSum(a = 0, b = 0) {
+    return a + b;
+}
+
+/*结果： NaN*/
+console.log(getSum(2))
+```
+
+### 4.2 动态参数
+
+- 伪数组
+- js内置函数 arguments，只存在于普通函数之中，在箭头函数中没有
+
+```js
+function sum() {
+    /* [Arguments] { '0': 2, '1': 'erick', '2': 6 } */
+    console.log(arguments)
+}
+
+sum(2, 'erick', 6);
+```
+
+```js
+function sum() {
+    for (let i = 0; i < arguments.length; i++) {
+        // 2 erick 6
+        console.log(arguments[i])
+    }
+}
+
+sum(2, 'erick', 6);
+```
+
+### 4.3 剩余参数
+
+- 可变参数是真数组，在普通函数，箭头函数中都有
+- 优先使用剩余参数，而不是动态参数
+
+```js
+function sum(a, b, ...other) {
+    
+}
+
+sum(2, 'erick', 6);
+```
+
+### a 展开运算符
+
+- 。。。
+
+```js
+function sum() {
+    const arr = [1, 2, 3, 6, 7];
+    console.log(...arr);  // 展开数组 1 2 3 6 7
+    console.log(Math.max(...arr))
+}
+
+sum();
+```
+
+## 5. this指向
+
+- 对于函数中的this，谁调用该函数，谁就是this
+
+### 5.1 普通函数
+
+```html
+<script>
+    console.log(this);     // window 调用该js
+
+    function say() {
+        console.log(this);  // windows 调用该函数
+    }
+
+    say();
+
+    let people = {
+        name: 'erick',
+
+        work: function () {
+            console.log(this) // people
+        }
+    }
+
+    people.work();
+</script>
+```
+
+### 5.2 箭头函数
+
+- 箭头函数u不会创建自己的this，它只会从自己的作用域链的上一层沿用this
+
+```js
+let say = () => {
+    console.log(this); // window,   作用域链上一层，就是window
+}
+say()
+
+let people = {
+    name: 'erick',
+
+    say: () => {
+        // 函数内部没this，向上一层找对象的this
+        console.log(this) // window
+    }
+}
+
+people.say();
+
+let nancy = {
+    name: 'erick',
+
+    say: function () {
+        let a = 10;
+        /*嵌套一个箭头函数*/
+        let work = () => {
+            console.log(this) // obj
+        }
+        work()
+    }
+}
+
+nancy.say();
+```
+
+
+
+# 对象
+
+## 1. 基础
+
+### 1.1 创建
+
+```js
+let people = {
+    username: 'erick',
+    age: 19,
+}
+```
+
+```js
+let people = new Object({username: 'erick', age: 20});
+```
+
+### 1.2 属性操作
+
+#### 获取属性
 
 ```js
 let people = {
     name: 'erick',
 }
 
-/*属性有，则是该*/
+/*属性有，则是改*/
 people.name = 'lucy';
 /*属性没有，则是增*/
 people.age = 10;
@@ -580,7 +893,7 @@ console.log(people["user-name"]) // 如果是非驼峰的字符串，则必须�
 console.log(people)
 ```
 
-### 2.2 遍历对象
+#### 遍历对象
 
 ```js
 let people = {
@@ -592,3 +905,111 @@ for (let key in people) {
 }
 ```
 
+### 1.3 对象解构
+
+#### 基本使用
+
+```js
+let people = {
+    'user-name': 'erick',
+    address: 'xian',
+    age: 10,
+    gender: 'boy',
+}
+
+/*对象解构*/
+/*1. 属性名和变量名必须一样，否然就是undefined
+* 2. 可以对解构的变量名重新命名*/
+let {'user-name': userName, address, age, gender: genderEric} = people;
+
+console.log(userName)
+console.log(address)
+console.log(age);
+console.log(genderEric);
+```
+
+#### 多级对象
+
+```js
+let people = {
+    address: 'xian',
+    age: 10,
+    other: {
+        sex: 'boy',
+        id: 19,
+    }
+}
+
+let {address, age, other: {sex, id}} = people;
+console.log(sex);
+```
+
+#### 部分解构
+
+- 可以在解构的时候，只解构需要的数据
+
+```js
+let people = {
+    address: 'xian',
+    age: 10,
+    other: {
+        sex: 'boy',
+        id: 19,
+    }
+}
+
+let {address} = people;
+console.log(address);
+```
+
+## 2. 构造函数
+
+- 也是一种创建对象的方式
+
+### 2.1 实例属性/方法
+
+- 公共的属性和方法，可以封装在构造函数中
+- 封装的方法，存在浪费内存问题，不同的对象new出来后，所指向的方法，都是一个单独的内存，不能复用
+
+```js
+function People(username, address) {
+    this.username = username;
+    this.address = address;
+    /*匿名函数， 具名函数， 箭头函数 都可以放*/
+    this.sayHello = function () {
+        console.log('hello')
+    }
+}
+
+let people = new People('erick', 'xian'); // 使用new关键字调用函数
+
+people.sayHello();
+```
+
+### 2.2 静态属性/方法
+
+- 只能通过类名调用，不能通过实例调用
+
+```js
+function People(username, address) {
+    this.username = username;
+    this.address = address;
+    this.workHard = function work() {
+        console.log('work hard');
+    }
+}
+
+/*定义静态方法*/
+People.staticMethod = function () {
+    console.log('静态方法')
+}
+
+/*定义静态成员*/
+People.info = '静态属性'
+
+let people = new People('erick', 'xian'); // 使用new关键字调用函数
+
+console.log(people.info); // undefined， 不能通过实例调用
+console.log(People.info);
+People.staticMethod()
+```
