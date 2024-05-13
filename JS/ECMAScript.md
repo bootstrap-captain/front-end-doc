@@ -120,9 +120,10 @@ console.log(name)
 ### 1.2 常量
 
 - 常量的值不能改变，声明的时候必须赋值
+- 一般使用大写
 
 ```js
-const age = 19
+const AGE = 19
 ```
 
 ## 2. 作用域
@@ -253,12 +254,29 @@ console.log(info + 'hello')
 
 #### 模版字符串
 
+- ES6语法
+- 反单引号
+
 ```java
+// 可以包含变量
 let age = 19
 let name = 'erick'
 
 console.log(`我是${name}, 今年${age}岁了`)
 ```
+
+```js
+// 可以换行
+let str = `<ul>
+<li>he</li>
+<li>ha</li>
+<li>j</li>
+</ul>`
+
+console.log(str)
+```
+
+
 
 ### boolean
 
@@ -290,6 +308,30 @@ console.log(typeof name)   // object，本身就是一个js的内置对象
 ```js
 let arr = [1,4,6,8]
 console.log(typeof arr) // object
+```
+
+### Symbol
+
+```js
+let s = Symbol();
+
+console.log(s, typeof s); // symbol对象
+
+/*创建方式一：*/
+let a1 = Symbol('erick');
+let a2 = Symbol('erick');
+
+console.log(a1 === a2); // false，两个属性值相同的标记
+
+/*创建方式二：*/
+
+let b1 = Symbol.for('erick');
+let b2 = Symbol.for('erick');
+console.log(b1 === b2);  // true
+
+/*symbol不能与任何其他数据类型运算, 直接报错*/
+
+console.log(b1 + 'erick');
 ```
 
 ## 2. 类型转换
@@ -359,8 +401,6 @@ Object.assign(p, people);  // 对象拷贝
 console.log(p)
 ```
 
-
-
 # 数组
 
 ## 1. API
@@ -429,9 +469,10 @@ console.log(res)
 console.log(arr01)
 ```
 
-## 2. 解构
+## 2. 解构赋值
 
 - 将数组的元素快速批量赋值给一些列变量的简洁语法
+- ES6语法
 
 ### 2.1 基本使用
 
@@ -487,6 +528,46 @@ let arr = [1, 4, 5, 7];
 let [a, b, , d] = arr; // 快速解构
 
 console.log(`${a}, ${b}, ${d}`);
+```
+
+# 集合
+
+## Set
+
+- ES6的新语法
+
+```js
+let set = new Set();
+set.add('a');
+set.add('b');
+set.add('c');
+set.add('c');
+
+set.delete('a');
+set.has('b');
+let keys = set.keys();
+
+for (let v of set){
+    console.log(v);
+}
+```
+
+## Map
+
+- ES6的新语法
+
+```js
+let map = new Map();
+map.set('name', 'erick');
+map.set({name: 'erick', age: 20}, 'people');
+
+let name = map.get('name');
+
+map.delete('name');
+
+for (let v of map) {
+    console.log(v); // k-v对
+}
 ```
 
 # 函数
@@ -583,10 +664,11 @@ console.log(sum)
 ('apple');
 ```
 
-## 3. 箭头函数
+## 3. 箭头函数-ES6
 
 - 是对函数表达式进行的更简短的函数写法
 - 并且不绑定this
+- 不能使用arguments动态参数
 
 ### 3.1 基本语法
 
@@ -698,10 +780,11 @@ console.log(getInfo('admin', '123456'));
 
 ## 4. 函数参数
 
-### 4.1 默认值
+### 4.1 默认值-ES6
 
 - 如果调用方没有将需要的参数都传递过来，形参默认是undefined，这样后面运算时就是undefined，类似Java的空指针
 - 可以给形参默认值
+- 一般带有默认值的星灿，位置在声明时候靠后(潜规则)
 
 ```js
 /*形参的默认值：undefined*/
@@ -748,9 +831,10 @@ function sum() {
 sum(2, 'erick', 6);
 ```
 
-### 4.3 剩余参数
+### 4.3 剩余参数-ES6
 
-- 可变参数是真数组，在普通函数，箭头函数中都有
+- 可变参数是真数组，可以使用数组的api
+- 在普通函数，箭头函数中都有
 - 优先使用剩余参数，而不是动态参数
 
 ```js
@@ -761,7 +845,7 @@ function sum(a, b, ...other) {
 sum(2, 'erick', 6);
 ```
 
-### a 展开运算符
+### 4.4 展开运算符
 
 - 。。。
 
@@ -905,7 +989,9 @@ for (let key in people) {
 }
 ```
 
-### 1.3 对象解构
+### 1.3 解构赋值
+
+- ES6语法
 
 #### 基本使用
 
@@ -962,6 +1048,44 @@ let {address} = people;
 console.log(address);
 ```
 
+### 1.4 属性/方法简写
+
+```js
+/*ES-5*/
+let name = 'erick';
+let age = 20
+let people = {
+    name: name,
+    age: age,
+
+    say: function () {
+        console.log('say es-5')
+    }
+}
+
+/*ES-6*/
+let size = 'big';
+let fur = 'white';
+let dog = {
+    /*属性简写*/
+    size,
+    fur,
+
+    /*方法简写*/
+    say() {
+        console.log('say es-6')
+    }
+}
+
+console.log(people);
+people.say();
+
+console.log(dog)
+dog.say();
+```
+
+
+
 ## 2. 构造函数
 
 - 也是一种创建对象的方式
@@ -1013,3 +1137,296 @@ console.log(people.info); // undefined， 不能通过实例调用
 console.log(People.info);
 People.staticMethod()
 ```
+
+## 3. 原型
+
+### 3.1 原型对象
+
+- js中，每个构造函数都有一个prototype属性，指向另一个对象，称prototype为原型对象
+- 可以把不变的方法，直接定义在prototype对象上，这样所有对象的实例可以共享这些方法
+
+```bash
+# 公共的属性，写到构造方法中
+# 公共的方法，写到原型对象中
+```
+
+```js
+function People(username, address) {
+    /*公共的属性*/
+    this.username = username;
+    this.address = address;
+}
+
+/*公共的方法*/
+People.prototype.workHard = function () {
+    console.log('公共的方法')
+}
+
+let people1 = new People('erick', 'xian');
+let people2 = new People('lucy', 'beijing');
+
+people1.workHard();
+
+console.log(people1.workHard === people2.workHard); // true
+```
+
+- 构造函数和原型对象中的this，都指向实例化的对象
+
+```js
+let thisConstructor;
+let thisPrototype;
+
+function People(username, address) {
+    /*公共的属性*/
+    this.username = username;
+    this.address = address;
+    thisConstructor = this;
+}
+
+/*公共的方法*/
+People.prototype.workHard = function () {
+    console.log('公共的方法')
+    thisPrototype = this;
+}
+
+let people = new People('erick', 'xian');
+
+people.workHard();
+
+/*都指向当前对象*/
+console.log(people === thisConstructor && people === thisPrototype);
+```
+
+-  扩展js本身的库，自定义函数
+
+```js
+let arr = [1, 2, 3];
+
+/*给array加了一个方法*/
+Array.prototype.getSum = function () {
+    let length = this.length;
+    let result = 0;
+    for (let i = 0; i < length; i++) {
+        result += this[i];
+    }
+    return result;
+}
+
+console.log(arr.getSum());
+```
+
+### 3.2 constructor属性
+
+#### 介绍
+
+- 每个构造函数中，都包含一个原型对象，原型对象中，包含一个constructor属性，constructor属性再指向构造函数
+
+![image-20240513104520047](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240513104520047.png)
+
+```js
+function People(username, password) {
+    this.username = username;
+    this.password = password;
+}
+
+console.log(People.prototype.constructor === People); // true
+```
+
+#### 场景
+
+```js
+function People(username, password) {
+    this.username = username;
+    this.password = password;
+}
+
+/*可以把公共的方法，都放在原型链中*/
+People.prototype = {
+
+    /*必须要加，不然这个原型链就是把之前的原型链替换掉了*/
+    constructor: People,
+
+    sing: function (){
+        console.log('sing');
+    },
+
+    work: function (){
+        console.log('work')
+    }
+}
+
+console.log(People.prototype)
+```
+
+### 3.3 对象原型
+
+- 属于每个实例对象的，指向构造函数的prototype原型对象
+
+```bash
+# 对象原型
+- 每个实例对象，都有一个属性 __proto__,指向构造函数的prototype原型对象
+- 因此实例对象，可以通过属性 __proto__，访问到prototype原型对象
+```
+
+ ![image-20240513112648429](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240513112648429.png)
+
+```js
+function People(username, password) {
+    this.username = username;
+    this.password = password;
+}
+
+let people = new People('erick', 'xian');
+
+console.log(people.__proto__ === People.prototype); //true
+```
+
+### 3.4 原型继承
+
+- js中大多是借助原型对象来实现对象的继承
+
+```js
+/*父类*/
+function People() {
+    this.eye = 'blue';
+    this.mouth = 'open';
+}
+
+
+/*子类1*/
+function Boy() {
+}
+
+Boy.prototype = new People(); // 继承
+Boy.prototype.constructor = Boy; // 指回去
+Boy.prototype.fish = function () {
+    console.log('go fishing')
+}
+
+/*子类2*/
+function Girl() {
+}
+
+Girl.prototype = new People(); // 继承
+Girl.prototype.constructor = Girl; // 指回去
+Girl.prototype.dance = function () {
+    console.log('go dancing')
+}
+
+console.log(new Boy())
+console.log(new Girl())
+```
+
+## 4. ES6-class
+
+### 4.1 基本语法
+
+```js
+class People {
+
+    /*构造函数*/
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    /*函数必须是这种写法*/
+    say() {
+        console.log('hello');
+    }
+
+    /*静态方法和属性: 只能通过类调用，不能通过实例对象调用*/
+    static region = 'cn';
+
+    static work() {
+        console.log('work')
+    }
+}
+
+let people = new People('erick', 20);
+
+console.log(people.age + people.name);
+people.say();
+People.work();
+```
+
+### 4.2 继承
+
+```js
+class People {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    say() {
+        console.log('people')
+    }
+
+    work() {
+        console.log('people work hard')
+    }
+
+}
+
+class Boy extends People {
+    constructor(name, age, sex, address) {
+        super(name, age); // 对父类的属性进行初始化
+        this.sex = sex;
+        this.address = address;
+    }
+
+    /*自定义方法*/
+    fish() {
+        console.log('boy fishing')
+    }
+
+    /*方法重写
+    * 方法名相同：就会认为是重写*/
+    say() {
+        console.log('boy dancing')
+    }
+}
+
+let boy = new Boy('erick', 20, 'boy', 'xian');
+boy.fish();
+boy.say();
+boy.work();  // 子类可直接调用父类的方法和属性
+console.log(boy.age);
+```
+
+### 4.2 私有属性
+
+```js
+class People {
+    // 公有属性
+    name;
+    age;
+
+    // 私有属性
+    #info;
+
+    constructor(name, age, info) {
+        this.name = name;
+        this.age = age;
+        this.#info = info;
+    }
+}
+
+class Boy extends People {
+    sex;
+    address;
+
+    constructor(name, age, info, sex, address) {
+        super(name, age, info); // 对父类的属性进行初始化
+        this.sex = sex;
+        this.address = address;
+    }
+}
+
+
+let boy = new Boy('erick', 20, 'boy', 'xian');
+console.log(boy.sex);
+console.log(boy.info); // 获取不到
+```
+
