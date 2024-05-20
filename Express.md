@@ -20,6 +20,8 @@ server.listen(8080, 'localhost', function () {
 
 # 路由
 
+- 类似springboot项目中的controller
+
 ## 1. 请求参数
 
 - 路径匹配，获取请求体中的一些参数：路径，自定义header等
