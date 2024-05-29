@@ -2,6 +2,7 @@
 
 - Asynchronous JavaScript And XML
 - 在网页不刷新的情况下，向服务端发送请求
+- 属于基于浏览器执行引擎的，发送http服务的工具
 
 ```bash
 # 优点
@@ -403,6 +404,7 @@ function testNetWorkError() {
 ## 4. 取消请求
 
 - 当一个请求，处于pending状态时候，可以取消请求
+- 取消时候，后端可能已经收到请求了，只是本次ajax和后端的连接断开了
 
 ```html
 <!DOCTYPE html>
@@ -556,6 +558,394 @@ public class TimeoutController {
     }
 }
 ```
+
+# http
+
+- Node内置模块，用于进行node端的网络请求端处理
+- node官方提供的，用来将node变为一个服务器
+- 运行该文件，就会启动一个node的后端server
+- 一般不会直接使用，都是使用express来创建server，使用axios来发送请求
+
+```js
+let http = require('http');
+
+/*创建一个server*/
+let erickService = http.createServer();
+
+/* 通过 http://localhost:8080/+任何路径都可以 访问触发*/
+erickService.on('request', function (request, response) {
+    /*请求体*/
+    if (request) {
+        /*url: /, 地址为完整url删除 host和port后的地址*/
+        console.log(`Your Method is ${request.method}, Your url is ${request.url}`);
+    }
+
+    /*响应体*/
+    if (response) {
+        /*解决中文乱码问题*/
+        response.setHeader('Content-Type', 'text/html;charset=utf-8');
+        /* end : 结束本次请求，返回给页面的数据*/
+        response.end('我是舒展');
+    }
+});
+
+const PORT = 8080;
+const HOST = 'localhost';
+erickService.listen(PORT, HOST, function () {
+    console.log('http server started successfully');
+});
+```
+
+# Axios
+
+## 1. 基本介绍
+
+- 基于Promise的Http客户端，可以在浏览器和Node.js环境中使用
+- [官方DOC](https://axios-http.com/docs/intro)
+- npm install axios
+
+```bash
+# 浏览器端： ajax请求
+- axios使用XMLHttpRequest对象发送HTTP请求
+- XMLHttpRequest是浏览器提供的内置对象，将请求发送到服务端，并处理服务器的响应
+- axios创建和配置XMLHttpRequest对象
+
+# Node端： http模块
+- axios使用http模块发送HTTP请求
+- http模块是Node.js的内置模块，将请求发送到服务端，并处理服务器的响应
+- axios创建和配置http.ClientRequest对象
+```
+
+## 2. axios(config)
+
+- 传入具体的请求的详细信息
+
+### GET
+
+```java
+package com.citi.erick.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/get")
+@CrossOrigin()
+@Slf4j
+public class StudentController {
+
+    @GetMapping("/sleep")
+    public String sleep() {
+        log.info("sleep coming");
+        return "hello erick";
+    }
+
+    @GetMapping("/eat")
+    public String eat(@RequestParam(name = "name") String name,
+                      @RequestParam(name = "age") String myName) {
+        log.info("name={},age={}", name, myName);
+        return name + myName;
+    }
+
+    /*响应Json*/
+    @GetMapping("/getAll")
+    public People getAll(@RequestParam(name = "prefix") String prefix) {
+        People people = new People();
+        people.setAddress(prefix + "xian");
+        people.setAge(prefix + "45");
+        people.setName(prefix + "shuzhan");
+        return people;
+    }
+}
+```
+
+```js
+const axios = require('axios');
+
+/*1. 创建这个对象后，就已经发送了请求
+* 2. axios()返回的是一个Promise对象*/
+
+/*get无参请求*/
+axios({
+    method: 'GET',
+    url: 'http://localhost:8080/get/sleep',
+}).then(value => {
+    console.log(value.data);     // 响应体
+    console.log(value.status)    // 响应码
+}).catch(error => {
+    console.log(error)
+})
+
+/*get带参数*/
+axios({
+    method: 'GET',
+    url: 'http://localhost:8080/get/eat?name=shuzhan&age=12',
+}).then(value => {
+    console.log(value.data);
+    console.log(value.status)
+}).catch(error => {
+    console.log(error)
+})
+
+/*get带参数*/
+axios({
+    method: 'GET',
+    url: 'http://localhost:8080/get/eat',
+    params: {
+        name: 'zhangsan',
+        age: 70
+    }
+}).then(value => {
+    console.log(value.data);
+    console.log(value.status)
+}).catch(error => {
+    console.log(error)
+});
+
+
+/*get带参数返回json*/
+axios({
+    method: 'GET',
+    url: 'http://localhost:8080/get/getAll',
+    params: {
+        prefix: 'shshs'
+    }
+}).then(value => {
+    console.log(value.data);     // json数据
+    console.log(value.status)
+}).catch(error => {
+    console.log(error)
+});
+```
+
+### POST
+
+```java
+package com.citi.erick.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/post")
+@Slf4j
+@CrossOrigin
+public class PostController {
+
+    @PostMapping("/noargs")
+    public String noargs() {
+        log.info("post1 coming");
+        return "erick";
+    }
+
+    @PostMapping("/withargs")
+    public People savePeople(@RequestParam(name = "address") String myAddress,
+                             @RequestParam(name = "name") String myName,
+                             @RequestParam(name = "age") String myAge) {
+        People people = new People();
+        people.setAddress("param_" + myAddress);
+        people.setName("param_" + myName);
+        people.setAge("param_" + myAge);
+        return people;
+    }
+
+    @PostMapping("/withRequestBody")
+    public People savePeopleBody(@RequestBody People people) {
+        people.setAddress("body_" + people.getAddress());
+        people.setAge("body_" + people.getAge());
+        people.setName("body_" + people.getName());
+        return people;
+    }
+}
+```
+
+```js
+const axios = require("axios");
+
+/*无参post*/
+axios({
+    method: 'POST',
+    url: 'http://localhost:8080/post/noargs',
+}).then(value => {
+    console.log(value.data);     // 响应体
+}).catch(error => {
+    console.log(error)
+})
+
+
+/*带参post*/
+axios({
+    method: 'POST',
+    url: 'http://localhost:8080/post/withargs',
+    params: {
+        name: 'erick',
+        age: 12,
+        address: 'xian',
+    }
+}).then(value => {
+    console.log(value.data);     // 响应体
+}).catch(error => {
+    console.log(error)
+})
+
+/*带参post*/
+axios({
+    method: 'POST',
+    url: 'http://localhost:8080/post/withargs?name=erick&age=12&address=beijing'
+}).then(value => {
+    console.log(value.data);     // 响应体
+}).catch(error => {
+    console.log(error)
+})
+
+/*带参post*/
+axios({
+    method: 'POST',
+    url: 'http://localhost:8080/post/withRequestBody',
+    // 请求体
+    data: {
+        address: 'nanjing',
+        age: 30,
+        name: 'lucy',
+    }
+}).then(value => {
+    console.log(value.data);     // 响应体
+}).catch(error => {
+    console.log(error)
+})
+```
+
+### 其他方式
+
+- axis.get
+- axis.post
+
+```js
+const axios = require("axios");
+
+/*request*/
+axios.request({
+    method: 'GET',
+    url: 'http://localhost:8080/get/sleep',
+}).then(value => {
+    console.log(value.data);
+}).catch(error => {
+    console.log(error)
+});
+
+/*get*/
+axios.get('http://localhost:8080/get/eat?name=shuzhan&age=12')
+    .then(value => {
+        console.log(value.data);
+        console.log(value.status)
+    }).catch(error => {
+    console.log(error)
+});
+
+/*post*/
+axios.post('http://localhost:8080/post/withRequestBody', { //  // 请求体
+    address: 'nanjing',
+    age: 30,
+    name: 'lucy',
+}).then(value => {
+    console.log(value.data);     // 响应体
+}).catch(error => {
+    console.log(error)
+})
+```
+
+### 默认配置
+
+- 可以配置一些全局的axios的默认配置
+
+```js
+const axios = require('axios');
+
+axios.defaults.baseURL = 'http://localhost:8080';
+axios.defaults.method = 'GET';
+
+/*get无参请求*/
+axios({
+
+    url: 'get/sleep',
+}).then(value => {
+    console.log(value.data);
+}).catch(error => {
+    console.log(error)
+})
+
+/*get带参数*/
+axios({
+    url: 'get/eat?name=shuzhan&age=12',
+}).then(value => {
+    console.log(value.data);
+}).catch(error => {
+    console.log(error)
+})
+```
+
+###  AxiosRequestConfig
+
+- 传入到axios的参数
+
+```java
+interface AxiosRequestConfig<D = any> {
+  url?: string;
+  method?: Method | string;
+  baseURL?: string;
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+  headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
+  params?: any;
+  paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
+  data?: D;
+  timeout?: Milliseconds;
+  timeoutErrorMessage?: string;
+  withCredentials?: boolean;
+  adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
+  auth?: AxiosBasicCredentials;
+  responseType?: ResponseType;
+  // 其他略
+}
+```
+
+## 3. 创建axios实例
+
+- 两个创建自定义axios的方法
+
+```js
+const axios = require("axios");
+
+/*自己创建的axios对象，和axios默认的差不多*/
+
+/*调用a服务的一个接口*/
+let firstService = axios.create();
+firstService.defaults.baseURL = 'http://localhost:8080';
+firstService.defaults.method = 'GET';
+
+firstService({
+    url: 'get/sleep',
+}).then(value => {
+    console.log(value.data);
+}).catch(error => {
+    console.log(error)
+})
+
+/*调用b服务的一个接口*/
+let secondService = axios.create({
+    baseURL: 'http://localhost:8080',
+    method: 'GET'
+});
+secondService({
+    url: 'get/sleep',
+}).then(value => {
+    console.log(value.data);
+}).catch(error => {
+    console.log(error)
+})
+```
+
+
 
 # Promise
 
@@ -1142,12 +1532,4 @@ async function callApi() {
     }
 }
 ```
-
-# Axios
-
-
-
-# JS模块化
-
-
 
