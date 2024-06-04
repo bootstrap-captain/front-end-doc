@@ -526,6 +526,12 @@ public class TimeoutController {
 - 违反同源策略的就是跨域
 - Ajax发送请求时，默认要遵循同源策略
 
+```bash
+# 跨域问题：
+- 前端发送数据了，后端也会接受到请求
+- 但是数据回不来
+```
+
 ### 6.1 CORS
 
 - 官方的跨域解决方案：Cross-Origin Resource Sharing
@@ -945,7 +951,97 @@ secondService({
 })
 ```
 
+## 4. Interceptors
 
+```bash
+# 成功响应
+2-request-success
+1-request-success
+1-response-success
+2-response-success
+hello erick
+
+# request处理错误时
+2-request-success
+1-request-failure
+1-response-failure
+2-response-failure
+cuole
+
+# response处理错误时
+2-request-success
+1-request-success
+1-response-failure
+2-response-failure
+AxiosError: Request failed with status code 404
+```
+
+```js
+const axios = require('axios');
+
+/**
+ * 在发送请求时候，加入一些自定义修改或者验证
+ * config: InternalAxiosRequestConfig，
+ */
+axios.interceptors.request.use(function (config) {
+    // request发送之前的设置，必须返回config
+    console.log('1-request-success');
+    config.headers.set('k1', 'v1');
+    return config;
+}, function (error) {
+    // request处理错误后，就会走到这里
+    console.log('1-request-failure');
+    return Promise.reject(error);
+});
+
+axios.interceptors.request.use(function (config) {
+    console.log('2-request-success')
+    throw 'cuole';
+}, function (error) {
+    // request发送错误后的设置
+    console.log('2-request-failure');
+    return Promise.reject(error);
+});
+
+
+/**
+ * 在返回请求的时候，加入一些自定义验证
+ * response：AxiosResponse
+ *
+ */
+axios.interceptors.response.use(function (response) {
+    // 2xx的回调，处理完响应结果后,必须return
+    console.log('1-response-success');
+    return response;
+}, function (error) {
+    // 其他所有状态码的回调
+    console.log('1-response-failure');
+    return Promise.reject(error);
+});
+
+axios.interceptors.response.use(function (response) {
+    // 2xx的回调，处理完响应结果后,必须return
+    console.log('2-response-success');
+    return response;
+}, function (error) {
+    console.log('2-response-failure');
+    return Promise.reject(error);
+});
+
+
+/*拦截器必须放在上面*/
+axios.defaults.baseURL = 'http://localhost:8080';
+axios.defaults.method = 'GET';
+
+/*get无参请求*/
+axios({
+    url: 'get/sleep/fh',
+}).then(value => {
+    console.log(value.data);
+}).catch(error => {
+    console.log(error)
+})
+```
 
 # Promise
 

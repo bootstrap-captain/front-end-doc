@@ -401,6 +401,33 @@ Object.assign(p, people);  // 对象拷贝
 console.log(p)
 ```
 
+## 5. 展开运算符
+
+```js
+// 1. 展开一个数组 1 2 3
+let arr1 = [1, 2, 3];
+console.log(...arr1);
+
+// 2. 合并两个数组
+let arr2 = [4, 5, 6];
+let arr3 = [7, 8, 9];
+const num = [...arr2, ...arr3]; // 合并两个数组
+console.log(...num);
+
+// 3.深克隆对象
+let person = {name: 'erick', age: 20};
+let person_1 = {...person};
+person_1.name = 'jack';
+console.log(person_1, person);
+
+// 4.克隆同时进行修改
+let dog = {name: 'mimi', age: 2};
+let dog2 = {...dog, name: 'xiaohua'};
+console.log(dog, dog2);
+```
+
+
+
 # 数组
 
 ## 1. API
@@ -468,6 +495,24 @@ let res = arr01.join('-');
 console.log(res)
 console.log(arr01)
 ```
+
+### 1.5 删除指定索引元素
+
+#### filter+箭头函数
+
+```js
+let arr = ['fruit', 'apple', 'lemon'];
+let removed = 'apple';
+
+let newArr = arr.filter((item) => {
+    return item !== removed;
+});
+
+console.log(arr);    // 原数组不变
+console.log(newArr); // 过滤后的数组
+```
+
+
 
 ## 2. 解构赋值
 
@@ -843,20 +888,6 @@ function sum(a, b, ...other) {
 }
 
 sum(2, 'erick', 6);
-```
-
-### 4.4 展开运算符
-
-- 。。。
-
-```js
-function sum() {
-    const arr = [1, 2, 3, 6, 7];
-    console.log(...arr);  // 展开数组 1 2 3 6 7
-    console.log(Math.max(...arr))
-}
-
-sum();
 ```
 
 ## 5. this指向

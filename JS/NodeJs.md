@@ -17,6 +17,9 @@
 ```bash
 	•	Node.js v20.13.1 to /usr/local/bin/node
 	•	npm v10.5.2 to /usr/local/bin/npm
+	
+	# 卸载
+	sudo rm -rf /usr/local/{bin/{node,npm},lib/node_modules/npm,lib/node,share/man/*/node.*}
 ```
 
 
