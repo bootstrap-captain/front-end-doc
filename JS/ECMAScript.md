@@ -477,6 +477,28 @@ arr.forEach(function (item, index) {
 });
 ```
 
+```js
+let arr = ['appLe', 'HAHA', 'HEHE'];
+/*传递一个参数：就是当前元素内容*/
+let newArr1 = arr.map((item) => {
+    return item.toUpperCase();
+});
+
+/*参数一：当前元素内容
+* 参数二：索引值*/
+let newArr2 = arr.map((item, index) => {
+    return item.toUpperCase() + index;
+});
+
+console.log(arr);    // [ 'appLe', 'HAHA', 'HEHE' ]
+
+console.log(newArr1); // [ 'APPLE', 'HAHA', 'HEHE' ]
+
+console.log(newArr2);  // [ 'APPLE0', 'HAHA1', 'HEHE2' ]
+```
+
+
+
 ### 1.4 其他
 
 ```js
@@ -1354,6 +1376,61 @@ console.log(new Girl())
 
 ```js
 class People {
+    /*1. 必须要写，不然传入的参数接收不到*/
+    constructor(name, address) {
+        /*this: 类的实例对象*/
+        this.name = name;
+        this.address = address;
+    }
+
+    /*2. 一般方法
+    *  speak():
+    *     2.1 并不是在实例对象上，而是放在了类的原型对象上
+    *     2.2 供实例使用
+    *     2.3 this:
+    *              - 如果使用people1实例调用speak, this就是people1实例
+    *              - call调用，更改this指向，传什么，this就是什么
+     */
+    speak() {
+        console.log(this);
+        console.log(this.name + this.address);
+    }
+}
+
+let people1 = new People('tom', 'xian');
+let people2 = new People('lucy', 'nanjing');
+
+console.log(people1);
+people1.speak();
+
+console.log("===========")
+
+console.log(people2);
+people1.speak.call({a: 1, b: 2});  /*call调用，更改this指向，传什么，this就是什么*/
+people2.speak();
+```
+
+```js
+class People {
+    say() {
+        console.log('say---')
+    }
+
+    speak() {
+        console.log('speak---');
+        // 必须加this，不然会报错
+        this.say();
+    }
+}
+
+let people = new People();
+people.speak();
+```
+
+
+
+```js
+class People {
 
     /*构造函数*/
     constructor(name, age) {
@@ -1401,6 +1478,7 @@ class People {
 }
 
 class Boy extends People {
+  // 如果不写该构造器，则会自动调用父类构造器，传递name和age，其他参数就会丢失
     constructor(name, age, sex, address) {
         super(name, age); // 对父类的属性进行初始化
         this.sex = sex;
