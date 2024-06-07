@@ -429,6 +429,7 @@ export const AdidasComponent = () => {
 ### 2.2 类式组件
 
 - React16中，因为一些局限，用的比较多
+- rcc：快捷键生成一个类式组件
 
 ```js
 import {Component} from "react";
@@ -619,11 +620,11 @@ export default class Citi extends Component {
 
 
 
-## 3. state
+## 4. state
 
 - 当前组件的一些状态，属性，等
 
-### 3.1 函数组件
+### 4.1 函数组件
 
 - React-18中，在函数式组件中，可以使用state属性
 
@@ -702,7 +703,7 @@ export function NikeComponent() {
 }
 ```
 
-### 3.2 类组件
+### 4.2 类组件
 
 - 组件实例对象上的，因为类组件继承了React.Component，React.Component中预先定义了一些属性
 - React.Component中的state默认给null
@@ -780,7 +781,7 @@ export default class Citi extends Component {
 }
 ```
 
-## 4. props
+## 5. props
 
 - 组件之间的状态传递，父子组件传递
 
@@ -856,9 +857,7 @@ NikeComponent.defaultProps = {
 }
 ```
 
-
-
-### 4.2 类组件
+### 5.2 类组件
 
 - 组件实例对象上的，因为类组件继承了React.Component
 - props是Readonly
@@ -954,16 +953,16 @@ export default class Citi extends Component {
 }
 ```
 
-## 5.ref
+## 6.ref
 
 - 用来获取jsx中带值标签的值
 - 也是React.Component的属性
 
-### 5.1 函数式组件
+### 6.1 函数式组件
 
 
 
-### 5.2 类式组件
+### 6.2 类式组件
 
 #### 字符串ref
 
@@ -1107,7 +1106,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 5.3 事件
+### 6.3 事件
 
 - 不要过度的使用ref，发生事件的事件源和输入框如果是一个，使用event
 
@@ -1129,13 +1128,170 @@ export default class Citi extends Component {
 }
 ```
 
+## 7. 高阶函数
+
+### 7.1 高阶函数
+
+```bash
+# 高阶函数：    如果一个函数满足下面两条任意一个
+- 如果A函数，接收的参数是一个函数，       那么A就是高阶函数
+- 如果A函数，调用的返回值依然是一个函数，  那么A就是高阶函数
+       #    Promise  setTimeout, arr.map
+
+# 函数柯里化
+- 通过函数调用继续返回函数的方式，实现多次接受参数，最后统一处理的函数编码方式
+```
+
+#### 非柯里化
+
+```jsx
+function sum(a, b, c) {
+    return a + b + c;
+}
+
+let sum1 = sum(1, 3, 5);
+console.log(sum1);
+```
+
+#### 柯里化
+
+```jsx
+/*因为调用参数时，不一定一下子都能拿到所有参数*/
+function sum(a) {
+    console.log(`a=${a}`);
+
+    return (b) => {
+        console.log(`b=${b}`)
+
+        return (c) => {
+            console.log(`c=${c}`)
+            return a + b + c;
+        }
+    }
+}
+
+/*a=1
+ b=3
+ c=5
+*/
+sum(1)(3)(5);
+```
+
+### 7.2 函数回调-普通
+
+- 回调箭头函数时候，不能带()
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    saveUsername = (event) => {
+        console.log('hello');
+        // 返回值是undefined
+    }
+
+    saveEmail = (event) => {
+        console.log('email');
+    }
+
+    render() {
+        return (
+            <div>
+                {/*1. saveUsername不能加()，否则就是，还没点呢，在render的时候，就已经调用了
+                   2. 后续onChange不会再触发回调: 因为是将saveUsername的返回值作为回调
+                                  2.1 saveUsername的返回值是undefined*/}
+                用户名：<input onChange={this.saveUsername('username')} type="text" placeholder="用户名"/>
+
+                {/*是把一个函数的指向作为回调*/}
+                邮箱：<input onChange={this.saveEmail} type="text" placeholder="邮箱"/>
+            </div>)
+    }
+}
+```
+
+### 7.3 函数回调-柯里化
+
+- 如果要在回调方法中，使用参数()，可以考虑高阶函数-函数柯里化
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    state = {
+        username: ''
+    }
+
+    /*被调用函数，返回了一个内层函数
+        1. dataType： 可以传递参数名
+        2. 取值时，用[]来存入到state中
+    * */
+    saveUsername = (dataType) => {
+        console.log('hello');
+
+        /*回调的时候，会把event传递进去*/
+        return (event) => {
+            this.setState({
+                [dataType]: event.target.value
+            })
+        }
+    }
+
+    render() {
+        return (
+            <div>
+                {/*1. 返回值是内层函数,该内层函数作为方法的回调
+                       1.1 一上来就调用一次
+                       1.2 后续每次点击，就会调用其内层函数
+                       1.3 dataType可以自己传递，但是event是React帮忙传递的*/}
+                用户名：<input onChange={this.saveUsername('username')} type="text" placeholder="用户名"/>
+            </div>)
+    }
+}
+```
+
+### 7.4 函数回调-非柯里化
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    state = {
+        username: ''
+    }
+
+    saveUsername = (dataType, event) => {
+        this.setState({
+            [dataType]: event.target.value
+        })
+    }
+
+    render() {
+        return (
+            <div>
+
+                {/*onChange需要一个函数作为回调，第一次不会加载
+                    传入的是一个箭头函数
+                 1. 点击后，React把event自动传递给这个函数
+                 2. 函数内部再去调用this.saveUsername，并且把event和dataType传递进去*/}
+
+                用户名：<input onChange={(event) => {
+                this.saveUsername('username', event);
+            }} type="text" placeholder="用户名"/>
+            </div>)
+    }
+}
+```
 
 
-## 6. 受控/非受控
+
+## 8. 受控/非受控
 
 - 收集表单中的数据
 
-### 6.1 非受控组件
+### 8.1 非受控组件
 
 - 页面内所有输入类的DOM，现用现取
 
@@ -1176,7 +1332,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 6.2 受控组件
+### 8.2 受控组件
 
 - 每次改变输入框的值，就将其值放入state中
 
@@ -1214,6 +1370,7 @@ export default class Citi extends Component {
         return (
             <div>
                 <form action="" onSubmit={this.savePeople}>
+                    
                     用户名：<input onChange={this.saveUsername} type="text" placeholder="用户名"/>
 
                     地址：<input onChange={this.saveAddress} type="text" placeholder="地址"/>
@@ -1226,44 +1383,98 @@ export default class Citi extends Component {
 }
 ```
 
+#### 柯里化
+
 ```jsx
-<script type="text/babel">
-    class Login extends React.Component {
+import {Component} from "react";
 
-        /*属性初始化*/
-        state = {
-            username: '',
-            password: '',
-        }
+export default class Citi extends Component {
 
-        handleSave = () => {
-            event.preventDefault();    // 阻止表单提交
-            alert(this.state.username + this.state.password)
-        }
+    state = {
+        username: '',
+        address: '',
+        email: '',
+    }
 
-        saveData = (type, event) => {
-            this.setState({[type]: event.target.value})
-        }
+    savePeople = () => {
+        const {username, address, email} = this.state;
+        alert(username + address + email);
+    }
 
-        render() {
-            return (
-                <form action="" onSubmit={this.handleSave}>
-                    用户名：<input onChange={(event) => {
-                    this.saveData('username', event)
-                }} type="text" name="username"/><br/>
-
-                    密码: <input onChange={(event) => {
-                    this.saveData('password', event)
-                }} type="password" name="password"/><br/>
-
-                    <button>登陆</button>
-                </form>
-            )
+    /*柯里化*/
+    saveData = (key) => {
+        /*作为回调，React自动传递event*/
+        return (event) => {
+            this.setState({
+                [key]: event.target.value
+            })
         }
     }
 
-    ReactDOM.render(<Login/>, document.getElementById('first'));
-</script>
+    render() {
+        return (
+            <div>
+                <form action="" onSubmit={this.savePeople}>
+
+                    用户名：<input onChange={this.saveData("username")} type="text" placeholder="用户名"/>
+
+                    地址：<input onChange={this.saveData("address")} type="text" placeholder="地址"/>
+
+                    邮箱：<input onChange={this.saveData("email")} type="text" placeholder="邮箱"/>
+                    <button>提交</button>
+                </form>
+            </div>)
+    }
+}
+```
+
+#### 非柯里化
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    state = {
+        username: '',
+        address: '',
+        email: '',
+    }
+
+    savePeople = () => {
+        const {username, address, email} = this.state;
+        alert(username + address + email);
+    }
+
+    /*柯里化*/
+    saveData = (event, key) => {
+        this.setState({
+            [key]: event.target.value
+        })
+
+    }
+
+    render() {
+        return (
+            <div>
+                <form action="" onSubmit={this.savePeople}>
+
+                    用户名：<input onChange={(event) => {
+                    this.saveData(event, 'username')
+                }} type="text" placeholder="用户名"/>
+
+                    地址：<input onChange={(event) => {
+                    this.saveData(event, 'address')
+                }} type="text" placeholder="地址"/>
+
+                    邮箱：<input onChange={(event) => {
+                    this.saveData(event, 'email')
+                }} type="text" placeholder="邮箱"/>
+                    <button>提交</button>
+                </form>
+            </div>)
+    }
+}
 ```
 
 # 生命周期
@@ -1273,135 +1484,166 @@ export default class Citi extends Component {
 
 ## React-16
 
-### 1. 挂载及更新
-
 - React中，组件第一次渲染，和后续更新状态后的渲染，都会触发React组件默认的一些回调函数
 - 所有的回调函数在React.Component中会有默认实现
 - 自定义组件在继承React.Component后，可以对其回调函数进行重写
 
 ```bash
-# 1. 第一次挂载
+# 第一次挂载
 
- # 1.1 constructor
+ # 1.constructor
  - 执行构造器里面的方法
- # 1.2 componentWillMount
+ # 2. componentWillMount
  - 挂载前的准备工作
- # 1.3 render
+ # 3. render
  - 将内容挂载到页面上
- # 1.4 componentDidMount
+ # 4. componentDidMount
  - 内容挂载完毕后
- 
-# 2. setState更新
-  # 2.1 shouldComponentUpdate
+```
+
+```bash
+# setState更新
+  # 1. shouldComponentUpdate
     - 默认返回true，可以自定义实现
     - 调用setState更新state后，是否需要重新render
-  # 2.2 componentWillUpdate
+  # 2. componentWillUpdate
   - 重新render
-  # 2.3 render
-  # 2.4 componentDidUpdate
+  # 3. render
+  # 4. componentDidUpdate
   - update完成后执行
-  
-# 3. forceUpdate
-  # 3.1 可以在state不改变的情况下，强制刷新
-  # 3.2 render
-  # 3.3 componentDidUpdate
-  
- 
-# 4. 卸载
-  # 4.1 componentWillUnmount
+```
+
+```bash
+# forceUpdate
+  # 1. 可以在state不改变的情况下，强制刷新
+  # 2. render
+  # 3. componentDidUpdate
+
+```
+
+```bash
+  # 卸载
+  # 1. componentWillUnmount
   - 卸载组件前，执行的动作
-  # 4.2 卸载组件
+  # 2. 卸载组件
 ```
 
 ![image-20240602102203012](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240602102203012.png)
 
+# 网络代理
+
+![image-20240603095750770](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240603095750770.png)
+
+## 1. 配置方式一
+
+- 在package.json中添加，React启动后，就会在3000端口启动一个Proxy，后序请求就会将数据发送到Server端的8080端口
+- 3000端口只要没有的资源，都会去通过proxy找8080要
+- 只能配置一个后台的端口
+
+```bash
+"proxy": "http://localhost:8080"
+```
+
+![image-20240603102230316](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240603102230316.png)
+
 ```jsx
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+import React from "react";
+import axios from "axios";
 
-</head>
-<body>
+export default class App extends React.Component {
 
-<div id="first">
-
-</div>
-
-<script type="text/babel">
-    class Erick extends React.Component {
-        /*1. 构造器*/
-        constructor(props) {
-            super(props);
-            console.log('constructor')
-        }
-
-        state = {
-            count: 1
-        }
-
-        /*2. 组件将要被render之前*/
-        componentWillMount() {
-            console.log('componentWillMount')
-        }
-
-        /*3. 组件被render*/
-        render() {
-            console.log("render")
-            return (
-                <div>
-                    <h2> 状态：{this.state.count}</h2>
-                    <button onClick={this.changeCount}>更新状态</button>
-                    <button onClick={this.force}>强制更新</button>
-                    <button onClick={this.death}>卸载组件</button>
-                </div>
-            )
-        }
-
-        /*4. 组件挂载完毕后*/
-        componentDidMount() {
-            console.log('componentDidMount')
-        }
-
-        /*5.组件将要被卸载: 收尾工作，React调用*/
-        componentWillUnmount() {
-            console.log('componentWillUnmount')
-        }
-
-        /*更新*/
-        shouldComponentUpdate() {
-            console.log('shouldComponentUpdate')
-            return true;
-        }
-
-        componentWillUpdate() {
-            console.log('强制更新');
-        }
-
-        changeCount = () => {
-            let count = this.state.count;
-            this.setState({
-                count: count + 1
-            })
-        }
-
-        /*6. 卸载组件*/
-        death = () => {
-            ReactDOM.unmountComponentAtNode(document.getElementById('first'));
-            console.log('卸载完毕')
-        }
-
-        force = () => {
-            this.forceUpdate();
-        }
+    getInfo = () => {
+        axios({
+            method: 'GET',
+            url: 'http://localhost:3000/erick/sleep'
+        }).then(value => {
+            console.log(value.data);
+        }).catch(reason => {
+            console.log(reason)
+        })
     }
 
-    ReactDOM.render(<Erick/>, document.getElementById('first'));
-</script>
-</body>
-</html>
+    render() {
+        return (
+            <div>
+                <button onClick={this.getInfo}>点击获取数据</button>
+            </div>)
+    }
+}
 ```
+
+## 2. 配置方式二
+
+- 在React的src目录下，建一个名字必须为setupProxy.js的文件
+- 请求不同服务，不同服务的不同转发
+- React在执行时，会自动使用配置的setupProxy.js配置的规则
+
+### setupProxy.js
+
+```js
+const {createProxyMiddleware} = require('http-proxy-middleware');
+
+module.exports = function (app) {
+    app.use(
+        '/firstserver',/*请求如果带这个前缀*/
+        createProxyMiddleware({
+            target: 'http://localhost:8080', // 目标服务器地址
+            changeOrigin: true,              // 是否改变源地址
+            pathRewrite: {
+                '^/firstserver': '',                   // 重写路径
+            },
+        })
+    );
+
+    app.use(
+        '/secondserver',
+        createProxyMiddleware({
+            target: 'http://localhost:9090', // 目标服务器地址
+            changeOrigin: true,              // 是否改变源地址
+            pathRewrite: {
+                '^/secondserver': '',                   // 重写路径
+            },
+        })
+    );
+};
+```
+
+```jsx
+import React from "react";
+import axios from "axios";
+
+export default class App extends React.Component {
+
+    getFromFirstServer = () => {
+        axios({
+            method: 'GET',
+            url: 'http://localhost:3000/firstserver/erick/sleep'
+        }).then(value => {
+            console.log(value.data);
+        }).catch(reason => {
+            console.log(reason)
+        })
+    }
+
+    getFromSecondServer = () => {
+        axios({
+            method: 'GET',
+            /*带前缀*/
+            url: 'http://localhost:3000/secondserver/erick/sleep'
+        }).then(value => {
+            console.log(value.data);
+        }).catch(reason => {
+            console.log(reason)
+        })
+    }
+
+    render() {
+        return (
+            <div>
+                <button onClick={this.getFromFirstServer}>第一个服务</button>
+                <button onClick={this.getFromSecondServer}>第二个服务</button>
+            </div>)
+    }
+}
+```
+
