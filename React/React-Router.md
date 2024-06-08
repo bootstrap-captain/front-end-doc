@@ -430,3 +430,323 @@ export default class App extends React.Component {
 
 ## 6. 嵌套路由
 
+- 路由可能包含多层结构
+- 一般将嵌套路由，加入到对应的上级路由的目录结构中
+
+![image-20240608094854189](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608094854189.png)
+
+
+
+```bash
+# 匹配规则
+- 路由注册是有顺序的，一级路由先注册，先遍历， 二级路由后注册，后遍历
+- 二级路由，在定义url的部分，必须把上层路由带上
+
+# 模糊匹配： http://localhost:3000/home/erick
+- 先来到一级路由，能够匹配上 path='/home'，        则渲染一级路由的Home组件， 一级路由渲染完毕
+- 再来到二级路由，能够匹配上 path='/home/erick'，  则渲染二级路由的ErickHome组件，二级路由渲染完毕
+
+# 精准匹配： http://localhost:3000/home/erick
+- 先来到一级路由，匹配失败，则自动回到  <Redirect to='/welcome'/>， 不会继续渲染二级路由
+- 精准匹配：除非特殊情况，一般不要开启
+```
+
+### 6.1 一级路由-app.jsx
+
+```jsx
+import React from "react";
+import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
+import {AboutComponent} from "./pages/About/AboutComponent";
+import {HomeComponent} from "./pages/Home/HomeComponent";
+import {WelcomeComponent} from "./pages/Welcome/WelcomeComponent";
+
+export default class App extends React.Component {
+    render() {
+        return (
+            <div>
+                <div>公共组件</div>
+                <NavLink to='/about'>About</NavLink><br/>
+
+                <Link to='/home'>Home</Link><br/>
+                <Link to='/welcome'>Welcome</Link><br/>
+                
+                <Redirect to='/welcome'/>
+                <Switch>
+                    <Route path='/about' component={AboutComponent}></Route>
+                    <Route path='/home' component={HomeComponent}></Route>
+                    <Route path='/welcome' component={WelcomeComponent}></Route>
+
+                </Switch>
+            </div>
+        )
+    }
+}
+```
+
+### 6.2 二级路由-HomeComponent.jsx
+
+```jsx
+import React, {Component} from "react";
+import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
+import {DefaultHome} from "./Defalut/DefaultHome";
+import {LucyHome} from "./Lucy/LucyHome";
+import {ErickHome} from "./Erick/ErickHome";
+
+export class HomeComponent extends Component {
+    render() {
+        return (
+            <div>
+                <span>我是Home组件</span>
+                {/*二级路由匹配
+                    1. 二级路由，在定义url的部分，必须把上层路由带上*/}
+                <NavLink to='/home/erick'>Erick</NavLink><br/>
+                <Link to='/home/lucy'>Lucy</Link><br/>
+                <Redirect to='/home/default'/>
+
+
+                {/*二级路由注册*/}
+                <Switch>
+                    <Route path='/home/erick' component={ErickHome}></Route>
+                    <Route path='/home/lucy' component={LucyHome}></Route>
+                    <Route path='/home/default' component={DefaultHome}></Route>
+                </Switch>
+            </div>
+        )
+    }
+}
+```
+
+## 7. 路由传参
+
+- 上层路由跳转到下层路由时，可能需要携带参数，可以有三种方式
+
+### 7.1 params参数
+
+- 地址栏：http://localhost:3000/about/lucy/erick/xian/19
+
+#### 上层路由
+
+```jsx
+import React, {Component} from "react";
+import {NavLink, Route, Switch} from "react-router-dom";
+import {AboutLucy} from "./Lucy/AboutLucy";
+
+export class About extends Component {
+
+    render() {
+        let passData = {
+            name: 'erick',
+            address: 'xian',
+            age: 19
+        }
+
+        return (
+            <div>
+                我是About组件
+                <div>
+                    {/*1. 传递params参数*/}
+                    <NavLink
+                        to={`/about/lucy/${passData.name}/${passData.address}/${passData.age}`}>AboutLucy</NavLink><br/>
+
+                    {/*2. 接收params参数，否则就会根据模糊匹配，把后面的参数去掉了*/}
+                    <Switch>
+                        <Route path='/about/lucy/:name/:address/:title' component={AboutLucy}></Route>
+                    </Switch>
+                </div>
+            </div>
+        )
+    }
+}
+```
+
+#### 接收路由
+
+```jsx
+import {Component} from "react";
+
+export class AboutLucy extends Component {
+    render() {
+        /*子路由解析参数: 路由参数的props中会包含一些特殊的信息*/
+
+        const {name, address, age} = this.props.match.params;
+        return (
+            <div>
+                姓名：{name} 年龄：{age} 地址：{address}
+            </div>
+        )
+    }
+}
+```
+
+### 7.2 search参数
+
+- 地址栏：http://localhost:3000/about/lucy/?name=erick&address=xian&age=19
+
+#### 上层路由
+
+```jsx
+import React, {Component} from "react";
+import {NavLink, Route, Switch} from "react-router-dom";
+import {AboutLucy} from "./Lucy/AboutLucy";
+
+export class About extends Component {
+
+    render() {
+        let data = {
+            name: 'erick',
+            address: 'xian',
+            age: 19
+        }
+
+        return (
+            <div>
+                我是About组件
+                <div>
+                    {/*1. 传递search参数*/}
+                    <NavLink
+                        to={`/about/lucy/?name=${data.name}&address=${data.address}&age=${data.age}`}>AboutLucy</NavLink><br/>
+
+                    {/*2. 接收search参数: 无需声明接收*/}
+                    <Switch>
+                        <Route path='/about/lucy/' component={AboutLucy}></Route>
+                    </Switch>
+                </div>
+            </div>
+        )
+    }
+}
+```
+
+#### 接收路由
+
+```jsx
+import {Component} from "react";
+import qs from 'qs'; /*React脚手架帮忙下载的一个三方依赖*/
+
+export class AboutLucy extends Component {
+    render() {
+        /* 1. 初始参数search：?name=erick&address=xian&age=19"*/
+        let search = this.props.location.search;
+
+        /* name=erick&address=xian&age=19*/
+        let slice = search.slice(1); // 去掉？
+        let result = qs.parse(slice); // 对象
+
+        return (
+            <div>
+                姓名：{result.name} 年龄：{result.age} 地址：{result.address}
+            </div>
+        )
+    }
+}
+```
+
+### 7.3 state参数
+
+- 和React组件的state属性不是一回事，这个是react-router-dom的属性
+- 地址：http://localhost:3000/about/lucy/
+- 即使刷新当前页面，数据也不会丢失，因为BrowserRouter利用浏览器的history做了缓存
+- 如果重新打开一个无痕浏览，直接访问上面地址，state属性一开始就是undefined
+
+#### 上层路由
+
+```jsx
+import React, {Component} from "react";
+import {NavLink, Route, Switch} from "react-router-dom";
+import {AboutLucy} from "./Lucy/AboutLucy";
+
+export class About extends Component {
+
+    render() {
+        let data = {
+            name: 'erick',
+            address: 'xian',
+            age: 19
+        }
+
+        return (
+            <div>
+                我是About组件
+                <div>
+                    {/*1. 传递state参数*/}
+                    <NavLink to={{
+                        pathname: '/about/lucy/',
+                        state: {
+                            name: data.name,
+                            address: data.address,
+                            age: data.age
+                        }
+                    }}> AboutLucy </NavLink><br/>
+
+                    {/*2. 接收state参数: 无需声明接收*/}
+                    <Switch>
+                        <Route path='/about/lucy/' component={AboutLucy}></Route>
+                    </Switch>
+                </div>
+            </div>
+        )
+    }
+}
+```
+
+#### 接收路由
+
+```jsx
+import {Component} from "react";
+
+export class AboutLucy extends Component {
+    render() {
+        /*默认传递空*/
+        let state = this.props.location.state;
+        if (state === undefined) {
+            state = {
+                name: 'default',
+                age: 1,
+                address: 'default'
+            }
+        }
+
+        return (
+            <div>
+                姓名：{state.name} 年龄：{state.age} 地址：{state.address}
+            </div>
+        )
+    }
+}
+```
+
+## 8. 路由跳转模式
+
+### 8.1 push
+
+- 默认方式
+
+```bash
+# 默认push，使用压栈操作，在浏览器页面
+- 回退或者前进，可以进行
+
+
+http://localhost:3000/home             # 3
+http://localhost:3000/about/detail     # 2     # 当前元素
+http://localhost:3000/about            # 1
+```
+
+### 8.2 replace
+
+```bash
+# 在Navlink中开启 
+ <NavLink replace={true}
+ 
+# 替换操作， 如果下一个是替换模式，则会替换掉栈顶元素
+
+http://localhost:3000/about/detail     # 2     
+http://localhost:3000/about            # 1
+```
+
+## 9. 编程式路由导航
+
+
+
+# react-router-dom-6
+
+- 6版本和5版本差距比较大
