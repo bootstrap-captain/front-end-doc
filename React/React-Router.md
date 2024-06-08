@@ -243,37 +243,6 @@ match:
 
 ## 3. switch
 
-### 3.1 不中断
-
-```jsx
-import React from "react";
-import {Link, NavLink, Route} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
-import {TestComponent} from "./pages/Test/TestComponent";
-
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
-
-                <NavLink to='/about'>About</NavLink><br/>
-                <Link to='/home'>Home</Link>
-
-                {/*一个url中，会遍历所有的<Route>,路径符合的，都会渲染对应的组件
-                  1. 如果<Route>多了，会有效率问题*/}
-                <Route path='/about' component={AboutComponent}></Route>
-                <Route path='/home' component={HomeComponent}></Route>
-                <Route path='/home' component={TestComponent}></Route>
-            </div>
-        )
-    }
-}
-```
-
-### 3.2 中断
-
 ```jsx
 import React from "react";
 import {Link, NavLink, Route, Switch} from "react-router-dom";
@@ -290,7 +259,10 @@ export default class App extends React.Component {
                 <NavLink to='/about'>About</NavLink><br/>
                 <Link to='/home'>Home</Link>
 
-                {/*一个url中，会遍历所有的<Route>,路径符合,则渲染，并不再遍历下面的<Route>*/}
+                {/*不用Switch包裹，一个url中，会遍历所有的<Route>,路径符合的，都会渲染对应的组件
+                  1. 如果<Route>多了，会有效率问题*/}
+                 
+                {/*用了Switch包裹：一个url中，会遍历所有的<Route>,路径符合,则渲染，并不再遍历下面的<Route>*/}
                 <Switch>
                     <Route path='/about' component={AboutComponent}></Route>
                     <Route path='/home' component={HomeComponent}></Route>
@@ -302,6 +274,69 @@ export default class App extends React.Component {
     }
 }
 ```
+
+## 4. LazyLoad
+
+- 懒加载：在路由组件中用的比较多
+
+### 4.1 预加载
+
+```bash
+# 默认情况
+- 项目启动后，会根据配置的路由，把所有的路由组件加载到了React中
+- 进入页面，加载所有的路由组件
+- 后续再点击路由组件的时候，不会有请求发出
+
+# 假如路由很多，会出现刚进入网页，短时间要做很多工作
+```
+
+![image-20240608204855040](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608204855040.png)
+
+### 4.2 懒加载
+
+```jsx
+import {Link, NavLink, Route} from "react-router-dom";
+import {Component, lazy, Suspense} from "react";
+import {Loading} from "./component/pages/Loading/Loading";
+
+/*懒加载: 
+1. Home组件中，必须是export default class Home 
+2. 如果加{}, 必须加return关键字*/
+const Home = lazy(() => {
+    return import('./component/pages/Home/Home')
+});
+
+/*懒加载*/
+const About = lazy(() => {
+    return import('./component/pages/About/About')
+});
+
+
+export default class App extends Component {
+    render() {
+        return (<div>
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link>
+
+
+            {/*如果因为网路原因，加载路由组件时候出现问题
+              1. 兜底方案
+              2. fallback指定的Loading组件，必须要立即加载*/}
+            <Suspense fallback={<Loading/>}>
+                <Route path='/about' component={About}></Route>
+                <Route path='/home' component={Home}></Route>
+            </Suspense>
+
+        </div>)
+    }
+}
+```
+
+- 可以通过浏览器，改变网络速度，从而让Loading页面展示出来
+
+![image-20240608212711685](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608212711685.png)
+
+![image-20240608212815066](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608212815066.png)
 
 ## 4. 匹配方式
 
@@ -750,3 +785,5 @@ http://localhost:3000/about            # 1
 # react-router-dom-6
 
 - 6版本和5版本差距比较大
+- "react-router-dom": "^6.23.1"
+- React明确推荐：函数式组件

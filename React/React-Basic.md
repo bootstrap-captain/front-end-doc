@@ -452,9 +452,66 @@ export default class Citi extends Component {
 }
 ```
 
-## 3. 类式组件this问题
+## 3. Fragment
 
-### 3.1 普通函数-this指向
+### 3.1 闭合标签
+
+```jsx
+import React from "react";
+
+export function RefHook() {
+    return (
+        /*为了骗过jsx的语法规则，必须包裹一个闭合标签 <div>*/
+        <div id='ref'>
+            我是组件
+        </div>
+    )
+}
+```
+
+![image-20240608215936037](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608215936037.png)
+
+### 3.2 空标签
+
+- 空标签不能指定任何属性
+
+```jsx
+import React, {Fragment} from "react";
+
+export function RefHook() {
+    return (
+        <>
+            我是组件
+        </>
+    )
+}
+```
+
+![image-20240608220421807](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608220421807.png)
+
+### 3.3 Fragment
+
+- 如果不想嵌套不必要的div，则可以使用React提供的Fragment
+- React在解析时候，会自动把Fragment去掉
+- 相比空标签，Fragment可以指定key，只能指定key，可以参与唯一标识的遍历
+
+```jsx
+import React, {Fragment} from "react";
+
+export function RefHook() {
+    return (
+        <Fragment key={1}>
+            我是组件
+        </Fragment>
+    )
+}
+```
+
+![image-20240608220247923](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608220247923.png)
+
+## 4. 类式组件this问题
+
+### 4.1 普通函数-this指向
 
 ```html
 <!DOCTYPE html>
@@ -483,7 +540,7 @@ export default class Citi extends Component {
 </html>
 ```
 
-### 3.2 类中普通函数-this指向
+### 4.2 类中普通函数-this指向
 
 - this指向丢失问题：直接调用方法，会导致类中方法的this丢失
 
@@ -525,7 +582,7 @@ export default class Citi extends Component {
 </html>
 ```
 
-### 3.3 类式组件中this丢失
+### 4.3 类式组件中this丢失
 
 ```jsx
 import {Component} from "react";
@@ -552,7 +609,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 3.4 类式组件this找回一
+### 4.4 类式组件this找回一
 
 - 通过bind找回
 
@@ -591,7 +648,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 3.5 类式组件this找回二
+### 4.5 类式组件this找回二
 
 - 通过箭头函数加+赋值语句找回
 
@@ -618,35 +675,36 @@ export default class Citi extends Component {
 }
 ```
 
-
-
-## 4. state
+# state
 
 - 当前组件的一些状态，属性，等
 
-### 4.1 函数组件
+## 1. 函数组件
 
 - React-18中，在函数式组件中，可以使用state属性
 
-#### 单个属性
-
 ```jsx
-import React from "react";
 import {nanoid} from "nanoid";
+import React from "react";
 
-/* NikeComponent这个函数执行 n+1 此
+/* StateHook 这个函数执行 n+1 次
 *     1. 初次渲染执行一次
-*     2. 后续每次changeWhether执行一次*/
-export function NikeComponent() {
+*     2. 后续每次改变state属性，执行一次*/
+export function StateHook() {
 
     /* 2. 第一次调用，就会把count结果缓存下来
-    *     后续调用，就不会再去执行了*/
+        *     后续调用，就不会再去执行了*/
 
     /*参数：初始值
     * 返回：一个数组，第一个是属性，第二个是修改属性的方法
     * 数组的解构赋值*/
     const [count, setCount] = React.useState(0);
-    const [time, setTime] = React.useState(nanoid());
+    const [time, setTime] = React.useState(nanoid(5));
+    const [data, setData] = React.useState({
+        name: '',
+        age: 0,
+        address: ''
+    });
 
     /*写法一： setCount传入一个函数*/
     function updateCount() {
@@ -657,8 +715,16 @@ export function NikeComponent() {
 
     /*写法二： setTime传入一个更新后的新值*/
     function updateTime() {
-        let newValue = nanoid();
-        setTime(newValue);
+        setTime(nanoid(5));
+    }
+
+    /*对象写法*/
+    function queryData() {
+        setData({
+            name: nanoid(3),
+            age: data.age + 1,
+            address: 'address:' + nanoid(3)
+        })
     }
 
     return (
@@ -667,47 +733,20 @@ export function NikeComponent() {
             <button onClick={updateCount}>改变计数器</button>
             <h2>当前时间{time}</h2>
             <button onClick={updateTime}>更改时间</button>
+            <h2>当前数据{data.name}=={data.age}==={data.address}</h2>
+            <button onClick={queryData}>查看信息</button>
         </div>
     )
 }
 ```
 
-#### 对象属性
-
-```jsx
-import React from "react";
-import {nanoid} from "nanoid";
-
-export function NikeComponent() {
-
-    /*初始值空对象*/
-    const [data, setData] = React.useState({});
-
-    function queryData() {
-        /*从服务器请求数据*/
-        let data = {
-            name: nanoid(10),
-            address: nanoid(5)
-        }
-
-        /*更新数据*/
-        setData(data);
-    }
-
-    return (
-        <div>
-            <h2>姓名：{data.name}, 地址：{data.address}</h2>
-            <button onClick={queryData}>重新查找</button>
-        </div>
-    )
-}
-```
-
-### 4.2 类组件
+## 2. 类组件
 
 - 组件实例对象上的，因为类组件继承了React.Component，React.Component中预先定义了一些属性
 - React.Component中的state默认给null
 - state是readOnly，组件初始化state属性后，后续修改只能调用setState()方法
+
+### 2.1 写法
 
 #### 普通函数
 
@@ -750,7 +789,7 @@ export default class Citi extends Component {
 
 #### 箭头函数
 
-- 不用关注this问题了
+- 不用关注this问题
 - 推荐的一种方式
 
 ```jsx
@@ -781,13 +820,89 @@ export default class Citi extends Component {
 }
 ```
 
-## 5. props
+### 2.2 setState
+
+```bash
+# setState()
+- 方法调用是同步的，但是执行的具体动作是异步的
+```
+
+#### 对象写法
+
+- setState(stateChange, [callback]) : 对象写法
+
+```jsx
+import {Component} from "react";
+
+export class SetState extends Component {
+    state = {
+        count: 0
+    }
+
+    addCount = () => {
+        this.setState({
+            count: this.state.count + 1
+        }, () => {
+            // callback是可选的回调函数，它在状态更新完毕，界面也更新后(render调用后)，才被调用
+            console.log('callback', this.state.count);
+        });
+
+        console.log('code', this.state.count);  // 是0
+    }
+
+    render() {
+        return (
+            <div>
+                <button onClick={this.addCount}>数字：{this.state.count}</button>
+            </div>
+        )
+    }
+}
+```
+
+#### 函数写法
+
+```bash
+# setState(updater, [callback]): 函数写法
+- updater 为返回stateChange对象的函数
+- updater可以接收到state和props属性
+```
+
+```jsx
+import {Component} from "react";
+
+export class SetState extends Component {
+    state = {
+        count: 0
+    }
+
+    addCount = () => {
+        this.setState((state, props) => {
+            return {count: this.state.count + 1}
+        }, () => {
+            console.log('callback', this.state.count)
+        })
+
+        console.log('code', this.state.count)
+    }
+    
+    render() {
+        return (
+            <div>
+                <button onClick={this.addCount}>数字：{this.state.count}</button>
+            </div>
+        )
+    }
+}
+```
+
+# props
 
 - 组件之间的状态传递，父子组件传递
 
-### 4.1 函数组件
+## 1. 函数组件
 
-#### 父组件
+### 父组件
 
 ```jsx
 import React from "react";
@@ -820,7 +935,7 @@ export default class App extends React.Component {
 }
 ```
 
-#### 子组件
+### 子组件
 
 ```jsx
 import React from "react";
@@ -857,7 +972,7 @@ NikeComponent.defaultProps = {
 }
 ```
 
-### 5.2 类组件
+## 2.  类组件
 
 - 组件实例对象上的，因为类组件继承了React.Component
 - props是Readonly
@@ -873,7 +988,7 @@ NikeComponent.defaultProps = {
 - 相当于给A方法定义形参类型，这样其他方法调用A方法时，知道需要传递的数据类型
 ```
 
-#### 父组件
+### 父组件
 
 ```jsx
 import React from "react";
@@ -915,7 +1030,7 @@ export default class App extends React.Component {
 }
 ```
 
-#### 子组件
+### 子组件
 
 ```jsx
 import {Component} from "react";
@@ -953,18 +1068,243 @@ export default class Citi extends Component {
 }
 ```
 
-## 6.ref
+# Context
+
+- 父子组件之间通信的一种方式
+- 开发中一般不用context，一般都用它来封装react插件
+
+## 1. props实现
+
+- 传递数据可以使用props，但是层级多了后，必须一层层传递props，比较麻烦
+
+```jsx
+import {Component} from "react";
+import {Second} from "./Second";
+
+export class First extends Component {
+
+    state = {
+        name: 'first'
+    }
+
+    render() {
+        return (
+            <>
+                <Second name={this.state.name}/>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+import {Third} from "./Third";
+
+export class Second extends Component {
+    render() {
+        return (
+            <>
+                <div>我是Second组件{this.props.name}</div>
+                {/*向子组件传递数据*/}
+                <Third name={this.props.name}/>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class Third extends Component {
+    render() {
+        return (
+            <>
+                <div>
+                    <div>我是Third组件{this.props.name}</div>
+                </div>
+            </>
+        )
+    }
+}
+```
+
+## 2. context实现
+
+- 层级多时，如果从顶层组件到底层组件，中间组件并不想获取到这个数据
+
+### 公共缓存
+
+```js
+import React from "react";
+/*定义一个Context，所有组件都可以访问到*/
+export const ErickContext = React.createContext();
+```
+
+### 顶组件
+
+- 包裹了Second组件，则Second组件及Second组件的子组件系列，都可以访问到顶组件的数据
+
+```jsx
+import {Component} from "react";
+import {Second} from "./Second";
+import {ErickContext} from "./ErickContext";
+
+export class First extends Component {
+
+    state = {
+        name: 'first',
+        address: 'xian',
+    }
+
+    render() {
+        return (
+            <>
+                <div>我是First组件{this.state.name}{this.state.address}</div>
+                {/*必须是value*/}
+                <ErickContext.Provider value={
+                    {
+                        name: this.state.name,
+                        address: this.state.address
+                    }
+                }>
+                    <Second/>
+                </ErickContext.Provider>
+
+            </>
+        )
+    }
+}
+```
+
+### 中间组件
+
+- 需要就声明，否则不用
+
+```jsx
+import {Component} from "react";
+import {Third} from "./Third";
+
+export class Second extends Component {
+    render() {
+        return (
+            <>
+                <div>我是Second组件</div>
+                <Third/>
+            </>
+        )
+    }
+}
+```
+
+### 底层组件
+
+#### 类式组件
+
+```jsx
+import {Component} from "react";
+import {ErickContext} from "./ErickContext";
+
+export class Third extends Component {
+
+    /*static属性，举手：要从顶层中去取数据*/
+    static contextType = ErickContext;
+
+    render() {
+        return (
+            <>
+                <div>
+                    <div>我是Third组件{this.context.name}{this.context.address}</div>
+                </div>
+            </>
+        )
+    }
+}
+```
+
+#### 类式/函数都可
+
+```jsx
+import {Component} from "react";
+import {ErickContext} from "./ErickContext";
+
+export class Third extends Component {
+
+    render() {
+        return (
+            <>
+                <ErickContext.Consumer>
+                    {
+                        (value) => {
+                            const {name, address} = value;
+                            return <div>我是Third组件{name}{address}</div>
+                        }
+                    }
+                </ErickContext.Consumer>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {ErickContext} from "./ErickContext";
+
+export function Third() {
+    return (
+        <>
+            <ErickContext.Consumer>
+                {
+                    (value) => {
+                        const {name, address} = value;
+                        return <div>我是Third组件{name}{address}</div>
+                    }
+                }
+            </ErickContext.Consumer>
+        </>
+    )
+
+}
+```
+
+
+
+# ref
 
 - 用来获取jsx中带值标签的值
 - 也是React.Component的属性
+- ref尽量少用
 
-### 6.1 函数式组件
+## 1. 函数式组件
+
+- React18引入的勾子，可以使用ref
+
+```jsx
+import React from "react";
+
+export function RefHook() {
+    // 专人专用，保存一个数据
+    const usernameRef = React.useRef();
+
+    function show() {
+        alert(usernameRef.current.value);
+    }
+
+    return (
+        <div>
+            姓名：<input ref={usernameRef} type="text" placeholder="请输入姓名"/>
+            <button onClick={show}>点击提示姓名</button>
+        </div>
+    )
+}
+```
 
 
 
-### 6.2 类式组件
+## 2. 类式组件
 
-#### 字符串ref
+### 2.1 字符串ref
 
 - React已经慢慢不支持了，效率低，不推荐使用
 
@@ -999,11 +1339,11 @@ export default class Citi extends Component {
 }
 ```
 
-#### 回调函数ref
+### 2.2 回调函数ref
 
 - 将当前结点，放在当前实例组件的属性上
 
-##### 内联形式
+#### 内联形式
 
 ```jsx
 import {Component} from "react";
@@ -1037,7 +1377,7 @@ export default class Citi extends Component {
 }
 ```
 
-##### 类绑定形式
+#### 类绑定形式
 
 ```jsx
 import {Component} from "react";
@@ -1072,7 +1412,7 @@ export default class Citi extends Component {
 }
 ```
 
-#### createRef
+### 2.3 createRef
 
 - React最推荐的一种
 
@@ -1106,7 +1446,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 6.3 事件
+## 3. 事件
 
 - 不要过度的使用ref，发生事件的事件源和输入框如果是一个，使用event
 
@@ -1128,9 +1468,11 @@ export default class Citi extends Component {
 }
 ```
 
-## 7. 高阶函数
+# 受控组件
 
-### 7.1 高阶函数
+## 1. 高阶函数
+
+### 1.1 高阶函数
 
 ```bash
 # 高阶函数：    如果一个函数满足下面两条任意一个
@@ -1177,7 +1519,7 @@ function sum(a) {
 sum(1)(3)(5);
 ```
 
-### 7.2 函数回调-普通
+## 1.2 函数回调-普通
 
 - 回调箭头函数时候，不能带()
 
@@ -1210,7 +1552,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 7.3 函数回调-柯里化
+## 1.3 函数回调-柯里化
 
 - 如果要在回调方法中，使用参数()，可以考虑高阶函数-函数柯里化
 
@@ -1251,7 +1593,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 7.4 函数回调-非柯里化
+## 1.4 函数回调-非柯里化
 
 ```jsx
 import {Component} from "react";
@@ -1285,13 +1627,11 @@ export default class Citi extends Component {
 }
 ```
 
-
-
-## 8. 受控/非受控
+## 2. 受控/非受控
 
 - 收集表单中的数据
 
-### 8.1 非受控组件
+### 2.1 非受控组件
 
 - 页面内所有输入类的DOM，现用现取
 
@@ -1332,7 +1672,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 8.2 受控组件
+### 2.2 受控组件
 
 - 每次改变输入框的值，就将其值放入state中
 
