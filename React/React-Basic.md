@@ -850,7 +850,7 @@ export class SetState extends Component {
 - 相当于给A方法定义形参类型，这样其他方法调用A方法时，知道需要传递的数据类型
 ```
 
-### 2.1 组件通信
+### 2.1 传值
 
 ```jsx
 import React from "react";
@@ -960,83 +960,6 @@ export class Son extends Component {
         console.log(children);
         return (
             <>我是子组件</>
-        )
-    }
-}
-```
-
-## 5. renderProps
-
-- 通过标签嵌套方式，形成的父子组件，如果有状态需要传递，则可以使用下面方式
-
-```jsx
-import {Component} from "react";
-import {Father} from "./Father";
-import {Son} from "./Son";
-
-export class TopParent extends Component {
-    render() {
-        return (
-            <>
-                {/*父子关系
-                 1. 父包裹子时，提供一个回调函数：props属性
-                    1.1 render可以随意起名字*/}
-                <Father render={(name, address, age) => {
-                    return <Son name={name} address={address} age={age}/>
-                }}/>
-            </>
-        )
-    }
-}
-```
-
-```jsx
-import {Component} from "react";
-
-/*父组件*/
-export class Father extends Component {
-
-    state = {
-        name: '爸爸',
-        age: 30,
-        address: '西安'
-    }
-
-    render() {
-        const {name, address, age} = this.state;
-        return (
-            <>
-                <h5>我是父组件</h5>
-
-                {/* 2. 预留空间*/}
-                {this.props.render(name, address, age)}
-            </>
-        )
-    }
-}
-```
-
-```jsx
-import {Component} from "react";
-
-/*父组件*/
-export class Father extends Component {
-
-    state = {
-        name: '爸爸',
-        age: 30,
-        address: '西安'
-    }
-
-    render() {
-        const {name, address, age} = this.state;
-        return (
-            <>
-                <h5>我是父组件</h5>
-
-                {/* 2. 预留空间*/}
-                {this.props.render(name, address, age)}
-            </>
         )
     }
 }
@@ -1314,6 +1237,269 @@ export class Son extends Component {
     }
 }
 ```
+
+### 4.3 renderProps
+
+- 通过标签嵌套方式，形成的父子组件，如果有状态需要传递，则可以使用下面方式
+
+```jsx
+import {Component} from "react";
+import {Father} from "./Father";
+import {Son} from "./Son";
+
+export class TopParent extends Component {
+    render() {
+        return (
+            <>
+                {/*父子关系
+                 1. 父包裹子时，提供一个回调函数：props属性
+                    1.1 render可以随意起名字*/}
+                <Father render={(name, address, age) => {
+                    return <Son name={name} address={address} age={age}/>
+                }}/>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+/*父组件*/
+export class Father extends Component {
+
+    state = {
+        name: '爸爸',
+        age: 30,
+        address: '西安'
+    }
+
+    render() {
+        const {name, address, age} = this.state;
+        return (
+            <>
+                <h5>我是父组件</h5>
+
+                {/* 2. 预留空间*/}
+                {this.props.render(name, address, age)}
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class Son extends Component {
+    render() {
+        return (
+            <>
+                <h5>叫我？{this.props.name}{this.props.age}{this.props.address}</h5>
+            </>
+        )
+    }
+}
+```
+
+## 5.PureComponent
+
+- 父组件只要更新了state或者props属性，所有的子组件都会重新渲染，可能存在效率低的问题
+
+### 5.1 state更新
+
+- 第一次加载：渲染父组件，接着渲染子组件
+- 后续每次更新父组件中的state属性，都会重新渲染父--->子组件
+- 不管子组件有没有使用父组件的状态
+
+```jsx
+import {Component} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
+
+/*父组件*/
+export class Father extends Component {
+
+    state = {
+        name: 'Erick'
+    }
+
+    changeName = () => {
+        this.setState({name: 'Lucy'})
+    }
+
+    render() {
+        console.log('Father render')
+        return (
+            <>
+                <h5>我是父组件{this.state.name}</h5><br/>
+                <button onClick={this.changeName}>更换姓名</button>
+                <br/>
+                {/*属性有依赖*/}
+                <FirstSon name={this.state.name}/><br/>
+                {/*属性无依赖*/}
+                <SecondSon/>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class FirstSon extends Component {
+    render() {
+        console.log('FirstSon render')
+        return (
+            <>我是第一个子组件{this.props.name}</>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class SecondSon extends Component {
+    render() {
+        console.log('SecondSon render')
+        return (
+            <>我是第二个子组件{this.props.name}</>
+        )
+    }
+}
+```
+
+### 5.2 state假装更新
+
+- 只要父组件调用了setState方法，不管到底有没有更新，都会从父到子全部render一次
+
+```bash
+# 父组件中    shouldComponentUpdate
+- 不做特殊处理，总是返回true
+```
+
+```jsx
+import {Component} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
+
+/*父组件*/
+export class Father extends Component {
+
+    state = {
+        name: 'Erick'
+    }
+
+    changeName = () => {
+        this.setState({})
+    }
+
+    render() {
+        console.log('Father render')
+        return (
+            <>
+                <h5>我是父组件{this.state.name}</h5><br/>
+                <button onClick={this.changeName}>更换姓名</button>
+                <br/>
+                {/*属性有依赖*/}
+                <FirstSon name={this.state.name}/><br/>
+                {/*属性无依赖*/}
+                <SecondSon/>
+            </>
+        )
+    }
+}
+```
+
+### 5.3 条件render-自定义
+
+- 需要在父子组件中，重写shouldComponentUpdate，如果组件的state属性和props的确更改了，再让它去render
+
+```jsx
+shouldComponentUpdate(nextProps, nextState, nextContext) {
+
+    if (this.state.name === nextState.name) {
+        return false;
+    }
+
+    if (this.props.name === nextProps.name) {
+        return false;
+    }
+
+    return true;
+}
+```
+
+### 5.4 PureComponent
+
+- React中提供了一个类，可以实现上面逻辑
+- 让父子组件，都继承PureComponent, PureComponent重写了上面shouldComponentUpdate方法
+
+#### 基本使用
+
+```jsx
+import {PureComponent} from "react";
+
+export class FirstSon extends PureComponent {
+
+    render() {
+        console.log('FirstSon render')
+        return (
+            <>我是第一个子组件{this.props.name}</>
+        )
+    }
+}
+```
+
+#### 浅对比
+
+```bash
+# 比较state属性时候，浅对象
+- 比较的是引用地址，而非引用地址的具体的值
+- 在setState时候，不要和原来的对象发生关系
+```
+
+```jsx
+import {PureComponent} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
+
+/*父组件*/
+export class Father extends PureComponent {
+
+    state = {
+        name: 'Erick'
+    }
+
+    /*没有改变指针，通过指针改变了堆中的对象
+    * 不会触发render*/
+    changeName = () => {
+        const obj = this.state;
+        obj.name = 'lucy';
+        this.setState(obj)
+    }
+
+    render() {
+        console.log('Father render')
+        return (
+            <>
+                <h5>我是父组件{this.state.name}</h5><br/>
+                <button onClick={this.changeName}>更换姓名</button>
+                <br/>
+                {/*属性有依赖*/}
+                <FirstSon name={this.state.name}/><br/>
+                {/*属性无依赖*/}
+                <SecondSon/>
+            </>
+        )
+    }
+}
+```
+
+
 
 # 函数组件
 
@@ -1614,75 +1800,206 @@ export function Son(props) {
 }
 ```
 
+### 4.3 renderProps
 
+- 通过标签嵌套方式，形成的父子组件，如果有状态需要传递，则可以使用下面方式
+
+```jsx
+import {Father} from "./Father";
+import {Son} from "./Son";
+
+export function TopParent() {
+    return (
+        <div>
+            我是爷爷
+            <Father render={(name, address, age) => {
+                return <Son name={name} address={address} age={age}/>
+            }}>
+
+            </Father>
+        </div>
+    )
+}
+```
+
+```jsx
+import {useState} from "react";
+
+export function Father(props) {
+
+    const [data, setData] = useState({
+        name: 'shuzhan',
+        address: 'xian',
+        age: 20
+    });
+
+    const {name, address, age} = data
+
+    return (
+
+        <div>
+            <div>我是父亲</div>
+            {/*预留空间：加上后才会解析Son组件*/}
+            {props.render(name, address, age)}
+        </div>
+    )
+}
+```
+
+```jsx
+export function Son(props) {
+    /*从props中接收*/
+    return (
+        <>叫我？{props.name}{props.address}{props.age}</>
+    )
+}
+```
+
+## 5. render次数
+
+- 因为父组件的state属性变化，导致子组件的props变化
+
+### 5.1 单一属性更改
+
+- 第一次加载：渲染父组件，接着渲染子组件，不管子组件有没有使用父组件的状态
+
+```jsx
+import {useState} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
+
+export function Father() {
+    const [address, setAddress] = useState('XIAN');
+
+    /*方式一：给了新属性，但值一样，不会重新render*/
+    function changeName() {
+        setAddress('XIAN');
+    }
+
+    /*方式二：给了新属性，但值变了，会重新render父组件及所有子组件*/
+    function changeName01() {
+        setAddress('BEIJING');
+    }
+
+    /*方式三：直接返回了旧的值，不重新render*/
+    function changeName02() {
+        setAddress(previous => {
+            return previous;
+        })
+    }
+
+    /*方式四：旧值更新*/
+    function changeName03() {
+        setAddress(previous => {
+            return previous + 'adf';
+        })
+    }
+
+    console.log('Father-Render')
+    return (
+        <div>
+            <h2>父亲：{address}</h2>
+
+            <button onClick={changeName03}>更换姓名</button>
+            <br/>
+            <FirstSon/>
+            <SecondSon address={address}/>
+        </div>
+    )
+}
+```
+
+```jsx
+export function FirstSon() {
+    console.log('FirstSon---Render')
+    return (
+        <div>
+            <h3>我是FirstSon</h3>
+        </div>
+    )
+}
+```
+
+```jsx
+export function SecondSon(props) {
+    console.log('SecondSon---Render')
+    return (
+        <div>
+            <h3>我是SecondSon=={props.address}</h3>
+        </div>
+    )
+}
+```
+
+### 5.2 对象属性更改
+
+```jsx
+import {useState} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
+
+export function Father() {
+    const [data, setData] = useState({
+        name: 'erick',
+        age: 20
+    })
+
+    /*方式一：重新赋值，不管值是否相同，都会重新render*/
+    function changeInfo01() {
+        setData({
+            name: 'erick',
+            age: 20
+        })
+    }
+
+    /*方式二：返回原对象，不会render*/
+    function changeInfo02() {
+        setData((previous) => {
+            return previous;
+        })
+    }
+
+    /*方式三：返回原对象，对象值变了，不会render*/
+    function changeInfo03() {
+        setData((previous) => {
+            previous.name = 'lucy';
+            return previous;
+        })
+    }
+
+    /*方式四：返回新对象，哪怕新对象值和之前不变，也会render*/
+    function changeInfo04() {
+        setData((previous) => {
+            let newVal = {
+                name: previous.name,
+                age: previous.age
+            }
+            return newVal;
+        })
+    }
+
+    console.log('Father-Render')
+    return (
+        <div>
+            <h2>父亲：{data.name}{data.age}</h2>
+
+            <button onClick={changeInfo04}>更换信息</button>
+            <br/>
+            <FirstSon/>
+            <SecondSon address={data.address} age={data.age}/>
+        </div>
+    )
+}
+```
 
 # Context
 
-- 父子组件之间通信的一种方式
+- 多层父子组件之间通信的一种方式
 - 开发中一般不用context，一般都用它来封装react插件
+- Props传递：传递数据可以使用props，但是层级多了后，必须一层层传递props，比较麻烦
+- 而且props传递时，层级多时，如果从顶层组件到底层组件，中间组件并不想获取到这个数据
 
-## 1. props实现
-
-- 传递数据可以使用props，但是层级多了后，必须一层层传递props，比较麻烦
-
-```jsx
-import {Component} from "react";
-import {Second} from "./Second";
-
-export class First extends Component {
-
-    state = {
-        name: 'first'
-    }
-
-    render() {
-        return (
-            <>
-                <Second name={this.state.name}/>
-            </>
-        )
-    }
-}
-```
-
-```jsx
-import {Component} from "react";
-import {Third} from "./Third";
-
-export class Second extends Component {
-    render() {
-        return (
-            <>
-                <div>我是Second组件{this.props.name}</div>
-                {/*向子组件传递数据*/}
-                <Third name={this.props.name}/>
-            </>
-        )
-    }
-}
-```
-
-```jsx
-import {Component} from "react";
-
-export class Third extends Component {
-    render() {
-        return (
-            <>
-                <div>
-                    <div>我是Third组件{this.props.name}</div>
-                </div>
-            </>
-        )
-    }
-}
-```
-
-## 2. context实现
-
-- 层级多时，如果从顶层组件到底层组件，中间组件并不想获取到这个数据
-
-### 公共缓存
+## 2.1 公共缓存
 
 ```js
 import React from "react";
@@ -1690,7 +2007,7 @@ import React from "react";
 export const ErickContext = React.createContext();
 ```
 
-### 顶组件
+## 2.2 顶组件
 
 - 包裹了Second组件，则Second组件及Second组件的子组件系列，都可以访问到顶组件的数据
 
@@ -1726,7 +2043,7 @@ export class First extends Component {
 }
 ```
 
-### 中间组件
+## 2.3 中间组件
 
 - 需要就声明，否则不用
 
@@ -1746,9 +2063,9 @@ export class Second extends Component {
 }
 ```
 
-### 底层组件
+## 2.4 底层组件
 
-#### 类式组件
+### 类式组件
 
 ```jsx
 import {Component} from "react";
@@ -1771,7 +2088,7 @@ export class Third extends Component {
 }
 ```
 
-#### 类式/函数都可
+### 类式/函数都可
 
 ```jsx
 import {Component} from "react";
@@ -1813,200 +2130,6 @@ export function Third() {
         </>
     )
 
-}
-```
-
-# PureComponent
-
-## 1. state更新
-
-- 第一次加载：渲染父组件，接着渲染子组件
-- 后续每次更新父组件中的state属性，都会重新渲染父--->子组件
-- 不管子组件有没有使用父组件的状态
-
-```jsx
-import {Component} from "react";
-import {FirstSon} from "./FirstSon";
-import {SecondSon} from "./SecondSon";
-
-/*父组件*/
-export class Father extends Component {
-
-    state = {
-        name: 'Erick'
-    }
-
-    changeName = () => {
-        this.setState({name: 'Lucy'})
-    }
-
-    render() {
-        console.log('Father render')
-        return (
-            <>
-                <h5>我是父组件{this.state.name}</h5><br/>
-                <button onClick={this.changeName}>更换姓名</button>
-                <br/>
-                {/*属性有依赖*/}
-                <FirstSon name={this.state.name}/><br/>
-                {/*属性无依赖*/}
-                <SecondSon/>
-            </>
-        )
-    }
-}
-```
-
-```jsx
-import {Component} from "react";
-
-export class FirstSon extends Component {
-    render() {
-        console.log('FirstSon render')
-        return (
-            <>我是第一个子组件{this.props.name}</>
-        )
-    }
-}
-```
-
-```jsx
-import {Component} from "react";
-
-export class SecondSon extends Component {
-    render() {
-        console.log('SecondSon render')
-        return (
-            <>我是第二个子组件{this.props.name}</>
-        )
-    }
-}
-```
-
-## 2. state假装更新
-
-- 只要父组件调用了setState方法，不管到底有没有更新，都会从父到子全部render一次
-
-```bash
-# 父组件中    shouldComponentUpdate
-- 不做特殊处理，总是返回true
-```
-
-```jsx
-import {Component} from "react";
-import {FirstSon} from "./FirstSon";
-import {SecondSon} from "./SecondSon";
-
-/*父组件*/
-export class Father extends Component {
-
-    state = {
-        name: 'Erick'
-    }
-
-    changeName = () => {
-        this.setState({})
-    }
-
-    render() {
-        console.log('Father render')
-        return (
-            <>
-                <h5>我是父组件{this.state.name}</h5><br/>
-                <button onClick={this.changeName}>更换姓名</button>
-                <br/>
-                {/*属性有依赖*/}
-                <FirstSon name={this.state.name}/><br/>
-                {/*属性无依赖*/}
-                <SecondSon/>
-            </>
-        )
-    }
-}
-```
-
-## 3. 条件render-自定义
-
-- 需要在父子组件中，重写shouldComponentUpdate，如果组件的state属性和props的确更改了，再让它去render
-
-```jsx
-shouldComponentUpdate(nextProps, nextState, nextContext) {
-
-    if (this.state.name === nextState.name) {
-        return false;
-    }
-
-    if (this.props.name === nextProps.name) {
-        return false;
-    }
-
-    return true;
-}
-```
-
-## 4. PureComponent
-
-- React中提供了一个类，可以实现上面逻辑
-- 让父子组件，都继承PureComponent, PureComponent重写了上面shouldComponentUpdate方法
-
-### 4.1 基本使用
-
-```jsx
-import {PureComponent} from "react";
-
-export class FirstSon extends PureComponent {
-
-    render() {
-        console.log('FirstSon render')
-        return (
-            <>我是第一个子组件{this.props.name}</>
-        )
-    }
-}
-```
-
-### 4.2 浅对比
-
-```bash
-# 比较state属性时候，浅对象
-- 比较的是引用地址，而非引用地址的具体的值
-- 在setState时候，不要和原来的对象发生关系
-```
-
-```jsx
-import {PureComponent} from "react";
-import {FirstSon} from "./FirstSon";
-import {SecondSon} from "./SecondSon";
-
-/*父组件*/
-export class Father extends PureComponent {
-
-    state = {
-        name: 'Erick'
-    }
-
-    /*没有改变指针，通过指针改变了堆中的对象
-    * 不会触发render*/
-    changeName = () => {
-        const obj = this.state;
-        obj.name = 'lucy';
-        this.setState(obj)
-    }
-
-    render() {
-        console.log('Father render')
-        return (
-            <>
-                <h5>我是父组件{this.state.name}</h5><br/>
-                <button onClick={this.changeName}>更换姓名</button>
-                <br/>
-                {/*属性有依赖*/}
-                <FirstSon name={this.state.name}/><br/>
-                {/*属性无依赖*/}
-                <SecondSon/>
-            </>
-        )
-    }
 }
 ```
 
