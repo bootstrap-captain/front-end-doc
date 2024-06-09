@@ -454,6 +454,8 @@ export default class Citi extends Component {
 
 ## 3. Fragment
 
+- jsx中，函数式组件和类式组件，返回值都必须用一个闭合标签来包裹，因此多了很多不需要的div
+
 ### 3.1 闭合标签
 
 ```jsx
@@ -461,7 +463,6 @@ import React from "react";
 
 export function RefHook() {
     return (
-        /*为了骗过jsx的语法规则，必须包裹一个闭合标签 <div>*/
         <div id='ref'>
             我是组件
         </div>
@@ -675,80 +676,16 @@ export default class Citi extends Component {
 }
 ```
 
-# state
+# 类组件
+
+## 1. State
 
 - 当前组件的一些状态，属性，等
-
-## 1. 函数组件
-
-- React-18中，在函数式组件中，可以使用state属性
-
-```jsx
-import {nanoid} from "nanoid";
-import React from "react";
-
-/* StateHook 这个函数执行 n+1 次
-*     1. 初次渲染执行一次
-*     2. 后续每次改变state属性，执行一次*/
-export function StateHook() {
-
-    /* 2. 第一次调用，就会把count结果缓存下来
-        *     后续调用，就不会再去执行了*/
-
-    /*参数：初始值
-    * 返回：一个数组，第一个是属性，第二个是修改属性的方法
-    * 数组的解构赋值*/
-    const [count, setCount] = React.useState(0);
-    const [time, setTime] = React.useState(nanoid(5));
-    const [data, setData] = React.useState({
-        name: '',
-        age: 0,
-        address: ''
-    });
-
-    /*写法一： setCount传入一个函数*/
-    function updateCount() {
-        setCount((previous) => {
-            return previous + 1;
-        })
-    }
-
-    /*写法二： setTime传入一个更新后的新值*/
-    function updateTime() {
-        setTime(nanoid(5));
-    }
-
-    /*对象写法*/
-    function queryData() {
-        setData({
-            name: nanoid(3),
-            age: data.age + 1,
-            address: 'address:' + nanoid(3)
-        })
-    }
-
-    return (
-        <div>
-            <h2>当前计数{count}</h2>
-            <button onClick={updateCount}>改变计数器</button>
-            <h2>当前时间{time}</h2>
-            <button onClick={updateTime}>更改时间</button>
-            <h2>当前数据{data.name}=={data.age}==={data.address}</h2>
-            <button onClick={queryData}>查看信息</button>
-        </div>
-    )
-}
-```
-
-## 2. 类组件
-
 - 组件实例对象上的，因为类组件继承了React.Component，React.Component中预先定义了一些属性
 - React.Component中的state默认给null
 - state是readOnly，组件初始化state属性后，后续修改只能调用setState()方法
 
-### 2.1 写法
-
-#### 普通函数
+### 1.1 普通函数
 
 - 必须要使用bind，否则存在this丢失问题
 
@@ -787,7 +724,7 @@ export default class Citi extends Component {
 }
 ```
 
-#### 箭头函数
+### 1.2 箭头函数
 
 - 不用关注this问题
 - 推荐的一种方式
@@ -820,7 +757,7 @@ export default class Citi extends Component {
 }
 ```
 
-### 2.2 setState
+### 1.3 setState
 
 ```bash
 # setState()
@@ -896,84 +833,9 @@ export class SetState extends Component {
 }
 ```
 
-# props
+## 2. Props
 
-- 组件之间的状态传递，父子组件传递
-
-## 1. 函数组件
-
-### 父组件
-
-```jsx
-import React from "react";
-import {NikeComponent} from "./component/Nike/NikeComponent";
-
-export default class App extends React.Component {
-
-    /* 父子组件：别和原型链扯关系
-     父组件的函数，也可以传递到子组件中*/
-    state = {
-        count: 1
-    }
-
-    update = () => {
-        this.setState({
-            count: this.state.count + 1
-        })
-    }
-
-    render() {
-        const person = {name: "shuzhan", age: 20, address: "beijing"};
-        return (
-            <div>
-                <h2>count={this.state.count}</h2>
-                <NikeComponent name="lucy" age={12} updateInfo={this.update}/>
-                <NikeComponent name={person.name} age={person.age} address={person.address} updateInfo={this.update}/>
-                <NikeComponent {...person} updateInfo={this.update}/>
-            </div>)
-    }
-}
-```
-
-### 子组件
-
-```jsx
-import React from "react";
-import PropTypes from "prop-types";
-
-export function NikeComponent(props) {
-
-    const {name, address, age, updateInfo} = props;
-
-    return (
-        <div>
-            <ul>
-                <li>{name}</li>
-                <li>{address}</li>
-                <li>{age + 1}</li>
-            </ul>
-            <button onClick={updateInfo}>点击</button>
-        </div>
-    )
-}
-
-/*定义数据规范*/
-NikeComponent.prototype = {
-    /*数据类型，是否必传*/
-    name: PropTypes.string.isRequired,
-    address: PropTypes.string,
-    age: PropTypes.number,
-    updateInfo: PropTypes.func  /*规定必须是一个函数*/
-}
-
-/*默认值*/
-NikeComponent.defaultProps = {
-    address: '北京'
-}
-```
-
-## 2.  类组件
-
+- 组件之间的状态传递，父子组件传递属性，方法等
 - 组件实例对象上的，因为类组件继承了React.Component
 - props是Readonly
 
@@ -988,14 +850,13 @@ NikeComponent.defaultProps = {
 - 相当于给A方法定义形参类型，这样其他方法调用A方法时，知道需要传递的数据类型
 ```
 
-### 父组件
+### 2.1 组件通信
 
 ```jsx
 import React from "react";
 import Citi from "./component/Citi/Citi";
 
 
-/*/*入口的app.js,里面包含多个不同的组件*/
 export default class App extends React.Component {
 
     /* 父子组件：别和原型链扯关系
@@ -1029,8 +890,6 @@ export default class App extends React.Component {
     }
 }
 ```
-
-### 子组件
 
 ```jsx
 import {Component} from "react";
@@ -1067,6 +926,695 @@ export default class Citi extends Component {
     }
 }
 ```
+
+### 2.2 props.chiledren
+
+- 组件嵌套的内容，如果是html标签，标签体内部的东西则可以直接渲染
+- 如果是组件标签，标签体内部的东西需要子组件从props.children中接收才能渲染
+
+```jsx
+import {Component} from "react";
+import {Son} from "./Son";
+
+export class Father extends Component {
+    render() {
+        return (
+            <>
+                {/*1. 如果是html标签，则标签体内部的东西可以自动渲染
+                   2. 如果是组件标签，则标签体内部的东西，需要从children中接收*/}
+                <h5>我是父组件</h5>
+                <Son>父亲</Son>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class Son extends Component {
+    render() {
+        /*会封装到props属性中的children： 标签体内容从this.props中去取*/
+        let children = this.props.children;
+        console.log(children);
+        return (
+            <>我是子组件</>
+        )
+    }
+}
+```
+
+## 5. renderProps
+
+- 通过标签嵌套方式，形成的父子组件，如果有状态需要传递，则可以使用下面方式
+
+```jsx
+import {Component} from "react";
+import {Father} from "./Father";
+import {Son} from "./Son";
+
+export class TopParent extends Component {
+    render() {
+        return (
+            <>
+                {/*父子关系
+                 1. 父包裹子时，提供一个回调函数：props属性
+                    1.1 render可以随意起名字*/}
+                <Father render={(name, address, age) => {
+                    return <Son name={name} address={address} age={age}/>
+                }}/>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+/*父组件*/
+export class Father extends Component {
+
+    state = {
+        name: '爸爸',
+        age: 30,
+        address: '西安'
+    }
+
+    render() {
+        const {name, address, age} = this.state;
+        return (
+            <>
+                <h5>我是父组件</h5>
+
+                {/* 2. 预留空间*/}
+                {this.props.render(name, address, age)}
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+/*父组件*/
+export class Father extends Component {
+
+    state = {
+        name: '爸爸',
+        age: 30,
+        address: '西安'
+    }
+
+    render() {
+        const {name, address, age} = this.state;
+        return (
+            <>
+                <h5>我是父组件</h5>
+
+                {/* 2. 预留空间*/}
+                {this.props.render(name, address, age)}
+            </>
+        )
+    }
+}
+```
+
+## 3.Ref
+
+- 用来获取jsx中带值标签的值
+- 也是React.Component的属性
+- ref尽量少用
+
+### 3.1 字符串ref
+
+- React已经慢慢不支持了，效率低，不推荐使用
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    getName = () => {
+        // 1. 从refs中拿到对应的真实DOM
+        const {nameInput} = this.refs;
+        // 2. 解析DOM的value
+        alert(nameInput.value);
+    }
+
+    getAddress = () => {
+        const {addressInput} = this.refs;
+        alert(addressInput.value);
+    }
+
+    render() {
+        return (
+            <div>
+                {/*1. 获取当前的input整个获取到真实DOM的结点
+                   2. 将该结点放在组件的refs属性上 */}
+                <input ref="nameInput" type="text" placeholder="请输入姓名"/>
+                <button onClick={this.getName}>查看姓名</button>
+
+                <input ref="addressInput" type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
+            </div>)
+    }
+}
+```
+
+### 3.2 回调函数ref
+
+- 将当前结点，放在当前实例组件的属性上
+
+#### 内联形式
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    getName = () => {
+        /*获取真实DOM,然后获取到该值*/
+        alert(this.nameInput.value);
+    }
+
+    getAddress = () => {
+        alert(this.addressInput.value);
+    }
+
+    render() {
+        return (<div>
+
+            {/*将当前节点的真实DOM，传递给Citi组件的一个新的属性nameInput*/}
+            <input ref={(currentNode) => {
+                this.nameInput = currentNode;
+            }} type="text" placeholder="请输入姓名"/>
+            <button onClick={this.getName}>查看姓名</button>
+
+
+            <input ref={(currentNode) => {
+                this.addressInput = currentNode;
+            }} type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
+        </div>)
+    }
+}
+```
+
+#### 类绑定形式
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    getName = () => {
+        /*获取真实DOM,然后获取到该值*/
+        alert(this.nameInput.value);
+    }
+
+    getAddress = () => {
+        alert(this.addressInput.value);
+    }
+
+    saveName = (currentNode) => {
+        this.nameInput = currentNode;
+    }
+
+    saveAddress = (currentNode) => {
+        this.addressInput = currentNode;
+    }
+
+    render() {
+        return (<div>
+            <input ref={this.saveName} type="text" placeholder="请输入姓名"/>
+            <button onClick={this.getName}>查看姓名</button>
+            
+            <input ref={this.saveAddress} type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
+        </div>)
+    }
+}
+```
+
+### 3.3 createRef
+
+- React最推荐的一种
+
+```jsx
+import {Component, createRef} from "react";
+
+export default class Citi extends Component {
+
+    /*ref容器： 只能保存一个，后加入的会对之前的进行覆盖*/
+    nameRef = createRef();
+
+    addressRef = createRef();
+
+    getName = () => {
+        alert(this.nameRef.current.value);
+    }
+
+    getAddress = () => {
+        alert(this.addressRef.current.value);
+    }
+    
+    render() {
+        return (<div>
+            {/*将当前结点存在ref容器中*/}
+            <input ref={this.nameRef} type="text" placeholder="请输入姓名"/>
+            <button onClick={this.getName}>查看姓名</button>
+
+            <input ref={this.addressRef} type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
+        </div>)
+    }
+}
+```
+
+### 3.4 事件
+
+- 不要过度的使用ref，发生事件的事件源和输入框如果是一个，使用event
+
+```jsx
+import {Component} from "react";
+
+export default class Citi extends Component {
+
+    getAddress = (event) => {
+        /*event.target: 真实结点*/
+        alert(event.target.value);
+    }
+
+    render() {
+        return (<div>
+            <input type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
+        </div>)
+    }
+}
+```
+
+## 4. 父子组件
+
+### 4.1 多层嵌套
+
+- 形成了TopParent-->Father-->Son的父子关系
+
+```jsx
+import {Component} from "react";
+import {Father} from "./Father";
+
+export class TopParent extends Component {
+    render() {
+        return (
+            <>
+                <Father/>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+import {Son} from "./Son";
+
+/*父组件*/
+export class Father extends Component {
+    render() {
+        return (
+            <>
+                <h5>我是父组件</h5>
+                {/*儿子组件*/}
+                <Son>父亲</Son>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class Son extends Component {
+    render() {
+        return (
+            <>我是子组件</>
+        )
+    }
+}
+```
+
+### 4.2 标签嵌套
+
+- 形成了TopParent-->Father-->Son的父子关系
+
+```jsx
+import {Component} from "react";
+import {Father} from "./Father";
+import {Son} from "./Son";
+
+export class TopParent extends Component {
+    render() {
+        return (
+            <>
+                {/*父子关系*/}
+                <Father>
+                    <Son/>
+                </Father>
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+/*父组件*/
+export class Father extends Component {
+    render() {
+        return (
+            <>
+                <h5>我是父组件</h5>
+                {/*加上后才可以渲染Son组件*/}
+                {this.props.children}
+            </>
+        )
+    }
+}
+```
+
+```jsx
+import {Component} from "react";
+
+export class Son extends Component {
+    render() {
+        return (
+            <>我是子组件</>
+        )
+    }
+}
+```
+
+# 函数组件
+
+- React官方比较推荐的组件定义方式
+
+## 1. State
+
+- 当前组件的一些状态，属性，等
+- React-18中，在函数式组件中，可以使用state属性
+
+```jsx
+import {nanoid} from "nanoid";
+import React from "react";
+
+/* StateHook 这个函数执行 n+1 次
+*     1. 初次渲染执行一次
+*     2. 后续每次改变state属性，执行一次*/
+export function StateHook() {
+
+    /* 2. 第一次调用，就会把count结果缓存下来
+        *     后续调用，就不会再去执行了*/
+
+    /*参数：初始值
+    * 返回：一个数组，第一个是属性，第二个是修改属性的方法
+    * 数组的解构赋值*/
+    const [count, setCount] = React.useState(0);
+    const [time, setTime] = React.useState(nanoid(5));
+    const [data, setData] = React.useState({
+        name: '',
+        age: 0,
+        address: ''
+    });
+
+    /*写法一： setCount传入一个函数*/
+    function updateCount() {
+        setCount((previous) => {
+            return previous + 1;
+        })
+    }
+
+    /*写法二： setTime传入一个更新后的新值*/
+    function updateTime() {
+        setTime(nanoid(5));
+    }
+
+    /*对象写法*/
+    function queryData() {
+        setData({
+            name: nanoid(3),
+            age: data.age + 1,
+            address: 'address:' + nanoid(3)
+        })
+    }
+
+    return (
+        <div>
+            <h2>当前计数{count}</h2>
+            <button onClick={updateCount}>改变计数器</button>
+            <h2>当前时间{time}</h2>
+            <button onClick={updateTime}>更改时间</button>
+            <h2>当前数据{data.name}=={data.age}==={data.address}</h2>
+            <button onClick={queryData}>查看信息</button>
+        </div>
+    )
+}
+```
+
+## 2. Props
+
+- 组件之间的状态传递，父子组件传递属性，方法等
+
+### 2.1 传值
+
+- 父组件在调用子组件的时候，可以给子组件传递一些值，函数
+- 值和函数的类型限制，需要在子组件中进行声明
+
+```jsx
+import React from "react";
+import {NikeComponent} from "./component/Nike/NikeComponent";
+
+export default class App extends React.Component {
+
+    /* 父子组件：别和原型链扯关系
+     父组件的函数，也可以传递到子组件中*/
+    state = {
+        count: 1
+    }
+
+    update = () => {
+        this.setState({
+            count: this.state.count + 1
+        })
+    }
+
+    render() {
+        const person = {name: "shuzhan", age: 20, address: "beijing"};
+        return (
+            <div>
+                <h2>count={this.state.count}</h2>
+                <NikeComponent name="lucy" age={12} updateInfo={this.update}/>
+                <NikeComponent name={person.name} age={person.age} address={person.address} updateInfo={this.update}/>
+                <NikeComponent {...person} updateInfo={this.update}/>
+            </div>)
+    }
+}
+```
+
+```jsx
+import React from "react";
+import PropTypes from "prop-types";
+
+export function NikeComponent(props) {
+
+    const {name, address, age, updateInfo} = props;
+
+    return (
+        <div>
+            <ul>
+                <li>{name}</li>
+                <li>{address}</li>
+                <li>{age + 1}</li>
+            </ul>
+            <button onClick={updateInfo}>点击</button>
+        </div>
+    )
+}
+
+/*定义数据规范*/
+NikeComponent.prototype = {
+    /*数据类型，是否必传*/
+    name: PropTypes.string.isRequired,
+    address: PropTypes.string,
+    age: PropTypes.number,
+    updateInfo: PropTypes.func  /*规定必须是一个函数*/
+}
+
+/*默认值*/
+NikeComponent.defaultProps = {
+    address: '北京'
+}
+```
+
+### 2.2 props.children
+
+- 组件嵌套的内容，如果是html标签，标签体内部的东西则可以直接渲染
+- 如果是组件标签，标签体内部的东西需要子组件从props.children中接收才能渲染
+
+```jsx
+import {Son} from "./Son";
+
+export function Father() {
+
+    return (
+        <div>
+            <div>我是父组件</div>
+            <Son>Hi,Son</Son>
+        </div>
+    )
+}
+```
+
+```jsx
+export function Son(props) {
+    /*从props中接收*/
+    return (
+        <>叫我？{props.children}</>
+    )
+}
+```
+
+
+
+## 3. Ref
+
+- 用来获取jsx中带值标签的值
+- ref尽量少用
+- React18引入的勾子，可以使用ref
+
+### 3.1 ref
+
+```jsx
+import React from "react";
+
+export function RefHook() {
+    // 专人专用，保存一个数据
+    const usernameRef = React.useRef();
+
+    function show() {
+        alert(usernameRef.current.value);
+    }
+
+    return (
+        <div>
+            姓名：<input ref={usernameRef} type="text" placeholder="请输入姓名"/>
+            <button onClick={show}>点击提示姓名</button>
+        </div>
+    )
+}
+```
+
+### 3.2 事件
+
+- 尽量少用ref，发生事件的事件源和输入框如果是一个，使用event
+
+```jsx
+export function Erick() {
+
+    function getAddress(event) {
+        /*event.target: 真实结点*/
+        alert(event.target.value);
+    }
+
+    return (
+        <div>
+            <input type="text" placeholder="请输入地址" onBlur={getAddress}/>
+        </div>
+    )
+}
+```
+
+## 4. 父子组件
+
+### 4.1 多层嵌套
+
+```jsx
+import {Father} from "./Father";
+
+export function TopParent() {
+    return (
+        <div>
+            我是爷爷
+            <Father></Father>
+        </div>
+    )
+}
+```
+
+```jsx
+import {Son} from "./Son";
+
+export function Father() {
+
+    return (
+        <div>
+            <div>我是父亲</div>
+            <Son>Hi,Son</Son>
+        </div>
+    )
+}
+```
+
+```jsx
+export function Son(props) {
+    /*从props中接收*/
+    return (
+        <>叫我？{props.children}</>
+    )
+}
+```
+
+### 4.2 标签嵌套
+
+```jsx
+import {Father} from "./Father";
+import {Son} from "./Son";
+
+export function TopParent() {
+    return (
+        <div>
+            我是爷爷
+            <Father>
+                <Son/>
+            </Father>
+        </div>
+    )
+}
+```
+
+```jsx
+export function Father(props) {
+
+    return (
+        <div>
+            <div>我是父亲</div>
+            {/*加上后才会解析Son组件*/}
+            {props.children}
+        </div>
+    )
+}
+```
+
+```jsx
+export function Son(props) {
+    /*从props中接收*/
+    return (
+        <>叫我？{props.children}</>
+    )
+}
+```
+
+
 
 # Context
 
@@ -1268,205 +1816,201 @@ export function Third() {
 }
 ```
 
+# PureComponent
 
+## 1. state更新
 
-# ref
-
-- 用来获取jsx中带值标签的值
-- 也是React.Component的属性
-- ref尽量少用
-
-## 1. 函数式组件
-
-- React18引入的勾子，可以使用ref
-
-```jsx
-import React from "react";
-
-export function RefHook() {
-    // 专人专用，保存一个数据
-    const usernameRef = React.useRef();
-
-    function show() {
-        alert(usernameRef.current.value);
-    }
-
-    return (
-        <div>
-            姓名：<input ref={usernameRef} type="text" placeholder="请输入姓名"/>
-            <button onClick={show}>点击提示姓名</button>
-        </div>
-    )
-}
-```
-
-
-
-## 2. 类式组件
-
-### 2.1 字符串ref
-
-- React已经慢慢不支持了，效率低，不推荐使用
+- 第一次加载：渲染父组件，接着渲染子组件
+- 后续每次更新父组件中的state属性，都会重新渲染父--->子组件
+- 不管子组件有没有使用父组件的状态
 
 ```jsx
 import {Component} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
 
-export default class Citi extends Component {
+/*父组件*/
+export class Father extends Component {
 
-    getName = () => {
-        // 1. 从refs中拿到对应的真实DOM
-        const {nameInput} = this.refs;
-        // 2. 解析DOM的value
-        alert(nameInput.value);
+    state = {
+        name: 'Erick'
     }
 
-    getAddress = () => {
-        const {addressInput} = this.refs;
-        alert(addressInput.value);
+    changeName = () => {
+        this.setState({name: 'Lucy'})
     }
 
     render() {
+        console.log('Father render')
         return (
-            <div>
-                {/*1. 获取当前的input整个获取到真实DOM的结点
-                   2. 将该结点放在组件的refs属性上 */}
-                <input ref="nameInput" type="text" placeholder="请输入姓名"/>
-                <button onClick={this.getName}>查看姓名</button>
-
-                <input ref="addressInput" type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
-            </div>)
+            <>
+                <h5>我是父组件{this.state.name}</h5><br/>
+                <button onClick={this.changeName}>更换姓名</button>
+                <br/>
+                {/*属性有依赖*/}
+                <FirstSon name={this.state.name}/><br/>
+                {/*属性无依赖*/}
+                <SecondSon/>
+            </>
+        )
     }
 }
 ```
-
-### 2.2 回调函数ref
-
-- 将当前结点，放在当前实例组件的属性上
-
-#### 内联形式
 
 ```jsx
 import {Component} from "react";
 
-export default class Citi extends Component {
-
-    getName = () => {
-        /*获取真实DOM,然后获取到该值*/
-        alert(this.nameInput.value);
-    }
-
-    getAddress = () => {
-        alert(this.addressInput.value);
-    }
-
+export class FirstSon extends Component {
     render() {
-        return (<div>
-
-            {/*将当前节点的真实DOM，传递给Citi组件的一个新的属性nameInput*/}
-            <input ref={(currentNode) => {
-                this.nameInput = currentNode;
-            }} type="text" placeholder="请输入姓名"/>
-            <button onClick={this.getName}>查看姓名</button>
-
-
-            <input ref={(currentNode) => {
-                this.addressInput = currentNode;
-            }} type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
-        </div>)
+        console.log('FirstSon render')
+        return (
+            <>我是第一个子组件{this.props.name}</>
+        )
     }
 }
 ```
-
-#### 类绑定形式
 
 ```jsx
 import {Component} from "react";
 
-export default class Citi extends Component {
-
-    getName = () => {
-        /*获取真实DOM,然后获取到该值*/
-        alert(this.nameInput.value);
-    }
-
-    getAddress = () => {
-        alert(this.addressInput.value);
-    }
-
-    saveName = (currentNode) => {
-        this.nameInput = currentNode;
-    }
-
-    saveAddress = (currentNode) => {
-        this.addressInput = currentNode;
-    }
-
+export class SecondSon extends Component {
     render() {
-        return (<div>
-            <input ref={this.saveName} type="text" placeholder="请输入姓名"/>
-            <button onClick={this.getName}>查看姓名</button>
-            
-            <input ref={this.saveAddress} type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
-        </div>)
+        console.log('SecondSon render')
+        return (
+            <>我是第二个子组件{this.props.name}</>
+        )
     }
 }
 ```
 
-### 2.3 createRef
+## 2. state假装更新
 
-- React最推荐的一种
+- 只要父组件调用了setState方法，不管到底有没有更新，都会从父到子全部render一次
 
-```jsx
-import {Component, createRef} from "react";
-
-export default class Citi extends Component {
-
-    /*ref容器： 只能保存一个，后加入的会对之前的进行覆盖*/
-    nameRef = createRef();
-
-    addressRef = createRef();
-
-    getName = () => {
-        alert(this.nameRef.current.value);
-    }
-
-    getAddress = () => {
-        alert(this.addressRef.current.value);
-    }
-    
-    render() {
-        return (<div>
-            {/*将当前结点存在ref容器中*/}
-            <input ref={this.nameRef} type="text" placeholder="请输入姓名"/>
-            <button onClick={this.getName}>查看姓名</button>
-
-            <input ref={this.addressRef} type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
-        </div>)
-    }
-}
+```bash
+# 父组件中    shouldComponentUpdate
+- 不做特殊处理，总是返回true
 ```
-
-## 3. 事件
-
-- 不要过度的使用ref，发生事件的事件源和输入框如果是一个，使用event
 
 ```jsx
 import {Component} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
 
-export default class Citi extends Component {
+/*父组件*/
+export class Father extends Component {
 
-    getAddress = (event) => {
-        /*event.target: 真实结点*/
-        alert(event.target.value);
+    state = {
+        name: 'Erick'
+    }
+
+    changeName = () => {
+        this.setState({})
     }
 
     render() {
-        return (<div>
-            <input type="text" placeholder="请输入地址" onBlur={this.getAddress}/>
-        </div>)
+        console.log('Father render')
+        return (
+            <>
+                <h5>我是父组件{this.state.name}</h5><br/>
+                <button onClick={this.changeName}>更换姓名</button>
+                <br/>
+                {/*属性有依赖*/}
+                <FirstSon name={this.state.name}/><br/>
+                {/*属性无依赖*/}
+                <SecondSon/>
+            </>
+        )
     }
 }
 ```
+
+## 3. 条件render-自定义
+
+- 需要在父子组件中，重写shouldComponentUpdate，如果组件的state属性和props的确更改了，再让它去render
+
+```jsx
+shouldComponentUpdate(nextProps, nextState, nextContext) {
+
+    if (this.state.name === nextState.name) {
+        return false;
+    }
+
+    if (this.props.name === nextProps.name) {
+        return false;
+    }
+
+    return true;
+}
+```
+
+## 4. PureComponent
+
+- React中提供了一个类，可以实现上面逻辑
+- 让父子组件，都继承PureComponent, PureComponent重写了上面shouldComponentUpdate方法
+
+### 4.1 基本使用
+
+```jsx
+import {PureComponent} from "react";
+
+export class FirstSon extends PureComponent {
+
+    render() {
+        console.log('FirstSon render')
+        return (
+            <>我是第一个子组件{this.props.name}</>
+        )
+    }
+}
+```
+
+### 4.2 浅对比
+
+```bash
+# 比较state属性时候，浅对象
+- 比较的是引用地址，而非引用地址的具体的值
+- 在setState时候，不要和原来的对象发生关系
+```
+
+```jsx
+import {PureComponent} from "react";
+import {FirstSon} from "./FirstSon";
+import {SecondSon} from "./SecondSon";
+
+/*父组件*/
+export class Father extends PureComponent {
+
+    state = {
+        name: 'Erick'
+    }
+
+    /*没有改变指针，通过指针改变了堆中的对象
+    * 不会触发render*/
+    changeName = () => {
+        const obj = this.state;
+        obj.name = 'lucy';
+        this.setState(obj)
+    }
+
+    render() {
+        console.log('Father render')
+        return (
+            <>
+                <h5>我是父组件{this.state.name}</h5><br/>
+                <button onClick={this.changeName}>更换姓名</button>
+                <br/>
+                {/*属性有依赖*/}
+                <FirstSon name={this.state.name}/><br/>
+                {/*属性无依赖*/}
+                <SecondSon/>
+            </>
+        )
+    }
+}
+```
+
+
 
 # 受控组件
 
