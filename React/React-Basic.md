@@ -68,7 +68,7 @@
 
 ![image-20240531111025866](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240531111025866.png)
 
-## 2. 脚手架
+## 2. React脚手架
 
 - 在实际开发中，是基于React官方提供的脚手架，搭建好基本的环境
 
@@ -208,6 +208,51 @@ export default class App extends React.Component {
     }
 }
 ```
+
+## 3. TS项目
+
+- 创建好项目后，在tsx文件中，按照ts的规范去写代码，其他正常
+
+```bash
+# 创造一个模版项目，使用typescript的react模版
+create-react-app react-ts-demo --template typescript
+
+# 后面所有jsx文件，都变成了tsx文件
+- 项目运行后，会将tsx文件变成了jsx，然后再将jsx转换为js
+
+# 项目多了一个 tsconfig.json文件
+```
+
+```json
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src"
+  ]
+}
+```
+
+
 
 # JSX
 
@@ -2661,7 +2706,5 @@ export default class App extends React.Component {
 ```bash
 # 编译打包
 npm run build
-
-
 ```
 
