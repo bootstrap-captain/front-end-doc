@@ -2537,11 +2537,13 @@ export default class Citi extends Component {
 
 ![image-20240602102203012](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240602102203012.png)
 
-# 网络代理
+# 项目运行
+
+## 1. 网络代理
 
 ![image-20240603095750770](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240603095750770.png)
 
-## 1. 配置方式一
+### 1.1 配置方式一
 
 - 在package.json中添加，React启动后，就会在3000端口启动一个Proxy，后序请求就会将数据发送到Server端的8080端口
 - 3000端口只要没有的资源，都会去通过proxy找8080要
@@ -2579,13 +2581,13 @@ export default class App extends React.Component {
 }
 ```
 
-## 2. 配置方式二
+### 1.2 配置方式二
 
 - 在React的src目录下，建一个名字必须为setupProxy.js的文件
 - 请求不同服务，不同服务的不同转发
 - React在执行时，会自动使用配置的setupProxy.js配置的规则
 
-### setupProxy.js
+#### setupProxy.js
 
 ```js
 const {createProxyMiddleware} = require('http-proxy-middleware');
@@ -2652,5 +2654,14 @@ export default class App extends React.Component {
             </div>)
     }
 }
+```
+
+## 2. 打包
+
+```bash
+# 编译打包
+npm run build
+
+
 ```
 

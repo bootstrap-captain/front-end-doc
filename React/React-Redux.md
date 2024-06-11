@@ -488,3 +488,231 @@ export default class App extends Component {
 ### 2.4 redux组件
 
 - 代码和上面的redux原生的一模一样，不发生任何改变
+
+## 3. 优化点
+
+### 3.1 CountContainer.js
+
+- 支持对象写法，简化代码，react-redux会帮忙dispatch
+
+```jsx
+import {CountUI} from "../../component/Count/CountUI";
+import {connect} from "react-redux";
+import {createAsyncIncrementAction, createDecrementAction, createIncrementAction} from "../../redux/count_action";
+
+function mapStateToProps(state) {
+    return {count: state}
+}
+
+/*mapDispatchToPros: 
+ 1.可以写对象模式
+ 2.react会自动进行dispatch的动作*/
+const mapDispatchToPros = {
+    increment: createIncrementAction,
+    decrement: createDecrementAction,
+    incrementIfOdd: createIncrementAction,
+    asyncIncrement: createAsyncIncrementAction
+}
+
+export const CountContainer = connect(mapStateToProps, mapDispatchToPros)(CountUI);
+```
+
+### 3.2 自动检测render
+
+- 上面的connect，帮助进行了自动检测
+- 可以从CountUI组件中删除以下代码
+
+```jsx
+componentDidMount() {
+    /*单纯保留，为了触发render*/
+    store.subscribe(() => {
+        /*不做任何处理，单纯为了触发render*/
+        this.setState({});
+    })
+}
+```
+
+### 3.3 Provider
+
+- 保证所有的app中的容器组件，都会有对应的store
+
+#### index.js
+
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import {Provider} from "react-redux";
+import store from "./redux/store";
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+    <React.StrictMode>
+        <Provider store={store}>
+            <App/>
+        </Provider>
+    </React.StrictMode>
+);
+```
+
+#### app.js
+
+- 不用再给UI组件传递store了
+
+```jsx
+import {Component} from "react";
+import {CountContainer} from "./containers/Count/CountContainer";
+
+export default class App extends Component {
+    render() {
+        return (
+            <div>
+                <CountContainer/>
+            </div>)
+    }
+}
+```
+
+### 3.4 UI组件和Container组件
+
+- 可以把这两个混在一起，避免文件太多
+- 将UI组件放在container组件中，这样就知道，这个UI组件，是使用到了redux的，和store有关系
+
+![image-20240610104348377](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240610104348377.png)
+
+```jsx
+import {connect} from "react-redux";
+import {createAsyncIncrementAction, createDecrementAction, createIncrementAction} from "../../redux/count_action";
+import {Component, createRef} from "react";
+
+/*UI的类*/
+export class Count extends Component {
+
+    selectRef = createRef();
+
+    increment = () => {
+        let value = this.selectRef.current.value;
+        this.props.increment(value * 1);
+    }
+
+    decrement = () => {
+        let value = this.selectRef.current.value;
+        this.props.decrement(value * 1);
+    }
+
+    incrementIfOdd = () => {
+        let value = this.selectRef.current.value;
+        let previous = this.props.count;
+        if (previous % 2 !== 0) {
+            this.props.incrementIfOdd(value * 1);
+        }
+    }
+
+    asyncIncrement = () => {
+        let value = this.selectRef.current.value;
+        this.props.asyncIncrement(value * 1, 1000);
+    }
+
+    render() {
+        return (
+            <div>
+
+                <h1>当前求和为{this.props.count}</h1>
+
+                <select ref={this.selectRef}>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                </select>&nbsp;&nbsp;&nbsp;
+
+                <button onClick={this.increment}>+</button>
+                &nbsp;&nbsp;&nbsp;
+                <button onClick={this.decrement}>-</button>
+                &nbsp;&nbsp;&nbsp;
+                <button onClick={this.incrementIfOdd}>当前count为奇数再加</button>
+                &nbsp;&nbsp;&nbsp;
+                <button onClick={this.asyncIncrement}>异步加</button>
+            </div>
+        )
+    }
+}
+
+/*Container的类, 暴露出去的是这个*/
+function mapStateToProps(state) {
+    return {count: state}
+}
+
+const mapDispatchToPros = {
+    increment: createIncrementAction,
+    decrement: createDecrementAction,
+    incrementIfOdd: createIncrementAction,
+    asyncIncrement: createAsyncIncrementAction
+}
+
+export const CountContainer = connect(mapStateToProps, mapDispatchToPros)(Count);
+```
+
+# react-redux
+
+- 多组件通信
+
+![image-20240610135519027](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240610135519027.png)
+
+## index.js
+
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import {Provider} from "react-redux";
+import store from "./redux/store";
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+    <React.StrictMode>
+        <Provider store={store}>
+            <App/>
+        </Provider>
+    </React.StrictMode>
+);
+```
+
+## app.js
+
+```jsx
+import {Component} from "react";
+import {CountContainer} from "./containers/Count/CountContainer";
+import {PersonContainer} from "./containers/person/PersonContainer";
+
+export default class App extends Component {
+    render() {
+        return (
+            <div>
+                <CountContainer/>
+                <hr/>
+                <PersonContainer/>
+            </div>)
+    }
+}
+```
+
+## store.js
+
+```jsx
+import {createStore, applyMiddleware, combineReducers} from "redux";
+import personReducer from "./reducers/Person";
+import countReducer from './reducers/Counter'
+/*支持异步任务*/
+import {thunk} from "redux-thunk";
+
+/*k-v，保证后面UI组件的取数据*/
+const allProducer = combineReducers({
+    person: personReducer,
+    count: countReducer
+})
+
+/*需要对所有的reducer都引入*/
+export default createStore(allProducer, applyMiddleware(thunk));
+```
