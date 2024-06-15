@@ -95,6 +95,12 @@ export class Count extends Component {
 
 #  Redux实现
 
+```bash
+npm i redux
+```
+
+- 基于浏览器内存的存储方式，刷新页面后，会丢失原来的state
+
 ## 1. 入门案例
 
 ### store.js

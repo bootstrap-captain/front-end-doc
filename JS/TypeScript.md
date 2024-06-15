@@ -437,6 +437,44 @@ console.log("nihao");
 
 # 面向对象
 
+## 1. 定义对象
+
+### 1.1 别名定义
+
+```ts
+type User = {
+  id: number;
+  name: string;
+  isActive: boolean;
+};
+ 
+// 使用类型别名定义对象
+const user: User = {
+  id: 1,
+  name: 'Alice',
+  isActive: true
+};
+```
+
+### 1.2 interface定义
+
+```ts
+interface User {
+  id: number;
+  name: string;
+  isActive: boolean;
+}
+ 
+// 使用接口定义对象
+const user: User = {
+  id: 1,
+  name: 'Alice',
+  isActive: true
+};
+```
+
+
+
 ### 1. 变量和方法
 - 成员变量
 - 成员静态变量

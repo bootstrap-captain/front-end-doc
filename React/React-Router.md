@@ -52,7 +52,15 @@
 
 # react-router-dom-5
 
-- npm i react-router-dom@5  # "react-router-dom": "^5.3.4"
+```bash
+# js中只需要安装这个
+npm i react-router-dom@5  # "react-router-dom": "^5.3.4"
+
+# ts中需要加上这个
+npm i --save-dev @types/react-router-dom 
+```
+
+
 
 ## 1. 基本路由
 
@@ -233,7 +241,7 @@ match:
         url:"/about"
 ```
 
-### 2.2 路由组件
+### 2.2 一般组件
 
 ```bash
 # 一般组件
@@ -779,6 +787,10 @@ http://localhost:3000/about            # 1
 ```
 
 ## 9. 编程式路由导航
+
+- 比如登陆页面，登陆失败继续跳转到登陆页面，登陆成功后跳转到home界面
+
+
 
 
 
