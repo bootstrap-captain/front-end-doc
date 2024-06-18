@@ -60,103 +60,99 @@ npm i react-router-dom@5  # "react-router-dom": "^5.3.4"
 npm i --save-dev @types/react-router-dom 
 ```
 
-
-
 ## 1. 基本路由
-
-### 写法一
 
 - 在app.js中包裹BrowserRouter
 
-#### index.js
+### index.tsx
 
-```jsx
+```tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
+const root = ReactDOM.createRoot(
+    document.getElementById('root') as HTMLElement
+);
 root.render(
     <React.StrictMode>
+        {/*导入app组件*/}
         <App/>
     </React.StrictMode>
 );
 ```
 
-#### app.js
+### app.tsx
 
-```jsx
+```tsx
+import React from 'react';
+import {ErickRouter} from "./routers/ErickRouter";
+
+function App() {
+    return (
+        <div>
+            <ErickRouter/>
+        </div>
+    );
+}
+
+export default App;
+```
+
+### ErickRouter.tsx
+
+- 一般写在src/routers下面
+
+```tsx
+import {BrowserRouter, Link, NavLink, Route} from "react-router-dom";
+import AboutComponent from "../component/AboutComponent";
+import HomeComponent from "../component/HomeComponent";
 import React from "react";
-import {BrowserRouter, Link, Route} from "react-router-dom";
-import {AboutComponent} from "./component/pages/About/AboutComponent";
-import {HomeComponent} from "./component/pages/Home/HomeComponent";
 
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
-                {/*整个应用，需要用一个BrowserRouter来管理*/}
-                <BrowserRouter>
-                    {/*1. 点击页面的About或者Home链接，触发事件*/}
+export function ErickRouter() {
+    return (
+        <div>
+            {/*整个应用，需要用一个BrowserRouter来管理*/}
+            <BrowserRouter>
+                {/*1. 点击页面的About或者Home链接，触发事件*/}
 
-                    {/*点击两个模块时，切换浏览器url：
+                {/*点击两个模块时，切换浏览器url：
                     http://localhost:3000/about
                     http://localhost:3000/home*/}
-                   {/*NavLink和Link差不多，NavLink可以实现高亮*/}
-                    <NavLink to='/about'>About</NavLink><br/>
-                    <Link to='/home'>Home</Link>
+                {/*NavLink和Link差不多，NavLink可以实现高亮*/}
+                <NavLink to='/about'>About</NavLink><br/>
+                <Link to='/home'>Home</Link>
 
-                    {/*2. 注册路由
-                    路由的具体跳转规则: 根据url，实现组件切换AboutComponent*/}
-                    <Route path='/about' component={AboutComponent}></Route>
-                    <Route path='/home' component={HomeComponent}></Route>
 
-                </BrowserRouter>
-            </div>
-        )
-    }
+                {/*2. 注册路由
+                    路由的具体跳转规则: 根据url，实现组件切换AboutComponent
+                   AboutComponent: 路由组件，和其他组件差不多 */}
+                <Route path='/about' component={AboutComponent}></Route>
+                <Route path='/home' component={HomeComponent}></Route>
+
+            </BrowserRouter>
+        </div>
+    );
 }
 ```
 
-#### AboutComponent.jsx
+### AboutComponent.tsx
 
-```jsx
-import {Component} from "react";
-
-export class AboutComponent extends Component {
-    render() {
-        return (
-            <div>
-                我是About
-            </div>
-        )
-    }
+```tsx
+export default function AboutComponent() {
+    return (
+        <div>
+            我是About
+        </div>
+    );
 }
 ```
 
-#### HomeComponent.jsx
-
-```jsx
-import {Component} from "react";
-
-export class HomeComponent extends Component {
-    render() {
-        return (
-            <div>
-                我是Home
-            </div>
-        )
-    }
-}
-```
-
-### 写法二
+## 2. 基本路由
 
 - 用\<BrowserRouter>把整个APP包起来
 
-#### index.js
+### index.tsx
 
 ```jsx
 import React from 'react';
@@ -164,8 +160,9 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import {BrowserRouter} from "react-router-dom";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
+const root = ReactDOM.createRoot(
+    document.getElementById('root') as HTMLElement
+);
 root.render(
     <React.StrictMode>
         {/*用BrowserRouter把App组件包裹起来*/}
@@ -176,49 +173,63 @@ root.render(
 );
 ```
 
-#### app.js
+### app.tsx
 
 ```jsx
+import React from 'react';
+import {ErickRouter} from "./routers/ErickRouter";
+
+function App() {
+    return (
+        <div>
+            <ErickRouter/>
+        </div>
+    );
+}
+
+export default App;
+```
+
+### ErickRouter.tsx
+
+```tsx
+import {Link, NavLink, Route, Switch} from "react-router-dom";
+import AboutComponent from "./first/AboutComponent";
+import HomeComponent from "./first/HomeComponent";
 import React from "react";
-import {Link, NavLink, Route} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
 
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
+export function ErickRouter() {
+    return (
+        <div>
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link>
 
-                {/*1. 点击页面的About或者Home链接，触发事件*/}
+            {/*不用Switch包裹，一个url中，会遍历所有的<Route>,路径符合的，都会渲染对应的组件
+                  1. HomeComponent会渲染两次
+                  2. 如果<Route>多了，会有效率问题*/}
 
-                {/*点击两个模块时，切换浏览器url：
-                    http://localhost:3000/about
-                    http://localhost:3000/home*/}
-                {/*NavLink和Link差不多*/}
-                <NavLink to='/about'>About</NavLink><br/>
-                <Link to='/home'>Home</Link>
-
-                {/*2. 注册路由
-                    路由的具体跳转规则: 根据url，实现组件切换AboutComponent*/}
+            {/*用了Switch包裹：一个url中，会遍历所有的<Route>,路径符合,则渲染，并不再遍历下面的<Route>*/}
+            <Switch>
                 <Route path='/about' component={AboutComponent}></Route>
                 <Route path='/home' component={HomeComponent}></Route>
-            </div>
-        )
-    }
+                <Route path='/home' component={HomeComponent}></Route>
+            </Switch>
+        </div>
+    );
 }
 ```
 
-## 2. 组件分类
+## 3. 组件分类
 
-### 2.1 路由组件
+### 3.1 路由组件
 
 ```bash
 # 路由组件
-- 用来控制页面跳转的
-- 一般放在 src/pages下面
 - 通过下面方式引入
   <Route path="/about" component={AboutComponent}></Route>
+  
+- 用来控制页面跳转的
+- 一般放在 src/routers下面  
 - 路由组件中，会自动给props属性传递下面的值
 ```
 
@@ -241,53 +252,130 @@ match:
         url:"/about"
 ```
 
-### 2.2 一般组件
+### 3.2 一般组件
 
 ```bash
 # 一般组件
-- 一般放在src/component下面
 - 通过 <NikeCompany/> 来进行引入的
+- 一般放在src/component下面
 ```
 
-## 3. switch
+## 4. 匹配方式
+
+### 4.1 模糊匹配
+
+- Route默认是模糊匹配
+- 我可以不要，但你不能不给
 
 ```jsx
-import React from "react";
 import {Link, NavLink, Route, Switch} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
-import {TestComponent} from "./pages/Test/TestComponent";
+import AboutComponent from "./first/AboutComponent";
+import HomeComponent from "./first/HomeComponent";
+import React from "react";
+import WelcomeComponent from "./first/WelcomeComponent";
 
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
+export function ErickRouter() {
+    return (
+        <div>
+            {/*默认是模糊匹配
+            1. 传递过来的东西*/}
+            {/* 1. 传递的url = /about/a/b */}
+            <NavLink to='/about/a/b'>About</NavLink><br/>
 
-                <NavLink to='/about'>About</NavLink><br/>
-                <Link to='/home'>Home</Link>
+            {/* 2. 传递的url = /a/home/b */}
+            <Link to='/a/home/b'>Home</Link><br/>
 
-                {/*不用Switch包裹，一个url中，会遍历所有的<Route>,路径符合的，都会渲染对应的组件
-                  1. 如果<Route>多了，会有效率问题*/}
-                 
-                {/*用了Switch包裹：一个url中，会遍历所有的<Route>,路径符合,则渲染，并不再遍历下面的<Route>*/}
-                <Switch>
-                    <Route path='/about' component={AboutComponent}></Route>
-                    <Route path='/home' component={HomeComponent}></Route>
-                    <Route path='/home' component={TestComponent}></Route>
-                </Switch>
+            {/* 3. 传递的url = /test */}
+            <Link to='/test'>Test</Link>
 
-            </div>
-        )
-    }
+
+            <Switch>
+                {/* 2. 要的东西
+                    * 最左前缀匹配*/}
+                {/*1. 解析到 about a  b,  about是第一个，可以*/}
+                <Route path='/about' component={AboutComponent}></Route>
+
+                {/*2. 解析到 a home b ,  a是第一个，不可以*/}
+                <Route path='/home' component={HomeComponent}></Route>
+
+                {/* 3. 解析到test， 不能识别，/test/a/b 必须全部传递过来*/}
+                <Route path='/test/a/b' component={WelcomeComponent}></Route>
+            </Switch>
+        </div>
+    );
 }
 ```
 
-## 4. LazyLoad
+### 4.2 精确匹配
+
+- 不要随便开启，有时候开启会导致无法继续匹配二级路由问题
+
+```jsx
+import {Link, NavLink, Route, Switch} from "react-router-dom";
+import AboutComponent from "./first/AboutComponent";
+import HomeComponent from "./first/HomeComponent";
+import React from "react";
+import WelcomeComponent from "./first/WelcomeComponent";
+
+export function ErickRouter() {
+    return (
+        <div>
+            <NavLink to='/about/a/b'>About</NavLink><br/>
+            <Link to='/a/home/b'>Home</Link><br/>
+            <Link to='/test'>Test</Link>
+
+            <Switch>
+                {/*exact，开启精确匹配模式*/}
+                <Route exact path='/about/a/b' component={AboutComponent}></Route>
+                <Route exact path='/a/home/b' component={HomeComponent}></Route>
+                <Route exact={true} path='/test' component={WelcomeComponent}></Route>
+            </Switch>
+        </div>
+    );
+}
+```
+
+## 5. 重定向
+
+```bash
+# 如果是下面的url，一个路由的兜底方案
+- http://localhost:3000   或者 http://localhost:3000/
+```
+
+```jsx
+import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
+import AboutComponent from "./first/AboutComponent";
+import HomeComponent from "./first/HomeComponent";
+import React from "react";
+import WelcomeComponent from "./first/WelcomeComponent";
+
+export function ErickRouter() {
+    return (
+        <div>
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link><br/>
+            <Link to='/welcome'>Welcome</Link>
+
+            <Switch>
+                {/*exact，开启精确匹配模式*/}
+                <Route path='/about' component={AboutComponent}></Route>
+                <Route path='/home' component={HomeComponent}></Route>
+                <Route path='/welcome' component={WelcomeComponent}></Route>
+
+                {/*兜底方案：如果和下面的任何路径都匹配不上,则重定向到一个路由上
+                路径就会变成 http://localhost:3000/welcome*/}
+                <Redirect to='/welcome'/>
+            </Switch>
+        </div>
+    );
+}
+```
+
+## 6. LazyLoad
 
 - 懒加载：在路由组件中用的比较多
 
-### 4.1 预加载
+### 6.1 预加载
 
 ```bash
 # 默认情况
@@ -300,43 +388,47 @@ export default class App extends React.Component {
 
 ![image-20240608204855040](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608204855040.png)
 
-### 4.2 懒加载
+### 6.2 懒加载
 
 ```jsx
-import {Link, NavLink, Route} from "react-router-dom";
-import {Component, lazy, Suspense} from "react";
-import {Loading} from "./component/pages/Loading/Loading";
+import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
+import React, {lazy, Suspense} from "react";
+import DefaultRouter from "./first/DefaultRouter";
 
-/*懒加载: 
-1. Home组件中，必须是export default class Home 
-2. 如果加{}, 必须加return关键字*/
+/*懒加载: 如果加{}, 必须加return关键字*/
 const Home = lazy(() => {
-    return import('./component/pages/Home/Home')
+    return import('./first/HomeComponent')
 });
 
 /*懒加载*/
 const About = lazy(() => {
-    return import('./component/pages/About/About')
+    return import('./first/AboutComponent')
 });
 
+const Welcome = lazy(() => {
+    return import('./first/AboutComponent')
+});
 
-export default class App extends Component {
-    render() {
-        return (<div>
+export function ErickRouter() {
+    return (
+        <div>
             <NavLink to='/about'>About</NavLink><br/>
-            <Link to='/home'>Home</Link>
+            <Link to='/home'>Home</Link><br/>
+            <Link to='/welcome'>Welcome</Link>
 
-
-            {/*如果因为网路原因，加载路由组件时候出现问题
-              1. 兜底方案
-              2. fallback指定的Loading组件，必须要立即加载*/}
-            <Suspense fallback={<Loading/>}>
-                <Route path='/about' component={About}></Route>
-                <Route path='/home' component={Home}></Route>
-            </Suspense>
-
-        </div>)
-    }
+            <Switch>
+                <Suspense fallback={<DefaultRouter/>}>
+                    {  /*如果因为网路原因，加载路由组件时候出现问题
+                    1. 兜底方案
+                    2. fallback指定的Loading组件，必须要立即加载*/}
+                    <Route path='/about' component={Home}></Route>
+                    <Route path='/home' component={About}></Route>
+                    <Route path='/welcome' component={Welcome}></Route>
+                    <Redirect to='/welcome'/>
+                </Suspense>
+            </Switch>
+        </div>
+    );
 }
 ```
 
@@ -346,139 +438,14 @@ export default class App extends Component {
 
 ![image-20240608212815066](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608212815066.png)
 
-## 4. 匹配方式
+# react-router-dom-5
 
-### 4.1 模糊匹配
-
-- Route默认是模糊匹配
-
-```jsx
-import React from "react";
-import {Link, NavLink, Route, Switch} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
-import {TestComponent} from "./pages/Test/TestComponent";
-
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
-
-                {/*默认是模糊匹配*/}
-                {/* 1. 传递的url = /about/a/b */}
-                <NavLink to='/about/a/b'>About</NavLink><br/>
-
-                {/* 2. 传递的url = /a/home/b */}
-                <Link to='/a/home/b'>Home</Link><br/>
-
-                {/* 3. 传递的url = /test */}
-                <Link to='/test'>Test</Link>
-
-
-                <Switch>
-                    {/*最左前缀匹配*/}
-                    {/*1. 解析到 about a  b,  about是第一个，可以*/}
-                    <Route path='/about' component={AboutComponent}></Route>
-
-                    {/*2. 解析到 a home b ,  a是第一个，不可以*/}
-                    <Route path='/home' component={HomeComponent}></Route>
-
-                    {/* 3. 解析到test， 不能识别，/test/a/b 必须全部传递过来*/}
-                    <Route path='/test/a/b' component={TestComponent}></Route>
-                </Switch>
-
-            </div>
-        )
-    }
-}
-```
-
-### 4.2 严格匹配
-
-- 不要随便开启，需要再看，有时候开启会导致无法继续匹配二级路由问题
-
-```jsx
-import React from "react";
-import {Link, NavLink, Route, Switch} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
-import {TestComponent} from "./pages/Test/TestComponent";
-
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
-                <NavLink to='/about/a/b'>About</NavLink><br/>
-
-                <Link to='/a/home/b'>Home</Link><br/>
-
-                <Link to='/test'>Test</Link>
-
-
-                <Switch>
-                    <Route exact path='/about/a/b' component={AboutComponent}></Route>
-
-                    <Route exact path='/a/home/b' component={HomeComponent}></Route>
-
-                    <Route exact={true} path='/test' component={TestComponent}></Route>
-                </Switch>
-            </div>
-        )
-    }
-}
-```
-
-## 5. 重定向
-
-```bash
-# 如果是下面的url，一个路由的兜底方案
-- http://localhost:3000   或者 http://localhost:3000/
-```
-
-```jsx
-import React from "react";
-import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
-import {WelcomeComponent} from "./pages/Welcome/WelcomeComponent";
-
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
-                <NavLink to='/about'>About</NavLink><br/>
-
-                <Link to='/home'>Home</Link><br/>
-                <Link to='/welcome'>Welcome</Link><br/>
-
-                {/*上面的都匹配不上了，兜底方案, 自动变为http://localhost:3000/welcome
-                1. http://localhost:3000/
-                2. http://localhost:3000
-                3. http://localhost:3000/random*/}
-                <Redirect to='/welcome'/>
-                <Switch>
-                    <Route path='/about' component={AboutComponent}></Route>
-                    <Route path='/home' component={HomeComponent}></Route>
-                    <Route path='/welcome' component={WelcomeComponent}></Route>
-
-                </Switch>
-            </div>
-        )
-    }
-}
-```
-
-## 6. 嵌套路由
+## 1. 多级路由
 
 - 路由可能包含多层结构
 - 一般将嵌套路由，加入到对应的上级路由的目录结构中
 
-![image-20240608094854189](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240608094854189.png)
-
-
+![image-20240617204100655](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240617204100655.png)
 
 ```bash
 # 匹配规则
@@ -494,76 +461,74 @@ export default class App extends React.Component {
 - 精准匹配：除非特殊情况，一般不要开启
 ```
 
-### 6.1 一级路由-app.jsx
+### 1.1 一级路由-ErickRouter.tsx
 
-```jsx
+- 定义了home，about，welcome三个一级路由
+
+```tsx
+import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
 import React from "react";
-import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
-import {AboutComponent} from "./pages/About/AboutComponent";
-import {HomeComponent} from "./pages/Home/HomeComponent";
-import {WelcomeComponent} from "./pages/Welcome/WelcomeComponent";
+import HomeComponent from "./Home/HomeComponent";
+import AboutComponent from "./About/AboutComponent";
+import WelcomeComponent from "./WelcomeComponent";
 
-export default class App extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>公共组件</div>
-                <NavLink to='/about'>About</NavLink><br/>
+export function ErickRouter() {
+    return (
+        <div>
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link><br/>
+            <Link to='/welcome'>Welcome</Link>
 
-                <Link to='/home'>Home</Link><br/>
-                <Link to='/welcome'>Welcome</Link><br/>
-                
+            <Switch>
+                <Route path='/about' component={AboutComponent}></Route>
+                <Route path='/home' component={HomeComponent}></Route>
+                <Route path='/welcome' component={WelcomeComponent}></Route>
                 <Redirect to='/welcome'/>
-                <Switch>
-                    <Route path='/about' component={AboutComponent}></Route>
-                    <Route path='/home' component={HomeComponent}></Route>
-                    <Route path='/welcome' component={WelcomeComponent}></Route>
-
-                </Switch>
-            </div>
-        )
-    }
+            </Switch>
+        </div>
+    );
 }
 ```
 
-### 6.2 二级路由-HomeComponent.jsx
+### 1.2 二级路由-HomeComponent.jsx
 
 ```jsx
-import React, {Component} from "react";
+import {Fragment} from "react";
 import {Link, NavLink, Redirect, Route, Switch} from "react-router-dom";
-import {DefaultHome} from "./Defalut/DefaultHome";
-import {LucyHome} from "./Lucy/LucyHome";
-import {ErickHome} from "./Erick/ErickHome";
+import ErickHome from "./ErickHome/ErickHome";
+import LucyHome from "./LucyHome/LucyHome";
+import DefaultHome from "./DefaultHome/DefaultHome";
 
-export class HomeComponent extends Component {
-    render() {
-        return (
-            <div>
-                <span>我是Home组件</span>
-                {/*二级路由匹配
+export default function HomeComponent() {
+    return (
+        <Fragment>
+
+            {/*一级路由的展示部分,也会展示*/}
+            <div>我是Home</div>
+
+            {/*二级路由匹配
                     1. 二级路由，在定义url的部分，必须把上层路由带上*/}
-                <NavLink to='/home/erick'>Erick</NavLink><br/>
-                <Link to='/home/lucy'>Lucy</Link><br/>
+            <NavLink to='/home/erick'>Erick</NavLink><br/>
+            <Link to='/home/lucy'>Lucy</Link><br/>
+
+            {/*二级路由注册*/}
+            <Switch>
+                <Route path='/home/erick' component={ErickHome}></Route>
+                <Route path='/home/lucy' component={LucyHome}></Route>
+                <Route path='/home/default' component={DefaultHome}></Route>
+
                 <Redirect to='/home/default'/>
-
-
-                {/*二级路由注册*/}
-                <Switch>
-                    <Route path='/home/erick' component={ErickHome}></Route>
-                    <Route path='/home/lucy' component={LucyHome}></Route>
-                    <Route path='/home/default' component={DefaultHome}></Route>
-                </Switch>
-            </div>
-        )
-    }
+            </Switch>
+        </Fragment>
+    );
 }
 ```
 
-## 7. 路由传参
+## 2. 路由传参
 
 - 上层路由跳转到下层路由时，可能需要携带参数，可以有三种方式
 
-### 7.1 params参数
+### 2.1 params参数
 
 - 地址栏：http://localhost:3000/about/lucy/erick/xian/19
 
@@ -621,7 +586,7 @@ export class AboutLucy extends Component {
 }
 ```
 
-### 7.2 search参数
+### 2.2 search参数
 
 - 地址栏：http://localhost:3000/about/lucy/?name=erick&address=xian&age=19
 
@@ -684,7 +649,7 @@ export class AboutLucy extends Component {
 }
 ```
 
-### 7.3 state参数
+### 2.3 state参数
 
 - 和React组件的state属性不是一回事，这个是react-router-dom的属性
 - 地址：http://localhost:3000/about/lucy/
@@ -758,9 +723,9 @@ export class AboutLucy extends Component {
 }
 ```
 
-## 8. 路由跳转模式
+## 4. 路由跳转模式
 
-### 8.1 push
+### 4.1 push
 
 - 默认方式
 
@@ -768,27 +733,118 @@ export class AboutLucy extends Component {
 # 默认push，使用压栈操作，在浏览器页面
 - 回退或者前进，可以进行
 
-
 http://localhost:3000/home             # 3
 http://localhost:3000/about/detail     # 2     # 当前元素
 http://localhost:3000/about            # 1
 ```
 
-### 8.2 replace
+### 4.2 replace
 
 ```bash
 # 在Navlink中开启 
  <NavLink replace={true}
  
 # 替换操作， 如果下一个是替换模式，则会替换掉栈顶元素
-
 http://localhost:3000/about/detail     # 2     
 http://localhost:3000/about            # 1
 ```
 
-## 9. 编程式路由导航
+## 5. 编程式路由导航
 
-- 比如登陆页面，登陆失败继续跳转到登陆页面，登陆成功后跳转到home界面
+- 编程式也可以按照上面的方式，添加对应的参数
+
+```bash
+# 声明式路由实现: 在页面上点击指定链接，比如About，从而实现路由跳转
+<NavLink to='/about'>About</NavLink><br/>
+
+# 编程式路由
+- 比如登陆页面的普通React组件中，登陆失败继续跳转到登陆页面，登陆成功后跳转到home界面
+```
+
+### 5.1 路由组件中
+
+- 在一个通过路由式组件中，可以借助props属性
+
+```tsx
+/*路由式组件的跳转: 路由组件可以包含 props属性，可以借助props中的history*/
+export default function LucyHome(props: any) {
+
+    const jumpToWelcome = () => {
+        props.history.replace('/welcome')
+    }
+
+    const jumpToAbout = () => {
+        props.history.replace('/about')
+    }
+
+    return (
+        <div>
+            <button onClick={jumpToWelcome}>跳转到welcome</button>
+            <button onClick={jumpToAbout}>跳转到About</button>
+        </div>
+    );
+}
+```
+
+### 5.2 普通组件中
+
+- 普通组件中，props中没有histroy属性
+
+#### withRouter
+
+- 加工一般组件，让一般组件具备路由组件所特有的api
+
+```tsx
+import {withRouter} from "react-router-dom";
+
+export function ErickBedroom(props: any) {
+
+    const jumpToWelcome = () => {
+        props.history.replace('/welcome')
+    }
+
+    const jumpToAbout = () => {
+        props.history.replace('/about')
+    }
+
+    return (
+        <div>
+            <button onClick={jumpToWelcome}>跳转到welcome</button>
+            <button onClick={jumpToAbout}>跳转到About</button>
+        </div>
+    );
+}
+
+export default withRouter(ErickBedroom);
+```
+
+#### useHistory()
+
+- 使用React的钩子函数
+
+```tsx
+import {useHistory} from "react-router-dom";
+
+export default function ErickBedroom() {
+
+    let history = useHistory();
+
+    const jumpToWelcome = () => {
+        history.replace('/welcome')
+    }
+
+    const jumpToAbout = () => {
+        history.replace('/about')
+    }
+
+    return (
+        <div>
+            <button onClick={jumpToWelcome}>跳转到welcome</button>
+            <button onClick={jumpToAbout}>跳转到About</button>
+        </div>
+    );
+}
+```
 
 
 
@@ -797,5 +853,555 @@ http://localhost:3000/about            # 1
 # react-router-dom-6
 
 - 6版本和5版本差距比较大
-- "react-router-dom": "^6.23.1"
 - React明确推荐：函数式组件
+
+```bash
+npm i react-router-dom                           # "react-router-dom": "^6.23.1"
+npm i --save-dev @types/react-router-dom         # "@types/react-router-dom": "^5.3.3"
+```
+
+## 1. 基本路由
+
+### index.tsx
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import {BrowserRouter} from "react-router-dom";
+
+const root = ReactDOM.createRoot(
+    document.getElementById('root') as HTMLElement
+);
+root.render(
+    <React.StrictMode>
+        <BrowserRouter>
+            <App/>
+        </BrowserRouter>
+    </React.StrictMode>
+);
+```
+
+### app.tsx
+
+```tsx
+import React from 'react';
+import ErickRouter from "./routers/ErickRouter";
+
+function App() {
+    return (
+        <div>
+            <ErickRouter/>
+        </div>
+    );
+}
+
+export default App;
+```
+
+### ErickRouter.tsx
+
+```tsx
+import {Link, Navigate, NavLink, Route, Routes} from "react-router-dom";
+import HomeComponent from "./Home/HomeComponent";
+import AboutComponent from "./About/AboutComponent";
+import {WelcomeComponent} from "./Welecome/WelcomeComponent";
+
+export default function ErickRouter() {
+    return (
+        <div>
+
+            {/*路由定义*/}
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link>
+
+            {/*路由匹配*/}
+            {/*1. Switch换成了Routes: 功能一样，不再继续匹配
+                    1.1 switch可加可不加
+                    1.2 routes必须加
+               2. component 换成了 element
+               3. 组件的引用方式变了*/}
+            <Routes>
+                <Route path='/home' element={<HomeComponent/>}></Route>
+                <Route path='/about' element={<AboutComponent/>}></Route>
+                <Route path='/welcome' element={<WelcomeComponent/>}></Route>
+
+                {/*相当于Redirect*/}
+                {/*路径如果是 http://localhost:3000/
+                            http://localhost:3000 */}
+                <Route path='/' element={<Navigate to='/welcome'/>}></Route>
+            </Routes>
+        </div>
+    )
+}
+```
+
+## 2. 路由表
+
+- 定义好路由规则，React-Router帮忙渲染
+
+### Routes.tsx
+
+- 定义好路由表
+- 一般在src/routes目录下
+
+```tsx
+/*路由表*/
+import type {RouteObject} from "react-router/dist/lib/context";
+import AboutComponent from "../pages/About/AboutComponent";
+import HomeComponent from "../pages/Home/HomeComponent";
+import {WelcomeComponent} from "../pages/Welecome/WelcomeComponent";
+import {Navigate} from "react-router-dom";
+
+export const router: RouteObject[] = [
+    {
+        path: '/about',
+        element: <AboutComponent/>,
+    },
+    {
+        path: '/home',
+        element: <HomeComponent/>,
+    },
+    {
+        path: '/welcome',
+        element: <WelcomeComponent/>,
+    },
+    {
+        path: '/',
+        element: <Navigate to='/welcome'/>,
+    }
+]
+```
+
+### ErickRouter.tsx
+
+- 一般放在pages下
+
+```tsx
+import {Link, NavLink, useRoutes} from "react-router-dom";
+import {router} from "../routers/Routes";
+
+export default function ErickRouter() {
+
+    /*引入路由表*/
+    const erickRouters = useRoutes(router)
+
+    return (
+        <div>
+
+            {/*路由定义*/}
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link>
+
+            {/*路由匹配*/}
+            {erickRouters}
+        </div>
+    )
+}
+```
+
+## 3. 嵌套路由
+
+### Routes.tsx
+
+```tsx
+/*路由表*/
+import type {RouteObject} from "react-router/dist/lib/context";
+import AboutComponent from "../pages/About/AboutComponent";
+import HomeComponent from "../pages/Home/HomeComponent";
+import {WelcomeComponent} from "../pages/Welecome/WelcomeComponent";
+import {Navigate} from "react-router-dom";
+import {LucyHome} from "../pages/Home/Lucy/LucyHome";
+import {TomHome} from "../pages/Home/Tom/TomHome";
+import JackHome from "../pages/Home/Jack/JackHome";
+
+export const router: RouteObject[] = [
+    {
+        path: '/about',
+        element: <AboutComponent/>,
+    },
+    {
+        path: '/home',
+        element: <HomeComponent/>,
+        /*配置子路由*/
+        children: [
+            {
+                path: 'lucy',
+                element: <LucyHome/>
+            },
+            {
+                path: 'tom',
+                element: <TomHome/>
+            },
+            {
+                path: 'jack',
+                element: <JackHome/>
+            },
+        ]
+    },
+    {
+        path: '/welcome',
+        element: <WelcomeComponent/>,
+    },
+    {
+        path: '/',
+        element: <Navigate to='/welcome'/>,
+    }
+]
+```
+
+### 一级路由-ErickRouter.tsx
+
+```tsx
+import {Link, NavLink, useRoutes} from "react-router-dom";
+import {router} from "../routers/Routes";
+
+export default function ErickRouter() {
+
+    /*引入路由表*/
+    const routersTable = useRoutes(router)
+
+    return (
+        <div>
+
+            {/*路由定义*/}
+            <NavLink to='/about'>About</NavLink><br/>
+            <Link to='/home'>Home</Link>
+
+            {/*路由匹配*/}
+            {routersTable}
+        </div>
+    )
+}
+```
+
+### 二级路由-HomeComponent.tsx
+
+```tsx
+/*二级路由*/
+import {NavLink, Outlet} from "react-router-dom";
+
+export default function HomeComponent() {
+    return (
+        <div>
+            <h2>
+                我是Home的爹
+            </h2>
+
+            {/*写法一：全路径*/}
+            <NavLink to='/home/lucy'>Lucy</NavLink><br/>
+
+            {/*写法二：当前子路由的路径名: 不破坏当前路径的情况下*/}
+            <NavLink to='./jack'>Jack</NavLink><br/>
+            {/*写法二的简写*/}
+            <NavLink to='tom'>Tom</NavLink><br/>
+
+            {/*不能 /lucy，这样就把前面的破坏了，直接 http://localhost:3000/lucy*/}
+
+            {/*展示二级菜单区的标记区，因为路由表引入的原因*/}
+            <Outlet/>
+        </div>
+    );
+}
+```
+
+## 4. 路由传参
+
+### 4.1 params传参
+
+- 地址：http://localhost:3000/home/15/xian/shuzhan
+
+#### 上层路由
+
+```tsx
+import {Link, useRoutes} from "react-router-dom";
+import {router} from "../routers/Routes";
+
+export default function ErickRouter() {
+
+    const routersTable = useRoutes(router);
+
+    const data = {
+        id: 15,
+        address: 'xian',
+        name: 'shuzhan'
+    }
+
+    return (
+        <div>
+            {/*传递路由参数*/}
+            <Link to={`/home/${data.id}/${data.address}/${data.name}`}>Home</Link>
+            {routersTable}
+        </div>
+    )
+}
+```
+
+#### 路由表
+
+```tsx
+/*路由表*/
+import type {RouteObject} from "react-router/dist/lib/context";
+import HomeComponent from "../pages/Home/HomeComponent";
+import {Navigate} from "react-router-dom";
+import {WelcomeComponent} from "../pages/Welecome/WelcomeComponent";
+
+export const router: RouteObject[] = [
+    {
+        /*接收时候，携带参数*/
+        path: '/home/:id/:address/:name',
+        element: <HomeComponent/>,
+    },
+
+    {
+        path: '/welcome',
+        element: <WelcomeComponent/>,
+    },
+
+    {
+        path: '/',
+        element: <Navigate to='/welcome'/>,
+    }
+]
+```
+
+#### 展示
+
+- 已经没有路由组件和普通组件的区别了
+
+```tsx
+import {useParams} from "react-router-dom";
+
+/*路由组件因为引入的是通过 element: <HomeComponent/>,
+* 其实props中已经没有了和路由相关的属性了*/
+export default function HomeComponent(props: any) {
+
+    /*取参数的方式*/
+    const {id, name, address} = useParams()
+
+    return (
+        <div>
+            <div>
+                我是Home
+            </div>
+
+            <div>
+                {id}==={name}==={address}
+            </div>
+
+        </div>
+    );
+}
+```
+
+### 4.2 search传参
+
+- 地址：http://localhost:3000/home?id=15&address=xian&name=shuzhan
+
+#### 上层路由
+
+```tsx
+import {Link, useRoutes} from "react-router-dom";
+import {router} from "../routers/Routes";
+
+export default function ErickRouter() {
+
+    const routersTable = useRoutes(router);
+
+    const data = {
+        id: 15,
+        address: 'xian',
+        name: 'shuzhan'
+    }
+
+    return (
+        <div>
+            {/*传递路由参数*/}
+            <Link to={`/home?id=${data.id}&address=${data.address}&name=${data.name}`}>Home</Link>
+            {routersTable}
+        </div>
+    )
+}
+```
+
+#### 路由表
+
+```tsx
+/*路由表*/
+import type {RouteObject} from "react-router/dist/lib/context";
+import HomeComponent from "../pages/Home/HomeComponent";
+import {Navigate} from "react-router-dom";
+import {WelcomeComponent} from "../pages/Welecome/WelcomeComponent";
+
+export const router: RouteObject[] = [
+    {
+        /*不用显示接收*/
+        path: '/home',
+        element: <HomeComponent/>,
+    },
+
+    {
+        path: '/welcome',
+        element: <WelcomeComponent/>,
+    },
+
+    {
+        path: '/',
+        element: <Navigate to='/welcome'/>,
+    }
+]
+```
+
+#### 展示
+
+```tsx
+import {useLocation, useSearchParams} from "react-router-dom";
+
+
+export default function HomeComponent(props: any) {
+
+    /*获取方式一： search为传递的参数，setSearch为改变search的方法*/
+    const [search, setSearch] = useSearchParams();
+    const id = search.get('id');
+    const name = search.get('name');
+    const address = search.get('address');
+
+    /*获取方式二：可以从location里面获取到
+    *  ?id=15&address=xian&name=shuzhan
+    * */
+    let location = useLocation();
+    console.log(location.search)
+
+    return (
+        <div>
+            <div>
+                我是Home
+            </div>
+
+            <div>
+                方式一的数据： {id}==={name}==={address}
+            </div>
+        </div>
+    );
+}
+```
+
+ ### 4.3 state传参
+
+#### 上层路由
+
+```tsx
+import {Link, useRoutes} from "react-router-dom";
+import {router} from "../routers/Routes";
+
+export default function ErickRouter() {
+
+    const routersTable = useRoutes(router);
+
+    const data = {
+        id: 15,
+        address: 'xian',
+        name: 'shuzhan'
+    }
+
+    return (
+        <div>
+            {/*传递路由参数*/}
+            <Link to='/home' state={
+                {
+                    id: data.id,
+                    address: data.address,
+                    name: data.name
+                }
+            }>Home</Link>
+            {routersTable}
+        </div>
+    )
+}
+```
+
+#### 路由表
+
+```tsx
+/*路由表*/
+import type {RouteObject} from "react-router/dist/lib/context";
+import HomeComponent from "../pages/Home/HomeComponent";
+import {Navigate} from "react-router-dom";
+import {WelcomeComponent} from "../pages/Welecome/WelcomeComponent";
+
+export const router: RouteObject[] = [
+    {
+        /*不用显示接收*/
+        path: '/home',
+        element: <HomeComponent/>,
+    },
+
+    {
+        path: '/welcome',
+        element: <WelcomeComponent/>,
+    },
+
+    {
+        path: '/',
+        element: <Navigate to='/welcome'/>,
+    }
+]
+```
+
+#### 展示
+
+```tsx
+import {useLocation} from "react-router-dom";
+
+export default function HomeComponent(props: any) {
+    /*useLocation获取*/
+    let location = useLocation();
+    const {id, name, address} = location.state;
+
+    return (
+        <div>
+            <div>
+                我是Home
+            </div>
+
+            <div>
+                {id}==={name}==={address}
+            </div>
+        </div>
+    );
+}
+```
+
+## 5. 编程式路由导航
+
+```tsx
+import {useNavigate} from "react-router-dom";
+import {NavigateFunction} from "react-router/dist/lib/hooks";
+
+export default function HomeComponent() {
+    /*类似5中的props中取history的api*/
+    let navigate: NavigateFunction = useNavigate();
+
+    const jumpToWelcome = () => {
+        navigate('/welcome', {
+            replace: false,
+            state: {}
+        })
+    }
+
+    const jumpToAbout = () => {
+        navigate('/about', {
+            replace: false,
+            state: {}
+        })
+    }
+
+    return (
+        <div>
+            <button onClick={jumpToWelcome}>跳转到welcome</button>
+            <button onClick={jumpToAbout}>跳转到About</button>
+        </div>
+    );
+}
+```
+
