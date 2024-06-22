@@ -808,7 +808,7 @@ axios({
 axios({
     method: 'POST',
     url: 'http://localhost:8080/post/withRequestBody',
-    // 请求体
+    // 请求体,和后台数据一样的话，可以简写为data：data
     data: {
         address: 'nanjing',
         age: 30,

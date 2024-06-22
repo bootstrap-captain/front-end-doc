@@ -388,10 +388,6 @@ export default class Citi extends Component {
 }
 ```
 
-
-
-
-
 ## 3. 虚拟DOM
 
 - 虚拟DOM，本质是Object类型的对象(一般对象)
@@ -1554,29 +1550,29 @@ export class Father extends PureComponent {
 
 - 当前组件的一些状态，属性，等
 - React-18中，在函数式组件中，可以使用state属性
+- 方法调用是同步的，更新操作是异步更新，更新完成后，state发生了改变，函数组件重新调用，触发整个页面重新render
 
-```jsx
+### 1.1 单一属性
+
+```tsx
 import {nanoid} from "nanoid";
 import React from "react";
 
-/* StateHook 这个函数执行 n+1 次
+/* Mall 函数执行 n+1 次
 *     1. 初次渲染执行一次
 *     2. 后续每次改变state属性，执行一次*/
-export function StateHook() {
+export default function Mall() {
+    console.log('mall')
 
     /* 2. 第一次调用，就会把count结果缓存下来
-        *     后续调用，就不会再去执行了*/
-
+            *     后续调用，就不会再去执行了*/
     /*参数：初始值
     * 返回：一个数组，第一个是属性，第二个是修改属性的方法
     * 数组的解构赋值*/
     const [count, setCount] = React.useState(0);
     const [time, setTime] = React.useState(nanoid(5));
-    const [data, setData] = React.useState({
-        name: '',
-        age: 0,
-        address: ''
-    });
+    
+    /*setCount不能直接调用，必须用一个函数来包裹后，提供给其他地方回调*/
 
     /*写法一： setCount传入一个函数*/
     function updateCount() {
@@ -1590,23 +1586,153 @@ export function StateHook() {
         setTime(nanoid(5));
     }
 
-    /*对象写法*/
-    function queryData() {
-        setData({
-            name: nanoid(3),
-            age: data.age + 1,
-            address: 'address:' + nanoid(3)
-        })
-    }
-
     return (
         <div>
             <h2>当前计数{count}</h2>
             <button onClick={updateCount}>改变计数器</button>
             <h2>当前时间{time}</h2>
             <button onClick={updateTime}>更改时间</button>
-            <h2>当前数据{data.name}=={data.age}==={data.address}</h2>
-            <button onClick={queryData}>查看信息</button>
+        </div>
+    )
+}
+```
+
+### 1.2 对象写法
+
+```tsx
+import React from "react";
+
+interface People {
+    username: string,
+    password: string,
+    address?: string,
+    age: string;
+}
+
+export default function Mall() {
+
+    /*定义数据类型*/
+   // 对象数组  const [data, setData] = React.useState<People[]>([{}]);
+    const [data, setData] = React.useState<People>({
+        username: '',
+        password: '',
+        address: '',
+        age: ''
+    });
+
+    function handleChange(type: string) {
+        return (event: any) => {
+            setData({
+                /*原对象解构*/
+                ...data,
+                /*新属性覆盖*/
+                [type]: event.target.value,
+            })
+        }
+    }
+    
+    return (
+        <div>
+            姓名：<input onChange={handleChange('username')}/><br/>
+            密码：<input onChange={handleChange('password')}/><br/>
+            地址：<input onChange={handleChange('address')}/><br/>
+            年龄：<input onChange={handleChange('age')}/><br/>
+        </div>
+    );
+}
+```
+
+### 1.3 更新方式
+
+#### 异步更新
+
+```tsx
+import React from "react";
+
+export default function Mall() {
+    console.log('mall')
+
+    const [count, setCount] = React.useState(0);
+
+    function updateCount() {
+        setCount((previous) => {
+            return previous + 1;
+        })
+        /*异步更新：原来是0，异步更新，这里打印出来就还是0*/
+        console.log('当前数据', count);
+    }
+
+    return (
+        <div>
+            <h2>当前计数{count}</h2>
+            <button onClick={updateCount}>改变计数器</button>
+        </div>
+    )
+}
+```
+
+#### 同步调用-useEfffect
+
+- 借助副作用钩子，获取到最新值
+
+```tsx
+import React from "react";
+
+export default function Mall() {
+    const [count, setCount] = React.useState(0);
+
+    function updateCount() {
+        setCount((previous) => {
+            return previous + 1;
+        })
+    }
+
+    /*1. 页面第一次加载完毕后，调用一次
+    * 2. 后续监测的值发生改变，再调用一次*/
+    React.useEffect(() => {
+        console.log('count', count)
+    }, [count]);
+    
+    console.log('mall')
+
+    return (
+
+        <div>
+            <h2>当前计数{count}</h2>
+            <button onClick={updateCount}>改变计数器</button>
+        </div>
+    )
+}
+```
+
+#### 同步调用-useRef
+
+- 借助ref，可以获取到最新的值
+- 在维护state属性的时候，可以在对该属性维护一个ref
+
+```tsx
+import React from "react";
+
+export default function Mall() {
+    const [count, setCount] = React.useState(0);
+    const countRef = React.useRef<number>();
+
+    function updateCount() {
+        let newNumber = 10;
+        setCount(10)
+        countRef.current = 10;
+        log();
+    }
+
+    /*假如调用完了上面的方法，立刻要使用到count的值，就可以用countRef*/
+    function log() {
+        console.log(countRef.current)
+    }
+
+    return (
+        <div>
+            <h2>当前计数{count}</h2>
+            <button onClick={updateCount}>改变计数器</button>
         </div>
     )
 }
@@ -1616,74 +1742,163 @@ export function StateHook() {
 
 - 组件之间的状态传递，父子组件传递属性，方法等
 
-### 2.1 传值
+### 2.1 传值/函数
 
 - 父组件在调用子组件的时候，可以给子组件传递一些值，函数
-- 值和函数的类型限制，需要在子组件中进行声明
+- 值和函数的类型限制，需要在子组件中进行声明，借助TS的类型说明
+- 可以在普通函数中写箭头函数
+- 回调函数带()，就要考虑用高阶函数或者高阶函数的其他写法
 
-```jsx
-import React from "react";
-import {NikeComponent} from "./component/Nike/NikeComponent";
+#### 普通函数
 
-export default class App extends React.Component {
+```tsx
+import React, {BaseSyntheticEvent} from "react";
+import Son from "./Son";
 
-    /* 父子组件：别和原型链扯关系
-     父组件的函数，也可以传递到子组件中*/
-    state = {
-        count: 1
+export default function Mall() {
+
+    const [age, setAge] = React.useState(1);
+    const [address, setAddress] = React.useState('');
+
+    function firstMethod() {
+        console.log('first-method');
     }
 
-    update = () => {
-        this.setState({
-            count: this.state.count + 1
-        })
+    /*高阶函数，柯里化写法*/
+    function secondMethod(data: number) {
+        return function (event: BaseSyntheticEvent) {
+            console.log(data);
+            console.log(event);
+        }
     }
 
-    render() {
-        const person = {name: "shuzhan", age: 20, address: "beijing"};
-        return (
-            <div>
-                <h2>count={this.state.count}</h2>
-                <NikeComponent name="lucy" age={12} updateInfo={this.update}/>
-                <NikeComponent name={person.name} age={person.age} address={person.address} updateInfo={this.update}/>
-                <NikeComponent {...person} updateInfo={this.update}/>
-            </div>)
+    function thirdMethod(data: number, event: BaseSyntheticEvent) {
+        console.log(data);
+        console.log(event)
     }
+
+    return (
+        <div>
+            <Son address={address} age={age}
+                 firstMethod={firstMethod}
+                 secondMethod={secondMethod}
+                 thirdMethod={thirdMethod}/>
+        </div>
+    );
 }
 ```
 
 ```jsx
-import React from "react";
-import PropTypes from "prop-types";
+import {BaseSyntheticEvent} from "react";
 
-export function NikeComponent(props) {
+interface SonProps {
+    /*可选属性，就可以不用必须传递*/
+    address?: string;
+    age: number;
+    /*无参，无返回值*/
+    firstMethod: () => void;
 
-    const {name, address, age, updateInfo} = props;
+    /*柯里化函数，返回值也是一个函数*/
+    secondMethod: (data: number) => (event: BaseSyntheticEvent) => void;
+
+    /*普通函数*/
+    thirdMethod: (data: number, event: BaseSyntheticEvent) => void;
+}
+
+export default function Son(props: SonProps) {
+    const {address, age, firstMethod, secondMethod, thirdMethod} = props
 
     return (
         <div>
-            <ul>
-                <li>{name}</li>
-                <li>{address}</li>
-                <li>{age + 1}</li>
-            </ul>
-            <button onClick={updateInfo}>点击</button>
+            {/*不带括号：将一个函数的指向作为回调*/}
+            <button onClick={firstMethod}>firstMethod</button>
+
+            {/*带括号：是将函数的返回值作为回调函数*/}
+
+            {/* 1. 返回值也是一个函数，并且React会自动把event传递给返回的函数*/}
+            <button onClick={secondMethod(1)}>secondMethod</button>
+
+            {/*2. 非柯里化写法*/}
+            <button onClick={function (event) {
+                return thirdMethod(1, event)
+            }}>thirdMethod
+            </button>
         </div>
-    )
+    );
+}
+```
+
+#### 箭头函数
+
+```tsx
+import React, {BaseSyntheticEvent} from "react";
+import {Son} from "./Son";
+
+export const Mall = () => {
+    const [age, setAge] = React.useState(1);
+    const [address, setAddress] = React.useState('');
+
+    const firstMethod = () => {
+        console.log('first-method');
+    }
+
+    /*高阶函数，柯里化写法*/
+    const secondMethod = (data: number) => {
+        return (event: BaseSyntheticEvent) => {
+            console.log(data);
+            console.log(event);
+        }
+    }
+
+    /*非柯里化写法*/
+    const thirdMethod = (data: number, event: BaseSyntheticEvent) => {
+        console.log(data);
+        console.log(event)
+    }
+
+    return (
+        <div>
+            <Son address={address} age={age}
+                 firstMethod={firstMethod}
+                 secondMethod={secondMethod}
+                 thirdMethod={thirdMethod}/>
+        </div>
+    );
+};
+```
+
+```tsx
+import React, {BaseSyntheticEvent} from "react";
+
+interface SonProps {
+    /*可选属性，就可以不用必须传递*/
+    address?: string;
+    age: number;
+    /*无参，无返回值*/
+    firstMethod: () => void;
+
+    /*柯里化函数，返回值也是一个函数*/
+    secondMethod: (data: number) => (event: BaseSyntheticEvent) => void;
+
+    /*普通函数*/
+    thirdMethod: (data: number, event: BaseSyntheticEvent) => void;
 }
 
-/*定义数据规范*/
-NikeComponent.prototype = {
-    /*数据类型，是否必传*/
-    name: PropTypes.string.isRequired,
-    address: PropTypes.string,
-    age: PropTypes.number,
-    updateInfo: PropTypes.func  /*规定必须是一个函数*/
-}
+export const Son: React.FC<SonProps> = (props) => {
+    const {address, age, firstMethod, secondMethod, thirdMethod} = props
 
-/*默认值*/
-NikeComponent.defaultProps = {
-    address: '北京'
+    return (
+        <div>
+
+            <button onClick={firstMethod}>firstMethod</button>
+            <button onClick={secondMethod(1)}>secondMethod</button>
+
+            <button onClick={(event) => {
+                thirdMethod(1, event);
+            }}>thirdMethod
+            </button>
+        </div>
+    );
 }
 ```
 
@@ -1769,134 +1984,192 @@ export function Erick() {
 
 ### 4.1 多层嵌套
 
-```jsx
-import {Father} from "./Father";
+- 在明确知道组件关系的时候，可以用多层嵌套
+- 可以获取到子组件的标签体的内容
 
-export function TopParent() {
+```jsx
+import Father from "./Father";
+
+export default function Customer() {
     return (
         <div>
-            我是爷爷
-            <Father></Father>
+            <h1>我是customer</h1>
+            <Father/>
         </div>
-    )
+    );
 }
 ```
 
 ```jsx
 import {Son} from "./Son";
+import React from "react";
 
-export function Father() {
-
+export default function Father() {
     return (
         <div>
-            <div>我是父亲</div>
-            <Son>Hi,Son</Son>
+            <h1>父亲组件</h1>
+            {/*渲染子组件的同时，传递了Hi，Son*/}
+            <Son>Hi, Son</Son>
         </div>
-    )
+    );
 }
 ```
 
 ```jsx
-export function Son(props) {
-    /*从props中接收*/
+import React from "react";
+
+interface SonProps {
+    children?: React.ReactNode /*可选的children属性*/
+}
+
+export function Son(props: SonProps) {
     return (
-        <>叫我？{props.children}</>
-    )
+        <div>
+            <h1>儿子组件</h1>
+            {/*要获取Father给Son组件传递的标签体内容: Hi,Son*/}
+            {props.children}
+        </div>
+    );
 }
 ```
 
 ### 4.2 标签嵌套
 
+- 另外一种父子组件的嵌套方式
+
 ```jsx
-import {Father} from "./Father";
+import Father from "./Father";
 import {Son} from "./Son";
 
-export function TopParent() {
+export default function Customer() {
     return (
         <div>
-            我是爷爷
+            <h1>我是customer</h1>
+            {/*通过标签体的方式
+             1. 可以更加清晰的查看父子组件的嵌套关系
+             2. 在Father中必须显示调用 props.children才能渲染son
+             3. Father的标签体：<Son>*/}
             <Father>
-                <Son/>
+                <Son>Hi, Son</Son>
             </Father>
         </div>
-    )
+    );
 }
 ```
 
 ```jsx
-export function Father(props) {
+import React from "react";
 
+interface FatherProps {
+    children?: React.ReactNode;
+}
+
+export default function Father(props: FatherProps) {
     return (
         <div>
-            <div>我是父亲</div>
-            {/*加上后才会解析Son组件*/}
+            <h1>父亲组件</h1>
+
+            {/*1. 显示调用
+               2. 指定子组件的渲染的位置
+               3. 并不会解析Son的标签体内容，交给Son去解析*/}
             {props.children}
         </div>
-    )
+    );
 }
 ```
 
 ```jsx
-export function Son(props) {
-    /*从props中接收*/
+import React from "react";
+
+interface SonProps {
+    children?: React.ReactNode;
+}
+
+export function Son(props: SonProps) {
     return (
-        <>叫我？{props.children}</>
-    )
+        <div>
+            <h1>儿子组件</h1>
+            {props.children}
+        </div>
+    );
 }
 ```
 
 ### 4.3 renderProps
 
-- 通过标签嵌套方式，形成的父子组件，如果有状态需要传递，则可以使用下面方式
+- 通过标签嵌套方式，形成的父子组件，并且可以传递状态
 
 ```jsx
-import {Father} from "./Father";
+import Father from "./Father";
 import {Son} from "./Son";
 
-export function TopParent() {
+export default function Customer() {
     return (
         <div>
-            我是爷爷
-            <Father render={(name, address, age) => {
-                return <Son name={name} address={address} age={age}/>
-            }}>
+            <h1>我是customer</h1>
 
-            </Father>
+            {/*1. 显示组件嵌套关系
+               2. erickRender: 给Father提供一个回调方法
+               3. 将Father的属性传递给Son*/}
+            <Father erickRender={(name, address, age) => {
+                return <Son name={name} address={address} age={age}/>
+            }}/>
         </div>
-    )
+    );
 }
 ```
 
-```jsx
-import {useState} from "react";
+```tsx
+import React from "react";
 
-export function Father(props) {
+interface FatherProps {
+    erickRender: (name: string, address: string, age: string) => React.ReactNode;
+    children?: React.ReactNode;
+}
 
-    const [data, setData] = useState({
+export default function Father(props: FatherProps) {
+
+    const [data, setData] = React.useState({
         name: 'shuzhan',
         address: 'xian',
-        age: 20
+        age: '20'
     });
 
     const {name, address, age} = data
 
     return (
-
         <div>
-            <div>我是父亲</div>
-            {/*预留空间：加上后才会解析Son组件*/}
-            {props.render(name, address, age)}
+            <h1>父亲组件开始</h1>
+
+            {/*子组件
+            1. 预留位置
+            2. 显示调用props.children进行解析子组件*/}
+            {props.erickRender(name, address, age)}
+
+            <h1>父亲组件结束</h1>
         </div>
-    )
+    );
 }
 ```
 
-```jsx
-export function Son(props) {
-    /*从props中接收*/
+```tsx
+import React from "react";
+
+interface SonProps {
+    children?: React.ReactNode;
+    name: string,
+    age: string,
+    address: string
+}
+
+export function Son(props: SonProps) {
     return (
-        <>叫我？{props.name}{props.address}{props.age}</>
-    )
+        <div>
+            <h1>儿子组件开始</h1>
+            {props.name} {props.age} {props.address}
+            <h1>儿子组件结束</h1>
+        </div>
+    );
 }
 ```
 
@@ -2034,6 +2307,102 @@ export function Father() {
             <SecondSon address={data.address} age={data.age}/>
         </div>
     )
+}
+```
+
+## 6. EffectHook
+
+- 在函数式组件中，能够使用组件的生命周期
+
+```bash
+# 副作用钩子
+- 发送ajax请求
+- 手动更改真实DOM
+- 设置订阅，启动定时器
+
+# 可以把useEffect Hook看成如下三个函数的组合
+- componentDidMount:  组件加载完毕后
+- componentDidUpdate: 组件更新后
+- componentWillMount: 组件卸载前
+```
+
+### 6.1 监测所有state
+
+```tsx
+import React from "react";
+
+export default function Admin() {
+    const [count, setCount] = React.useState(1);
+
+    /*1. 组件加载完毕后调用一次该方法 ： componentDidMount
+    * 2. 后续页面中的state属性发生变化后，继续加载一次： componentDidUpdate
+    *
+    *    默认检测所有state属性*/
+    React.useEffect(() => {
+        console.log('hello')
+    })
+
+    const handleClick = () => {
+        setCount(count + 1);
+    }
+
+    return (
+        <div>
+            <button onClick={handleClick}>点我加1</button>
+        </div>
+    );
+}
+```
+
+### 6.2 不监测任何
+
+```tsx
+import React from "react";
+
+export default function Admin() {
+    const [count, setCount] = React.useState(1);
+
+    /*1. 组件加载完毕后渲染一次 ： componentDidMount
+    * 2. 空数组代表：不监测任何state属性*/
+    React.useEffect(() => {
+        console.log('hello')
+    }, [])
+
+    const handleClick = () => {
+        setCount(count + 1);
+    }
+
+    return (
+        <div>
+            <button onClick={handleClick}>点我加1</button>
+        </div>
+    );
+}
+```
+
+### 6.3 监测指定state
+
+```tsx
+import React from "react";
+
+export default function Admin() {
+    const [count, setCount] = React.useState(1);
+
+    /*1. 组件加载完毕后渲染一次 ： componentDidMount
+    * 2. 可以指定监测的属性*/
+    React.useEffect(() => {
+        console.log('hello')
+    }, [count])
+
+    const handleClick = () => {
+        setCount(count + 1);
+    }
+
+    return (
+        <div>
+            <button onClick={handleClick}>点我加1</button>
+        </div>
+    );
 }
 ```
 
