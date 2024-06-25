@@ -1550,7 +1550,14 @@ export class Father extends PureComponent {
 
 - 当前组件的一些状态，属性，等
 - React-18中，在函数式组件中，可以使用state属性
-- 方法调用是同步的，更新操作是异步更新，更新完成后，state发生了改变，函数组件重新调用，触发整个页面重新render
+- 属性如果需要在页面显示，那么就可以使用state。否则就可以考虑使用ref，避免页面的重复渲染问题
+
+```bash
+# 方法调用是同步的，更新操作是异步更新
+1. state更新操作
+2. state发生了改变
+3. 函数组件重新调用，从而触发整个页面重新render
+```
 
 ### 1.1 单一属性
 
@@ -1643,6 +1650,8 @@ export default function Mall() {
 ```
 
 ### 1.3 更新方式
+
+- 进行到return的时候，已经异步更新完毕了
 
 #### 异步更新
 
@@ -1934,9 +1943,8 @@ export function Son(props) {
 
 ## 3. Ref
 
-- 用来获取jsx中带值标签的值
-- ref尽量少用
-- React18引入的勾子，可以使用ref
+- React18引入的Hook，可以使用ref
+- 可以维护组件的属性，状态，如果这种属性不直接被页面渲染所需要，则可以考虑使用ref，比如页面的查询条件
 
 ### 3.1 ref
 
@@ -1980,27 +1988,89 @@ export function Erick() {
 }
 ```
 
-## 4. 父子组件
+### 3.3 使用场景
 
-### 4.1 多层嵌套
+- 如果你的组件需要存储一些值，但不影响渲染逻辑，请选择 ref
 
-- 在明确知道组件关系的时候，可以用多层嵌套
-- 可以获取到子组件的标签体的内容
+```bash
+#   const queryCondition = React.useRef<CustomerEntity>();
+- 返回一个具有单个current属性的ref对象
+- current属性可以改变
+- 改变ref，不会触发重新渲染
+- 更新是同步的
 
-```jsx
-import Father from "./Father";
+# 使用场景: 
+- 1. 存储在组件中需要多次改变，但又不需要渲染到页面上的数据。    如查询条件，缓存的请求结果
+```
 
-export default function Customer() {
+```tsx
+import React from "react";
+import Search from "./Search";
+
+
+export type Person = {
+    name: string
+}
+export default function Mall() {
+    console.log('父页面渲染')
+
+    const queryCondition = React.useRef<Person>({
+        name: '',
+    });
+
+    const saveQueryCondition = (condition: Person) => {
+        queryCondition.current = condition;
+    }
+
     return (
         <div>
-            <h1>我是customer</h1>
-            <Father/>
+            <Search saveQueryCondition={saveQueryCondition}/>
+        </div>
+    )
+}
+```
+
+```tsx
+import React from "react";
+import {Person} from "./Mall";
+
+type SearchProps = {
+    saveQueryCondition: (condition: Person) => void;
+}
+
+export default function Search(props: SearchProps) {
+    console.log('子页面渲染')
+
+    /*state属性修改后，页面就会渲染，但是并不想让父页面也被渲染*/
+    const [name, setName] = React.useState('');
+
+    const {saveQueryCondition} = props;
+
+    /*调用父组件传递过来的函数*/
+    const handleClick = () => {
+        saveQueryCondition({
+            name: name,
+        });
+    }
+
+    const handleInput = (event: any) => {
+        setName(event.target.value)
+    }
+
+    return (
+        <div>
+            姓名：<input type='text' onChange={handleInput}/>
+            <button onClick={handleClick}>点击保存</button>
         </div>
     );
 }
 ```
 
-```jsx
+## 4. 标签体
+
+- 在使用组件时，需要传递组件标签体的内容
+
+```tsx
 import {Son} from "./Son";
 import React from "react";
 
@@ -2015,7 +2085,7 @@ export default function Father() {
 }
 ```
 
-```jsx
+```tsx
 import React from "react";
 
 interface SonProps {
@@ -2033,7 +2103,12 @@ export function Son(props: SonProps) {
 }
 ```
 
-### 4.2 标签嵌套
+## 5. 父子组件
+
+- 可以通过逐层嵌套的方式，父子组件的关系不太好判断
+- 下面提供另外一种组件嵌套的方式，并进行父子组件之间的通信
+
+### 5.1 标签嵌套
 
 - 另外一种父子组件的嵌套方式
 
@@ -2070,8 +2145,8 @@ export default function Father(props: FatherProps) {
             <h1>父亲组件</h1>
 
             {/*1. 显示调用
-               2. 指定子组件的渲染的位置
-               3. 并不会解析Son的标签体内容，交给Son去解析*/}
+               2. 指定子组件的渲染的位置,并渲染子组件
+               3. 并不会解析Son的标签体内容：'Hi, Son'，交给Son去解析*/}
             {props.children}
         </div>
     );
@@ -2095,25 +2170,38 @@ export function Son(props: SonProps) {
 }
 ```
 
-### 4.3 renderProps
+### 5.2 renderProps
 
 - 通过标签嵌套方式，形成的父子组件，并且可以传递状态
 
 ```jsx
-import Father from "./Father";
+import React from "react";
+import {Father} from "./Father";
 import {Son} from "./Son";
 
-export default function Customer() {
+export default function Mall() {
+
+    /*顶层组件的属性*/
+    const [mall, setMall] = React.useState<string>('mall');
+
+    /*顶层组件的方法*/
+    const logTop = () => {
+        console.log('我是top的函数')
+    }
+
     return (
         <div>
             <h1>我是customer</h1>
 
-            {/*1. 显示组件嵌套关系
-               2. erickRender: 给Father提供一个回调方法
-               3. 将Father的属性传递给Son*/}
-            <Father erickRender={(name, address, age) => {
-                return <Son name={name} address={address} age={age}/>
-            }}/>
+            {/*显示组件嵌套关系*/}
+            {/*1. mall：顶层组件的属性，  logTop: 顶层组件的方法
+               2. 可以跨越父组件，直接传递给子组件*/}
+            <Father
+                /* 1.erickRender: 给Father提供一个回调方法
+                   2. 将Father的属性或者方法传递给Son*/
+                erickRender={(name, address, age) => {
+                    return <Son name={name} address={address} age={age} mall={mall} logTop={logTop}/>
+                }}/>
         </div>
     );
 }
@@ -2124,11 +2212,9 @@ import React from "react";
 
 interface FatherProps {
     erickRender: (name: string, address: string, age: string) => React.ReactNode;
-    children?: React.ReactNode;
 }
 
-export default function Father(props: FatherProps) {
-
+export function Father(props: FatherProps) {
     const [data, setData] = React.useState({
         name: 'shuzhan',
         address: 'xian',
@@ -2153,31 +2239,31 @@ export default function Father(props: FatherProps) {
 ```
 
 ```tsx
-import React from "react";
-
-interface SonProps {
-    children?: React.ReactNode;
-    name: string,
-    age: string,
-    address: string
+type SonProps = {
+    name: string;
+    address: string;
+    age: string;
+    mall: string;
+    logTop: () => void;
 }
 
 export function Son(props: SonProps) {
     return (
         <div>
             <h1>儿子组件开始</h1>
-            {props.name} {props.age} {props.address}
+            {props.name} {props.age} {props.address} {props.mall}
+            <button onClick={props.logTop}>点击</button>
             <h1>儿子组件结束</h1>
         </div>
     );
 }
 ```
 
-## 5. render次数
+## 6. render次数
 
 - 因为父组件的state属性变化，导致子组件的props变化
 
-### 5.1 单一属性更改
+### 6.1 单一属性更改
 
 - 第一次加载：渲染父组件，接着渲染子组件，不管子组件有没有使用父组件的状态
 
@@ -2249,7 +2335,7 @@ export function SecondSon(props) {
 }
 ```
 
-### 5.2 对象属性更改
+### 6.2 对象属性更改
 
 ```jsx
 import {useState} from "react";
@@ -2310,9 +2396,11 @@ export function Father() {
 }
 ```
 
-## 6. EffectHook
+## 7. useEffect
 
-- 在函数式组件中，能够使用组件的生命周期
+- React Hook函数，从而在函数式组件中，能够使用组件的生命周期
+- 整个过程，没有发生任何的用户事件
+- 监测的对象：依赖项数据
 
 ```bash
 # 副作用钩子
@@ -2326,85 +2414,186 @@ export function Father() {
 - componentWillMount: 组件卸载前
 ```
 
-### 6.1 监测所有state
+### 7.1 空依赖项
+
+- 依赖项数据为空数组
+- 不监测任何属性，只会在组件整个渲染完毕后，执行一次
+
+#### 不修改state
+
+- 在副作用钩子中，不修改state属性，那么就只会在组件第一次渲染完毕后，调用该钩子
+- 更新组件，不会再次触发该钩子函数
 
 ```tsx
 import React from "react";
 
-export default function Admin() {
-    const [count, setCount] = React.useState(1);
+export default function Mall() {
 
-    /*1. 组件加载完毕后调用一次该方法 ： componentDidMount
-    * 2. 后续页面中的state属性发生变化后，继续加载一次： componentDidUpdate
-    *
-    *    默认检测所有state属性*/
-    React.useEffect(() => {
-        console.log('hello')
-    })
+    const [data, setData] = React.useState(1);
 
-    const handleClick = () => {
-        setCount(count + 1);
+    const handleAddClick = () => {
+        setData((previous) => {
+            return previous + 1;
+        })
     }
+
+    console.log('coming')
+
+    /*不监测任何数据，只在第一次组件加载完毕后调用该方法*/
+    React.useEffect(() => {
+        // 执行异步操作，不修改state属性
+        console.log('副作用执行了')
+    }, []);/*没有依赖项*/
 
     return (
         <div>
-            <button onClick={handleClick}>点我加1</button>
+            <button onClick={handleAddClick}>点击加</button>
         </div>
-    );
+    )
 }
 ```
 
-### 6.2 不监测任何
+#### 修改state
 
 ```tsx
 import React from "react";
 
-export default function Admin() {
-    const [count, setCount] = React.useState(1);
+/* 1. coming 1
+*  2. 页面渲染完毕，调用副作用，修改为2
+*  3. data变了，再次调用mall函数： coming, 2
+*  4. 渲染return*/
+export default function Mall() {
 
-    /*1. 组件加载完毕后渲染一次 ： componentDidMount
-    * 2. 空数组代表：不监测任何state属性*/
+    const [data, setData] = React.useState(1);
+
+    console.log('coming', data)
+
     React.useEffect(() => {
-        console.log('hello')
-    }, [])
-
-    const handleClick = () => {
-        setCount(count + 1);
-    }
+        // 执行异步操作，修改state属性
+        console.log('副作用执行了')
+        setData((previous) => {
+            return previous + 1;
+        })
+    }, []);/*监测所有state*/
 
     return (
         <div>
-            <button onClick={handleClick}>点我加1</button>
+            {data}
         </div>
-    );
+    )
 }
 ```
 
-### 6.3 监测指定state
+### 7.2 特定依赖项
+
+#### 不修改state
+
+- 在副作用钩子中，不修改state属性
+- 监测指定state，页面初始化渲染完毕后调用一次钩子，state改变时继续调用钩子
 
 ```tsx
 import React from "react";
 
-export default function Admin() {
-    const [count, setCount] = React.useState(1);
+export default function Mall() {
 
-    /*1. 组件加载完毕后渲染一次 ： componentDidMount
-    * 2. 可以指定监测的属性*/
-    React.useEffect(() => {
-        console.log('hello')
-    }, [count])
+    const [data, setData] = React.useState(1);
 
-    const handleClick = () => {
-        setCount(count + 1);
+    const handleAddClick = () => {
+        setData((previous) => {
+            return previous + 1;
+        })
     }
+
+    console.log('coming')
+
+    React.useEffect(() => {
+        // 执行异步操作，不修改state属性
+        console.log('副作用执行了')
+    }, [data]);/*监测指定state*/
 
     return (
         <div>
-            <button onClick={handleClick}>点我加1</button>
+            <button onClick={handleAddClick}>点击加</button>
         </div>
-    );
+    )
 }
 ```
+
+### 7.3 不指定依赖项
+
+- 如果不指定依赖项，则默认会监听当前组件的所有state
+
+#### 不修改state
+
+```tsx
+import React from "react";
+
+export default function Mall() {
+
+    const [data, setData] = React.useState(1);
+    const [count, setCount] = React.useState(1);
+
+    const handleDataClick = () => {
+        setData((previous) => {
+            return previous + 1;
+        })
+    }
+
+    const handleCountClick = () => {
+        setCount((previous) => {
+            return previous + 1;
+        })
+    }
+
+    console.log('coming')
+
+    React.useEffect(() => {
+        // 执行异步操作，不修改state属性
+        console.log('副作用执行了')
+    });/*监测所有state*/
+
+    return (
+        <div>
+            <button onClick={handleDataClick}>点击加Data</button>
+            <button onClick={handleCountClick}>点击加Count</button>
+        </div>
+    )
+}
+```
+
+### 7.4 死循环
+
+- 不要在副作用中修改依赖，这样就会造成死循环
+
+```tsx
+import React from "react";
+
+export default function Mall() {
+
+     // 1
+    const [data, setData] = React.useState(1);
+
+    console.log('coming', data)
+
+   // 3
+    React.useEffect(() => {
+        // 死循环：在副作用中修改了依赖
+        console.log('副作用执行了')
+        setData((previous) => {
+            return previous + 1;
+        })
+    }, [data]);
+
+    //2
+    return (
+        <div>
+            {data}
+        </div>
+    )
+}
+```
+
+
 
 # Context
 
@@ -2756,6 +2945,7 @@ export default class Citi extends Component {
 ### 2.2 受控组件
 
 - 每次改变输入框的值，就将其值放入state中
+- 表单中的数据，会通过比如onChange，放在当前组件的state属性中
 
 #### 基本写法
 

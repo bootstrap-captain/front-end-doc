@@ -401,6 +401,12 @@ Object.assign(p, people);  // 对象拷贝
 console.log(p)
 ```
 
+```ts
+
+```
+
+
+
 ## 5. 展开运算符
 
 ```js
