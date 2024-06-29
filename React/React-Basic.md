@@ -1988,6 +1988,37 @@ export function Erick() {
 }
 ```
 
+### 3.3 保存数据
+
+- 存放不用于触发更新的可变数据
+- Ref可以保存数据，数据更改后不会触发整个Mall的函数的重新渲染
+- Ref保存的数据，也会进行缓存。如果页面因为state触发了重新渲染，Ref之前保存的数据也不会丢失
+
+```tsx
+import React from "react";
+
+export default function Mall() {
+    console.log('render')
+
+    let counter = React.useRef(0);
+
+    const handleClickRef = () => {
+        counter.current += 1;
+        console.log(counter.current)
+    }
+
+    return (
+        <div>
+            <h1>我是customer</h1>
+            <br/>
+            <button onClick={handleClickRef}>改变Ref</button>
+        </div>
+    );
+}
+```
+
+
+
 ### 3.3 使用场景
 
 - 如果你的组件需要存储一些值，但不影响渲染逻辑，请选择 ref
