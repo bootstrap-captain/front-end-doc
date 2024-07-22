@@ -4,6 +4,8 @@
 # 1. 安装Angular CLI
 sudo npm install -g @angular/cli
 
+sudo npm install -g @angular/cli@16.2.0
+
 # 2. 创建项目: 不要用sudo来创建项目，不然文件就只是可读
 ng new erick-angular-demo
 

@@ -600,7 +600,8 @@ p {
 
 ### 普通属性
 
-- 继承text-， font-， line-， color这些元素开头的样式
+- 继承text-， font-， line-， color这些元素开头的样式。都是和盒子模型没关系的属性
+- 盒子属性类的，都不会继承
 
 ```html
 <!DOCTYPE html>
@@ -622,6 +623,64 @@ p {
 <div>nihao
     <p>hello</p>
 </div>
+</body>
+</html>
+```
+
+### 样式继承
+
+```bash
+# element.style
+- 行内样式
+
+# .d3  1.html
+- 内部样式
+
+# user agent stylesheet
+- 浏览器默认样式
+
+# inherited from div.d1
+- 亮着的部分，就是继承过来的样式
+```
+
+![image-20240721200423418](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721200423418.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .d1 {
+            font-size: 40px;
+            color: red;
+            width: 600px;
+            height: 400px;
+            background-color: gray;
+        }
+
+        .d2 {
+            width: 300px;
+            height: 200px;
+            background-color: orange;
+        }
+
+        .d3 {
+            width: 200px;
+            height: 50px;
+            background-color: skyblue;
+        }
+    </style>
+
+</head>
+<body>
+<div class="d1">
+    <div class="d2">
+        <div class="d3" style="font-family: 'Times New Roman',serif">你好啊</div>
+    </div>
+</div>
+
 </body>
 </html>
 ```
@@ -1328,137 +1387,307 @@ display: inline-block
 
 # 盒子模型
 
-- 会把所有的html元素都看成是一个盒子
+- 会把所有的HTML元素都看成是一个盒子
+- 调试：鼠标放在对应的盒子上，打开inspect，会直接打开该盒子的html元素的代码
+- 盒子的最终大小：content + padding + border
 
-## 1. Content
+## 1. content
 
 - 盒子的内容区
-- 默认充满外部盒子的宽度
+
+### 1.1 基本使用
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div {
+            /*设置的宽高：是content的宽和高*/
+            width: 400px;
+            height: 300px;
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<div>你好啊</div>
+
+</body>
+</html>
+```
+
+![image-20240721105948023](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721105948023.png)
+
+### 1.2 宽
+
+- 默认是父元素的宽度，充满整个父容器
+
+#### 不给宽度
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div {
+            height: 200px;
+            /*设置的背景颜色，会填充内边距区域,边框*/
+            background-color: gray;
+
+            /*width：
+            1. 充满整个父容器
+            2. 父容器为body：铺满整个视口*/
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto culpa eligendi fuga itaque laborum recusandae
+    tenetur! Adipisci error facilis incidunt laborum neque nihil placeat reiciendis! Fuga iure maxime nihil quasi quos
+    reprehenderit similique? Eum iusto minus officia repellendus voluptatem. Consequatur deserunt, dolore ex ipsam
+    labore minima nemo officia rerum vero?
+</div>
+
+</body>
+</html>
+```
+
+![image-20240721134553453](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721134553453.png)
+
+```bash
+# 调整浏览器的窗口大小
+# 响应式布局
+- 视口会从 1712--> 1284 --> ****
+```
+
+![image-20240721134657362](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721134657362.png)
+
+![image-20240721134744585](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721134744585.png)
+
+#### 指定宽度
+
+```css
+<style>
+    div {
+        height: 200px;
+        /*设置的背景颜色，会填充内边距区域,边框*/
+        background-color: gray;
+
+        width: 800px;
+    }
+</style>
+```
+
+```bash
+# 响应式布局
+- 初始值为800px
+- 当视口变小，小到800px一下时候，横向就会出现浏览器的滚动条
+```
+
+![image-20240721135155461](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721135155461.png)
+
+![image-20240721135413145](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721135413145.png)
+
+### 1.3 默认宽度
+
+#### 初始值
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div {
+            height: 200px;
+            background-color: gray;
+        }
+    </style>
+
+</head>
+<body>
+<div>
+    你好啊
+</div>
+
+</body>
+</html>
+```
+
+- body为1712，div为1712
+
+![image-20240721140933382](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721140933382.png)
+
+#### 不给宽度
+
+- margin是否会影响盒子大小，取决于是否给了盒子具体的宽度
+- 给了宽度，并且margin+盒子宽不会大于视口，则不会影响
+- border和padding不会影响盒子大小，因为本身就是盒子的一部分
+
+```bash
+# 默认宽度： 不设置width属性时，元素呈现的宽度
+- 总宽度 = 父的content-自身的左右margin
+- content宽度 = 父的contet-自身的左右margin-自身的左右border-自身的左右padding
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div {
+            height: 200px;
+            background-color: gray;
+            margin: 50px;
+        }
+    </style>
+
+</head>
+<body>
+<div>
+    你好啊
+</div>
+
+</body>
+</html>
+```
+
+- 盒子大小：body宽为1712，div为1612
+
+![image-20240721141630304](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721141630304.png)
+
+### 1.4 高
+
+- 默认由内容撑开
+- 可以指定高度
 
 ## 2. padding
 
 - 内边距：盒子中，content距离盒子边缘的距离
+- 会撑大盒子的总的大小：content + padding
 
-| 值个数                        | 含义               |
-| ----------------------------- | ------------------ |
-| padding: 50px                 | 四个都是50px       |
-| padding: 50px 20px            | 上下是50，左右是20 |
-| padding: 50px 10px 20px       | 上50，左右10，下20 |
-| padding: 10px 20px 30px 40 px | 上右下左           |
-
-```css
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
     <style>
-        body {
-            background-color: gray;
-        }
-
         div {
-            width: 200px;
-            height: 100px;
-            background-color: pink;
-            padding-left: 20px;
-            padding-right: 30px;
-            padding-bottom: 40px;
-            padding-top: 50px;
+            /*设置的宽高：是content的宽和高*/
+            width: 400px;
+            height: 300px;
+            /*设置的背景颜色，会填充内边距区域*/
+            background-color: gray;
+            /*内边距*/
+            padding: 10px 20px 30px 40px;
         }
     </style>
 </head>
 <body>
 
-<div>
-    你好
-</div>
+<div>你好啊</div>
 
 </body>
 </html>
 ```
 
-![image-20240616173004031](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240616173004031.png)
+![image-20240721110204537](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721110204537.png)
+
+```bash
+# 分开写法
+ padding-left: 10px;
+ padding-right
+ padding-top
+ padding-bottom
+
+# 复合写法
+padding: 50px                           四个都是50px
+padding: 50px 20px                      上下是50，左右是20
+padding: 50px 10px 20px                 上50，左右10，下20
+padding: 10px 20px 30px 40px            上右下左    
+```
 
 ## 3. border
 
 - 盒子的边框
+- 盒子的边框+盒子的padding，都会撑大盒子的总大小
 
-| 元素         | DESC     | value                                |
-| ------------ | -------- | ------------------------------------ |
-| border-width | 边框粗细 | px                                   |
-| border-style | 边框样式 | solid<br/>dashed<br/>dotted<br/>none |
-| border-color | 边框颜色 |                                      |
-
-```css
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
     <style>
         div {
-            width: 800px;
-            height: 400px;
-        }
-
-        .first {
-            border-color: green;
-            border-style: solid;
-            border-width: 5px;
-        }
-
-        /*复合写法：没有顺序*/
-        .second {
-            border: 5px solid rebeccapurple;
-        }
-
-        /*分别定义不同的边框*/
-        .third {
-            border-top: 5px solid gray;
-            border-left: 5px solid olivedrab;
-            border-right: 5px solid olivedrab;
-            border-bottom: 5px solid olivedrab;
-        }
-
-        /*层叠性： 就近原则， 顺序不能颠倒*/
-        .fourth {
-            border: 5px solid yellow;
-            border-top: 5px solid red;
+            /*设置的宽高：是content的宽和高*/
+            width: 400px;
+            height: 300px;
+            /*设置的背景颜色，会填充内边距区域,边框*/
+            background-color: gray;
+            /*内边距*/
+            padding: 10px 20px 30px 40px;
+            /*边框*/
+            border: 10px dashed black;
         }
     </style>
 </head>
 <body>
 
-<div class="first">
-
-</div>
-
-<div class="second">
-
-</div>
-
-<div class="third">
-
-</div>
-
-<div class="fourth">
-
-</div>
+<div>你好啊</div>
 
 </body>
 </html>
+```
+
+![image-20240721142806228](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721142806228.png)
+
+```bash
+# 分别设置
+border-width               边框粗细            10px
+border-style               边框样式            solid dashed dotted   none
+border-color               边框颜色
+
+# 复合写法： 没有顺序
+ border: 10px dashed black;
+ 
+# 分别定义不同方向的边框
+border-top: 5px solid gray;
+border-left: 5px solid olivedrab;
+border-right: 5px solid olivedrab;
+border-bottom: 5px solid olivedrab;
 ```
 
 ## 4. margin
 
-### 4.1 基本使用
-
-- 外边距：当前设置的盒子和其他盒子之间的距离，用法和padding一样
+- 外边距：当前设置的盒子和其他盒子之间的距离
 - 默认盒子和盒子之间，距离为0
-- 上下左右
+
+```bash
+# 分开写
+margin-left: 20px;
+margin-right: 30px;
+margin-bottom: 40px;
+margin-top: 50px;
+
+# 复合写法
+- 和padding差不多
+```
+
+### 4.1 注意事项
+
+#### 子元素的margin参考父元素的content计算
 
 ```html
 <!DOCTYPE html>
@@ -1467,76 +1696,96 @@ display: inline-block
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        div {
-            width: 200px;
-            height: 50px;
-        }
-
-        .first {
-            background-color: red;
-            margin-bottom: 20px;
-        }
-
-        .second {
+        .outer {
+            width: 400px;
+            height: 300px;
             background-color: gray;
-            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .inner {
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            margin: 20px;
         }
     </style>
+
 </head>
 <body>
+<div class="outer">
+    <div class="inner"></div>
+</div>
 
-<div class="first">
-    hello
-</div>
-<div class="second">
-    word
-</div>
 </body>
 </html>
 ```
 
-![image-20240616173531540](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240616173531540.png)
+![image-20240721185202119](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721185202119.png)
 
-### 4.2 单个块级元素水平居中
+#### 哪个元素动？
 
+- margin-top, margin-left, 会影响当前元素的位置
+- margin-bottom，margin-right会影响后面的元素的位置
+
+#### 行内元素
+
+- 对于行内元素，左右的margin可以设置，上下的margin，设置后是无效的
+
+#### auto-实现块级元素水平居中
+
+```bash
+# 盒子距离左边距，能有多远就多远
+margin-left: auto,  距离左边能有多远就多远
+
+# 盒子距离右边距，能有多远就多远
+margin-right:auto   距离右边，能有多远就多远
+
+# 可以左右都设置为auto，则就会居中
+- 必须是一个块级元素
 - 盒子中，让盒子内部的一个块级元素居中
 - 盒子必须指定宽度，盒子左右的外边距设置为auto
 
+# margin-bottom和margin-top不会有该功能
+```
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
     <style>
         div {
-            height: 50px;
-            background-color: green;
-            width: 1000px;
-            margin: 0 auto;
+            width: 500px;
+            height: 100px;
+            background-color: skyblue;
+            margin-left: auto;
         }
     </style>
+
 </head>
 <body>
-
-<div>
-
-</div>
+<div></div>
 
 </body>
 </html>
 ```
 
-### 4.3 嵌套元素垂直外边距塌陷
+![image-20240721190417916](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721190417916.png)
 
-- 如果存在父子盒子，二者都有外边距，会取二者中较大的值，但是父子盒子内部不会有边距
+![image-20240721190546823](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721190546823.png)
 
-![image-20230704150851287](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704150851287.png)
+![image-20240721190752824](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721190752824.png)
 
-- 解决方案一：为父元素定义上边框
-- 解决方案二：为父元素定义上内边距
-- 解决方案三：为父元素添加overflow:hidden
+### 4.2 margin塌陷问题
+
+#### 问题
+
+- 父元素中包裹了多个块元素，第一个块元素的margin-top，最后一个块元素的margin-bottom，会存在margin塌陷
+- margin塌陷：子元素没有上下移动，而是父元素上下移动了
+
+![image-20240721192452429](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721192452429.png)
 
 ```html
 <!DOCTYPE html>
@@ -1545,382 +1794,1097 @@ display: inline-block
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        .father {
+        .outer {
+            width: 500px;
+            background-color: gray;
+        }
+
+        .inner1 {
+            width: 100px;
+            height: 50px;
+            background-color: skyblue;
+            margin-top: 50px;
+        }
+
+        .inner2 {
+            width: 100px;
+            height: 50px;
+            background-color: orange;
+            margin-bottom: 50px;
+        }
+    </style>
+
+</head>
+<body>
+<div>测试上</div>
+<div class="outer">
+    <div class="inner1">inner1</div>
+    <div class="inner2">inner2</div>
+</div>
+<div>测试下</div>
+
+</body>
+</html>
+```
+
+#### 解决方案--overflow: hidden;
+
+- 在父容器中，添加属性overflow: hidden即可
+
+![image-20240721192610432](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721192610432.png)
+
+### 4.3 margin合并问题
+
+- 上下两个块级元素，上面的设置了margin-bottom，下面的设置了margin-top，会取二者最大值，作为距离，而不是二者相加
+- 注意有这个事情就行，不一定非要去解决
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box {
+            width: 200px;
+            height: 200px;
+        }
+
+        .box1 {
+            background-color: skyblue;
+            margin-bottom: 50px;
+        }
+
+        .box2 {
+            background-color: orange;
+            margin-top: 70px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="box box1">inner1</div>
+<div class="box box2">inner2</div>
+
+</body>
+</html>
+```
+
+![image-20240721193352767](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721193352767.png)
+
+# 样式问题
+
+## 1. 隐藏元素
+
+### 1.1 display: none
+
+- display: none;  不会占位，但是在html代码中，依然会存在
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box {
+            width: 200px;
+            height: 200px;
+        }
+
+        .box1 {
+            background-color: skyblue;
+            display: none;
+        }
+
+        .box2 {
+            background-color: orange;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="box box1">inner1</div>
+<div class="box box2">inner2</div>
+
+</body>
+</html>
+```
+
+![image-20240721195123882](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721195123882.png)
+
+### 1.2 visibility: hidden
+
+- 会隐藏，但是会占位
+
+![image-20240721195313586](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721195313586.png)
+
+# 定位
+
+## 1. 相对定位--position: relative
+
+```bash
+# position: relative;
+
+# left right top bottom
+- 1. 相对原来盒子的位置
+- 2. 相对定位：元素没有脱离原来的文本流，下面的元素不会顶上来
+- 3. 可以超出父容器的大小
+- 4. 左和右不能同时用，左生效     上和下不能同时用，上生效
+- 5. 上下：
+        - 5.1 开启相对定位的元素会盖住下面或者上面的元素
+        - 5.2 两个元素都开启定位了，后来者的权重大，会盖住前面的
+        
+# 应用场景
+- 1. 对元素的位置进行微调，比如向右下角微调。 对其他元素不会影响
+- 2. 99%场景，相对定位和绝对定位配合使用
+
+# tip
+- 一般不要把相对定位和margin配合
+- 一般不要把相对定位和float配合
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+            padding: 20px;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-color: skyblue;
+        }
+
+        .box2 {
+            background-color: orange;
+            /*给盒子2开启相对定位*/
+            position: relative;
+            /*1. 相对原来盒子的位置，距离左边100px
+              2. 相对定位：元素没有脱离原来的文本流，下面的元素不会顶上来
+              3. 可以超出父容器的大小
+              4. 左和右不能同时用，左生效
+              5. */
+            left: 550px;
+        }
+
+        .box3 {
             background-color: green;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="outer">
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+</div>
+</body>
+
+</html>
+```
+
+![image-20240722094849459](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240722094849459.png)
+
+## 2. 绝对定位--position: absolute
+
+### 2.1 参考定位
+
+- 会盖住其他元素
+
+```bash
+# 开启绝对定位的元素
+- 参考点：包含块
+
+# 包含块
+- 没有脱离文档流的元素，   父元素就是包含块
+- 脱离文档流的元素，第一个开启定位的祖先元素，就是他的包含块 （比如box2）
+
+  - box2开启了绝对定位，脱离了文档流
+     - 1. box2找outer，outer没开启相对定位，继续找body，继续找html，最终就是以html作为参考定位
+     - 2. box2找outer，outer开启了相对定位，则就以outer为标准
+
+# 子绝父相
+- 父元素开启相对定位，但是不给上下左右的值，就不会变化
+- 子元素开启绝对定位，就会相对父元素移动
+```
+
+- 左边是父元素没有开启相对定位，右边开启了
+
+![image-20240722101049249](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240722101049249.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .outer {
+            width: 500px;
+            background-color: gray;
+            border: 1px solid black;
+            padding: 20px;
+            /*父元素开启相对定位*/
+            position: relative;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-color: skyblue;
+        }
+
+        .box2 {
+            background-color: orange;
+            /*给盒子2开启绝对定位*/
+            position: absolute;
+            /*距离左边*/
+            left: 0;
+        }
+
+        .box3 {
+            background-color: green;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="outer">
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+</div>
+</body>
+
+</html>
+```
+
+## 3. 固定定位-position: fixed
+
+- 脱离了文档流，定位参考方式：直接找视口
+- 牛皮癣广告的右底脚，紧紧的贴在视口上
+
+## 4. 粘性定位
+
+## 5. 定位层级
+
+- 开启了定位的，一定比普通的元素层级高
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+        .outer {
+            width: 500px;
+            background-color: skyblue;
+            border: 1px solid black;
+            padding: 20px;
+            position: relative;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            font-size: 20px;
+        }
+
+        .box1 {
+            background-color: gray;
+        }
+
+        .box2 {
+            background-color: orange;
+            /*相对定位*/
+            position: relative;
+            top: -150px;
+            left: 50px;
+        }
+
+        .box3 {
+            background-color: green;
+            /*绝对定位*/
+            position: absolute;
+            top: 130px;
+            left: 130px;
+            /*控制层级*/
+            z-index: 10;
+        }
+
+        .box4 {
+            background-color: red;
+            /*固定定位*/
+            position: fixed;
+            top: 200px;
+            left: 200px;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="outer">
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+    <div class="box box4">4</div>
+</div>
+</body>
+
+</html>
+```
+
+![image-20240722134315123](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240722134315123.png)
+
+## 6. 定位特殊应用
+
+
+
+# 伸缩盒模型-Flex布局
+
+- Flex布局方案
+
+## 1. 简介
+
+- 2009年，W3C提出的新的盒子模型：Flexible Box, 弹性盒子，伸缩盒模型
+- 控制：元素分布方式，元素对齐方式，元素视觉顺序
+- 除了IE，其他浏览器都支持
+- 随着伸缩盒子模型的出现，逐渐演变出一套新的布局方案：flex布局
+- 在移动端应用比较广泛，因为传统布局不能很好的呈现在移动设备上
+
+## 2. 伸缩容器与伸缩项目
+
+- 伸缩容器：外面包裹的，大的伸缩容器
+- 伸缩项目：伸缩容器中的东西
+
+### 2.1 普通容器
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 600px;
+            height: 300px;
+            background-color: gray;
+        }
+
+        .inner {
+            width: 50px;
+            height: 50px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box; /*添加该属性后，inner盒子的最终大小就是 50*50， 就可以忽略边框的长度了*/
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="inner">1</div>
+    <div class="inner">2</div>
+    <div class="inner">3</div>
+</div>
+</body>
+</html>
+```
+
+![image-20240721094759835](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721094759835.png)
+
+### 2.2 Flex容器 -- display: flex
+
+- 只需要在outer中定义了该属性，则该盒子就变成了伸缩容器
+
+```css
+     .outer {
+            width: 600px;
+            height: 300px;
+            background-color: gray;
+            display: flex;   <!--开启了flex布局-->
+        }
+```
+
+![image-20240721095005364](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095005364.png)
+
+- 如果outer父元素不给高度，则会用内部的自动撑大
+
+![image-20240721095127813](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095127813.png)
+
+### 2.3 Flex容器的子元素是flex项目
+
+- 对当前容器开启了Flex布局后，里面所有的子元素，都变成了flex项目，但孙子元素，不是
+- 如果想要孙子元素还能是flex项目，对该孙子元素的父元素，同样开启flex布局即可
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 600px;
+            background-color: gray;
+            display: flex;
+        }
+
+        .inner {
+            width: 50px;
+            height: 50px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="inner">1</div>
+    <div class="inner">2</div>
+    <div class="inner">
+        <div>a</div>
+        <div>b</div>
+        <div>c</div>
+    </div>
+</div>
+</body>
+</html>
+```
+
+![image-20240721095238467](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095238467.png)
+
+### 2.4 Flex容器内都是块元素
+
+- 一旦一个容器开启了flex布局，里面所有的项目都变成了块元素
+- 块元素就可以设置宽高
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 600px;
+            height: 200px;
+            background-color: gray;
+            display: flex;
+        }
+
+        .inner {
+            width: 50px;
+            height: 50px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <!--span本来是行内元素，但是变成了flex项目，宽高依然起作用-->
+    <span class="inner">1</span>
+    <span class="inner">2</span>
+    <span class="inner">3</span>
+</div>
+</body>
+</html>
+```
+
+![image-20240721095517901](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095517901.png)
+
+- 可以通过浏览器的Computed属性，查看浏览器计算后的，该元素的显示方式是block，即块元素
+
+![image-20240721095651110](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095651110.png)
+
+## 3. 主轴
+
+### 3.1 主轴方向
+
+- 关注的是方向，主轴和侧轴垂直
+- 主轴：红色，默认水平，从左到右
+- 侧轴：蓝色，默认垂直，从上到下
+
+![image-20240721095952443](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095952443.png)
+
+### 3.2 主轴切换--flex-direction
+
+- 伸缩容器的主轴
+- 切换后，一般侧轴跟着变化
+
+#### row
+
+```bash
+# 默认值
+# 主轴： 水平，从左到右
+# 侧轴： 垂直，从上到下
+flex-direction: row;
+```
+
+![image-20240721100345534](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721100345534.png)
+
+#### row-reverse
+
+```bash
+ # 主轴：水平，从右到左 
+ # 侧轴：垂直，从上到下
+ flex-direction: row-reverse;
+```
+
+![image-20240721100442980](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721100442980.png)
+
+#### column
+
+```bash
+ # 主轴：垂直，从上到下
+ # 侧轴：水平，从左到右
+ flex-direction: column;
+```
+
+![image-20240721100544239](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721100544239.png)
+
+#### column-reverse
+
+```bash
+# 主轴：垂直，从下到上
+# 侧轴：水平，从左到右
+flex-direction: column-reverse;
+```
+
+![image-20240721100639664](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721100639664.png)
+
+### 3.3 主轴换行--flex-wrap
+
+- 当伸缩容器中，沿着主轴的伸缩项目很多时，换行的处理方式
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            background-color: gray;
+            display: flex;
+            flex-direction: row;
+            margin: 0 auto; /*让伸缩容器居中*/
+        }
+
+        .inner {
+            width: 50px;
+            height: 50px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <!--span本来是行内元素，但是变成了flex项目，宽高依然起作用-->
+    <span class="inner">1</span>
+    <span class="inner">2</span>
+    <span class="inner">3</span>
+    <span class="inner">4</span>
+    <span class="inner">5</span>
+</div>
+</body>
+</html>
+```
+
+#### nowrap
+
+```bash
+#  默认值：不换行
+#  压缩：各个元素挤一下，宽度变小了
+flex-wrap: nowrap
+```
+
+![image-20240721100919987](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721100919987.png)
+
+#### wrap
+
+```bash
+# 主轴：不会压缩宽度，排列满
+# 侧轴：如果侧轴还有空间，则会铺张浪费。没有的话，就不允许铺张浪费了
+flex-wrap: wrap
+```
+
+![image-20240721101104591](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721101104591.png)
+
+![image-20240721101200104](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721101200104.png)
+
+#### wrap-reverse
+
+```bash
+ # 后来居上
+ flex-wrap: wrap-reverse;
+```
+
+![image-20240721101225474](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721101225474.png)
+
+### 3.4 主轴对齐--justify-content
+
+- 元素在主轴的对齐方式
+
+#### flex-start
+
+```bash
+# 默认值，靠左对齐
+justify-content: flex-start;
+```
+
+![image-20240721101933412](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721101933412.png)
+
+#### flex-end
+
+```bash
+ # 靠右对齐
+ justify-content: flex-end;
+```
+
+![image-20240721101954414](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721101954414.png)
+
+#### center
+
+```bash
+# 居中对齐
+justify-content: center;
+```
+
+![image-20240721102015354](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102015354.png)
+
+#### space-around
+
+```bash
+# 伸缩项目均匀的分布在一行中
+# 项目与项目之间的距离，是项目距离边缘的二倍
+ justify-content: space-around;
+```
+
+![image-20240721102044149](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102044149.png)
+
+#### space-between
+
+```bash
+# 伸缩项目均匀的分布在一行中
+# 第一个和最后一个紧贴边缘，项目与项目之间距离是相等的
+ justify-content: space-between;
+```
+
+![image-20240721102115714](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102115714.png)
+
+#### space-evenly
+
+```bash
+# 伸缩项目均匀的分布在一行中
+# 项目与项目，项目和边缘，距离都是一样的
+  justify-content: space-evenly;
+```
+
+![image-20240721102150709](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102150709.png)
+
+## 4. 侧轴对齐
+
+- 在侧轴方向上的，对齐方式
+
+### 4.1 单行对齐--align-items
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1000px;
+            height: 600px;
+            background-color: gray;
+            margin: 0 auto; /*让该盒子水平居中*/
+            /*开启了该元素的flex布局*/
+            display: flex;
+            /*默认主轴方向*/
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+
+        .inner1 {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .inner2 {
+            width: 200px;
+            height: 300px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .inner3 {
+            width: 200px;
+            height: 100px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="inner1">1</div>
+    <div class="inner2">2</div>
+    <div class="inner3">3</div>
+</div>
+</body>
+</html>
+```
+
+#### flex-start
+
+```bash
+# 侧轴顶端对齐
+align-items: flex-start;
+```
+
+![image-20240721102502932](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102502932.png)
+
+#### flex-end
+
+```bash
+# 侧轴底端对齐
+ align-items: flex-end;
+```
+
+![image-20240721102523784](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102523784.png)
+
+#### center
+
+```bash
+ # 侧轴中间对齐
+ align-items: center;
+```
+
+![image-20240721102546046](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102546046.png)
+
+#### stretch
+
+```bash
+# 伸缩项目不能给高度才生效
+# 会自动将项目的高度拉伸到伸缩容器的高度
+# 默认值：必须不能给项目高度才可以
+align-items: stretch;
+```
+
+![image-20240721102623732](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721102623732.png)
+
+### 4.2 多行对齐--align-content
+
+- 和上面的属性二选一
+- 必须开启主轴换行
+
+#### flex-start
+
+```bash
+# 侧轴：紧紧贴合，从上到下
+align-content: flex-start;
+```
+
+![image-20240721103011623](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721103011623.png)
+
+#### flex-end
+
+```bash
+# 侧轴：紧紧贴合，从下到上
+align-content: flex-end;
+```
+
+![image-20240721103036523](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721103036523.png)
+
+#### center
+
+```bash
+# 侧轴：紧紧贴合，居中对齐
+align-content: center;
+```
+
+![image-20240721103132667](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721103132667.png)
+
+#### sapce-around
+
+```bash
+ # 伸缩项目之间距离是相等的，伸缩项目和边缘之间是1/2
+ align-content: space-around;
+```
+
+![image-20240721103209999](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721103209999.png)
+
+#### space-between
+
+```bash
+  # 紧贴边缘，伸缩项目之间距离等分
+  align-content: space-between;
+```
+
+![image-20240721103258319](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721103258319.png)
+
+#### space-evenly
+
+```bash
+# 边缘，项目之间距离等等分
+align-content: space-evenly;
+```
+
+![image-20240721103345748](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721103345748.png)
+
+## 5. 伸缩性
+
+### 5.1 伸--flex-grow
+
+```bash
+# 伸
+- 声明在伸缩项目中，该伸缩项目就参与了伸
+
+# 伸法则
+- 检查当前主轴的剩余长度
+- 每个伸缩项目可以定义权重，flex-grow: 1; 通过计算权重后，进行伸
+- 默认是0
+
+# 一般情况
+- 各个伸缩项目的权重定义成一个，有钱了大家一起分
+```
+
+```bash
+# 声明在伸缩项目中，而不是伸缩容器中
+.inner1 {
+            flex-grow: 1;
+        }
+```
+
+![image-20240721090848699](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721090848699.png)
+
+### 5.2 缩-flex-shrink
+
+- 只有当父元素的宽度小于各个伸缩项目的宽度和时，才会缩
+- 必须设置成换行方式为nowrap才可以缩，不然就换行了
+
+```bash
+# 父元素宽度不够了，压缩时
+- 分母  （伸缩项目宽度1 * flex-shrink）+（伸缩项目宽度2 * flex-shrink）+（伸缩项目宽度3 * flex-shrink）=700
+- 盒子一收缩比： （200*1）/700=比例值1
+- 盒子二收缩比： （300*1）/700=比例值2
+- 盒子三收缩比： （200*1）/700=比例值3
+
+- 盒子一收缩： 比例值1*300
+
+# 能力越大，职责越大，权重
+- 尽可能保证各个伸缩项目都能显示
+```
+
+## 6. 项目排序-order
+
+```bash
+# 在伸缩项目中定义
+- order默认为0，按照声明顺序在主轴排序
+
+#  order: -1;
+- order值越小的，越往主轴开始方向排列
+```
+
+![image-20240721093453108](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721093453108.png)
+
+## 7. 单独对齐-align-self
+
+- 某个元素，希望可以单独在侧轴对齐
+- 声明在伸缩项目中
+
+```bash
+        .inner2 {
+            width: 300px;
+            flex-grow: 1;
+            align-self: flex-end;
+        }
+```
+
+![image-20240721093802660](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721093802660.png)
+
+# 布局技巧
+
+## 1. 子元素在父元素中：水平垂直居中
+
+- 父子元素都是块级元素
+- 父元素：水平居中
+- 子元素：在父元素的水平居中，垂直居中
+
+![image-20240721202131991](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721202131991.png)
+
+### 1.1 margin
+
+- 如果有border和padding的话，要考虑一下盒子撑大问题
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .d1 {
             width: 400px;
             height: 200px;
-            margin-top: 20px;
-            /*border-top: black 1px solid;*/
-            /*padding-top: 10px;*/
+            background-color: gray;
+            /*父元素位置调整：水平居中，贴着顶端*/
+            margin: 0 auto;
+            /*解决margin塌陷问题*/
             overflow: hidden;
         }
 
-        .son {
-            background-color: red;
-            width: 200px;
+        .d2 {
+            width: 100px;
             height: 100px;
+            background-color: skyblue;
+
+            /*子元素位置调整：
+            水平居中，贴着顶端*/
+            margin-left: auto;
+            margin-right: auto;
+            /*具体的top和bottom，根据盒子大小来计算*/
             margin-top: 50px;
+            margin-bottom: 50px;
         }
     </style>
+
 </head>
 <body>
 
-<div class="father">
-    <div class="son"></div>
+<div class="d1">
+    <div class="d2"></div>
 </div>
+
 </body>
 </html>
 ```
 
-## 4. 清除内外边距
-
-- 网页元素如body，h，li等，都会默认带内外边距，并且在不同浏览器中，内外边距不同
-- 为了统一起见，需要清除内外边距
-
-```css
-    <style>
-        * {
-            padding: 0;
-            margin: 0;
-        }
-    </style>
-```
-
-## 5. 圆角边框
-
-- css3新增的语法: border-radius
-- 内切圆
+### 1.2 父元素flex，子元素主轴和侧轴居中对齐
 
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+<style>
+    .d1 {
+        width: 400px;
+        height: 200px;
+        background-color: gray;
+        /*父元素位置调整：水平居中，贴着顶端*/
+        margin: 0 auto;
+        /*flex布局*/
+        display: flex;
+        /*主轴居中*/
+        justify-content: center;
+        /*侧轴居中：单行*/
+        align-items: center;
+    }
 
-    <style>
-        /*做一个圆形： 
-        1. 打造正方形盒子
-        2. 设置圆角边框为长宽的一半*/
-        .first {
-            height: 200px;
-            width: 200px;
-            margin-bottom: 30px;
-            background-color: red;
-            border-radius: 100px;
-        }
+    .d2 {
+        width: 100px;
+        height: 100px;
+        background-color: skyblue;
 
-        /*做一个长方形，但是两边是圆的*/
-        .second {
-            height: 200px;
-            width: 600px;
-            background-color: green;
-            border-radius: 100px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="first">
-
-</div>
-
-<div class="second">
-
-</div>
-</body>
-</html>
+    }
+</style>
 ```
 
-## 6. 盒子阴影
-
-- box-shadow:
-- 需求：鼠标经过时，对盒子添加阴影,    div:hover{box-shadow}
-
-![image-20230704161012663](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704161012663.png)
-
-# 浮动
-
-### 2.1 分布方式
-
-- 一个标准的页面，是包含三种分布方式的
-
-#### 标准流
-
-- 普通流，文档流
-- 标签按照规定好，默认方式排列。包含块级元素，行内元素等
-- 是最基本的布局方式
-
-#### 浮动流
-
-#### 定位流
-
-### 2.2 浮动布局
-
-- 场景：多个div分布在同一行？两个div分别在同一行的左边和右边
-- 浮动：可以改变元素默认的排列方式
-- 网页布局第一准则：**多个块元素纵向排列用标准流，多个块元素横向排列用浮动** 
-- 网页布局第二准则：**先设置盒子大小，再设置盒子的位置**
-- float：用于创建浮动框，将其移动到一边，直到左边缘或右边缘，及包含块或另一个浮动框的边缘
-
-![image-20230704171521742](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230704171521742.png)
-
-### 2.3 浮动特性
-
-#### 脱标
-
-- 设置了浮动的元素，脱离标准普通流的控制，移动到指定位置(飞升)
-- 浮动的盒子不再保留原先的位置(图层叠加)
-
-#### 一行显示
-
-- 如果多个盒子都设置了浮动，则它们会按照属性值，在**一行内显示并且顶端对齐排列**
-- 盒子之间没有空隙
-- 如果缩放浏览器大小，则装不下的盒子，就会自动浮动到下一行
-
-#### 行内块元素特性
-
-- 任何元素都可以浮动，不管之前是什么模式的元素，添加浮动之后，都具有行内块元素的特性
-
-### 2.4 常用布局
-
-#### 多个块无间距
-
-- 为了约束浮动元素位置(不能基于浏览器对齐)，网页布局一半采取
-- 先用标准流的父元素排列上下文职，之后内部子元素采取浮动排列左右位置
+### 1.3 父元素flex，子元素margin:auto
 
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+<style>
+    .d1 {
+        width: 400px;
+        height: 200px;
+        background-color: gray;
+        /*父元素位置调整：水平居中，贴着顶端*/
+        margin: 0 auto;
+        /*flex布局*/
+        display: flex;
+    }
 
-    <style>
-        .bigBox {
-            width: 1500px;
-            height: 600px;
-            margin: 50px auto; /*大盒子居中对齐*/
-        }
-
-        .leftBox {
-            width: 1000px;
-            height: 600px;
-            float:left;
-            background-color: green;
-        }
-
-        .rightBox {
-            width: 500px;
-            height: 600px;
-            float:right;
-            background-color: red;
-        }
-
-
-    </style>
-</head>
-<body>
-
-<div class="bigBox">
-
-    <div class="leftBox">
-
-    </div>
-
-    <div class="rightBox">
-
-    </div>
-</div>
-
-</body>
-</html>
+    .d2 {
+        width: 100px;
+        height: 100px;
+        background-color: skyblue;
+        /*四个margin都是auto*/
+        margin: auto;
+    }
+</style>
 ```
 
-#### 多个块有间距
+![image-20240720111731254](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240720111731254.png)
 
-- 可以用ul-li来做
+# 布局
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+## 1. 常用类名
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
-
-        .box {
-            height: 300px;
-            width: 1090px;
-            background-color: gray;
-            margin: 50px auto;
-            list-style: none; /*清除掉li的样式*/
-        }
-
-        ul li {
-            height: 200px;
-            width: 250px;
-            background-color: green;
-            float: left;
-            margin-right: 30px; /*盒子间距离一定的缝隙*/
-        }
-
-        /*最后一个不要加*/
-        .last {
-            margin-right: 0!important;
-        }
-
-    </style>
-</head>
-<body>
-
-<ul class="box">
-    <li></li>
-    <li></li>
-    <li></li>
-    <li class="last"></li>
-</ul>
-
-</body>
-</html>
+```bash
+顶部导航条         topbar
+页头              header     page-header
+导航              nav        navigator      navbar
+搜索框            search     search-box
+横幅/广告/宣传图    banner
+主要内容           content    main
+侧边栏             aside   sidebar
+页脚              footer  page-footer
 ```
 
-#### 浮和不浮结合
 
-- 理论上来说，所有的兄弟盒子，一个浮动，其他都要浮动
-- 第一个不浮动，剩下的浮动：则第一个独占一行，剩下的兄弟盒子另起一行进行浮动
-- **浮动的盒子只会影响浮动盒子后面的标准流，不会影响前面的标准流**
 
-### 2.5 清除浮动
+# WebStorm快捷键
 
-- 父盒子可能不能指定高度，但是又需要包含若干个子盒子。比如商品的展示页
-- 理想情况：让子盒子撑开父盒子
+## 1. 快速生成文字
 
-#### 为什么要清除
-
-- 父盒子不方便给高度，但是又希望子盒子撑开父盒子
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-
-    <style>
-        .box {
-            background-color: gray;
-            width: 1000px;
-           /* height: 500px;*/
-            margin: 50px auto;
-        }
-
-        /*假如浮动的块有很多个，希望不要给父盒子指定高度，让子盒子来撑开父盒子
-        1. 不指定父元素高度时，又会导致父元素成为一条线*/
-        .first {
-            float: left;
-            background-color: green;
-            height: 100px;
-            width: 100px;
-        }
-
-        .second {
-            float: left;
-            background-color: red;
-            height: 100px;
-            width: 100px;
-        }
-
-    </style>
-</head>
-<body>
-
-<div class="box">
-
-    <div class="first">
-
-    </div>
-
-    <div class="second">
-
-    </div>
-</div>
-
-</body>
-</html>
-```
-
-#### 清除浮动
-
-- 本质就是清除浮动元素脱离标准流造成的影响
-- 如果父盒子本身有高度，则不需要清除浮动
-- 清除浮动后，父盒子就会根据浮动的子盒子自动检测高度。父级有了高度，就不会影响下面的标准流了
-
-| 清除方式     | 做法                                                         | 缺点           | 推荐 |
-| ------------ | ------------------------------------------------------------ | -------------- | ---- |
-| 额外标签法   | 在最后一个浮动标签后面，再加一个块标签，并且用clea：both来清除 | 需要新加块标签 | N    |
-| 父：overflow | 在父元素添加overflow：hidden, auto, scroll都可以             |                |      |
-| 伪元素       |                                                              |                |      |
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-
-    <style>
-        .box {
-            background-color: gray;
-            width: 1000px;
-            /* height: 500px;*/
-            margin: 50px auto;
-        }
-
-        .first {
-            float: left;
-            background-color: green;
-            height: 100px;
-            width: 100px;
-        }
-
-        .second {
-            float: left;
-            background-color: red;
-            height: 100px;
-            width: 100px;
-        }
-
-        /*新增clear*/
-        .sf {
-            clear: both;
-        }
-
-    </style>
-</head>
-<body>
-
-<div class="box">
-
-    <div class="first">
-
-    </div>
-
-    <div class="second">
-
-    </div>
-    <!--新增clear-->
-    <div class="sf">
-
-    </div>
-</div>
-
-</body>
-</html>
-```
+- 在div中，lorem20 + tab： 快速生成20个单词
 
