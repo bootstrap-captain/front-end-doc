@@ -1077,13 +1077,50 @@ p {
 </html>
 ```
 
+## 5. 长度
+
+### 5.1 像素--px
+
+- 具体的像素
+
+### 5.2 视口宽度--vw
+
+- viwport width
+- 宽和高，都是指的是视口宽度的百分比
+- 在PC端不多，在移动端多，响应式布局
+- 用的比较多
+
+```css
+<style>
+    .box1 {
+        width: 50vw;
+        height: 20vw;
+        background-color: skyblue;
+    }
+</style>
+```
+
+### 5.3 视口高度--vh
+
+- viewport hight
+
+```css
+<style>
+    .box1 {
+        width: 50vh;
+        height: 50vh;
+        background-color: skyblue;
+    }
+</style>
+```
+
 # 显示模式
 
 - 标签元素以什么方式进行显示，比如div独占一行，一行可以放多个span
 
 ## 1. Block元素
 
-- 其中div是最典型的块元素
+- div是最典型的块元素
 - 是一个容器及盒子，里面可以放block或者inline元素
 
 ```bash
@@ -1873,6 +1910,52 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240721193352767](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721193352767.png)
 
+## 5. 怪异盒模型--box-sizing: border-box
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box1 {
+            width: 200px;
+            height: 200px;
+            padding: 5px;
+            border: 5px solid black;
+            background-color: skyblue;
+            /*默认值：标准盒子模型
+            1. 盒子大小=内容+padding+border = 220*220*/
+            box-sizing: content-box;
+
+            margin-bottom: 10px;
+        }
+
+        .box2 {
+            width: 200px;
+            height: 200px;
+            padding: 5px;
+            border: 5px solid black;
+            background-color: skyblue;
+            /* IE盒模型
+            2. 盒子总大小=200*200，content区域变成了180*180*/
+            box-sizing: border-box;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="box1">1</div>
+<div class="box2">2</div>
+</body>
+
+</html>
+```
+
+![image-20240722163643769](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240722163643769.png)
+
 # 样式问题
 
 ## 1. 隐藏元素
@@ -2161,20 +2244,15 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240722134315123](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240722134315123.png)
 
-## 6. 定位特殊应用
+# 伸缩盒-Flex布局
 
-
-
-# 伸缩盒模型-Flex布局
-
-- Flex布局方案
+- Flex布局
 
 ## 1. 简介
 
-- 2009年，W3C提出的新的盒子模型：Flexible Box, 弹性盒子，伸缩盒模型
-- 控制：元素分布方式，元素对齐方式，元素视觉顺序
-- 除了IE，其他浏览器都支持
-- 随着伸缩盒子模型的出现，逐渐演变出一套新的布局方案：flex布局
+- Flexible Box, 弹性盒子，伸缩盒模型
+- 盒子元素分布方式，盒子元素对齐方式，盒子元素视觉顺序
+- 随着伸缩盒的出现，逐渐演变出一套新的布局方案：flex布局
 - 在移动端应用比较广泛，因为传统布局不能很好的呈现在移动设备上
 
 ## 2. 伸缩容器与伸缩项目
@@ -2880,11 +2958,12 @@ align-content: space-evenly;
 页脚              footer  page-footer
 ```
 
-
-
 # WebStorm快捷键
 
 ## 1. 快速生成文字
 
 - 在div中，lorem20 + tab： 快速生成20个单词
 
+## 2. 行复制
+
+- 鼠标放在某一行代码上，CTRL+C复制整行
