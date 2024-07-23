@@ -1525,7 +1525,7 @@ display: inline-block
 ```bash
 # 响应式布局
 - 初始值为800px
-- 当视口变小，小到800px一下时候，横向就会出现浏览器的滚动条
+- 当视口变小，小到800px以下时候，横向就会出现浏览器的滚动条
 ```
 
 ![image-20240721135155461](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721135155461.png)
@@ -1607,6 +1607,7 @@ display: inline-block
 
 - 默认由内容撑开
 - 可以指定高度
+- 一般高和min-height任选一个即可
 
 ## 2. padding
 
@@ -1710,6 +1711,7 @@ border-bottom: 5px solid olivedrab;
 
 - 外边距：当前设置的盒子和其他盒子之间的距离
 - 默认盒子和盒子之间，距离为0
+- marign不会影响盒子大小
 
 ```bash
 # 分开写
@@ -1722,9 +1724,7 @@ margin-top: 50px;
 - 和padding差不多
 ```
 
-### 4.1 注意事项
-
-#### 子元素的margin参考父元素的content计算
+### 子元素的margin参考父元素的content计算
 
 ```html
 <!DOCTYPE html>
@@ -1737,7 +1737,7 @@ margin-top: 50px;
             width: 400px;
             height: 300px;
             background-color: gray;
-            padding: 20px;
+            padding: 50px;
         }
 
         .inner {
@@ -1758,18 +1758,18 @@ margin-top: 50px;
 </html>
 ```
 
-![image-20240721185202119](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721185202119.png)
+![image-20240723105642044](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240723105642044.png)
 
-#### 哪个元素动？
+### 盒子元素移动
 
 - margin-top, margin-left, 会影响当前元素的位置
 - margin-bottom，margin-right会影响后面的元素的位置
 
-#### 行内元素
+### 行内元素margin
 
 - 对于行内元素，左右的margin可以设置，上下的margin，设置后是无效的
 
-#### auto-实现块级元素水平居中
+### margin: 0 auto -- 块级元素水平居中
 
 ```bash
 # 盒子距离左边距，能有多远就多远
@@ -1815,9 +1815,9 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240721190752824](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721190752824.png)
 
-### 4.2 margin塌陷问题
+### margin塌陷
 
-#### 问题
+#### 问题引出
 
 - 父元素中包裹了多个块元素，第一个块元素的margin-top，最后一个块元素的margin-bottom，会存在margin塌陷
 - margin塌陷：子元素没有上下移动，而是父元素上下移动了
@@ -1864,13 +1864,13 @@ margin-right:auto   距离右边，能有多远就多远
 </html>
 ```
 
-#### 解决方案--overflow: hidden;
+#### overflow: hidden;
 
 - 在父容器中，添加属性overflow: hidden即可
 
 ![image-20240721192610432](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721192610432.png)
 
-### 4.3 margin合并问题
+### margin合并
 
 - 上下两个块级元素，上面的设置了margin-bottom，下面的设置了margin-top，会取二者最大值，作为距离，而不是二者相加
 - 注意有这个事情就行，不一定非要去解决
@@ -2244,9 +2244,7 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240722134315123](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240722134315123.png)
 
-# 伸缩盒-Flex布局
-
-- Flex布局
+# Flex布局
 
 ## 1. 简介
 
@@ -2281,7 +2279,7 @@ margin-right:auto   距离右边，能有多远就多远
             height: 50px;
             background-color: skyblue;
             border: 1px solid black;
-            box-sizing: border-box; /*添加该属性后，inner盒子的最终大小就是 50*50， 就可以忽略边框的长度了*/
+            box-sizing: border-box; /*怪异盒子*/
         }
     </style>
 </head>
@@ -2298,9 +2296,10 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240721094759835](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721094759835.png)
 
-### 2.2 Flex容器 -- display: flex
+### 2.2 伸缩容器 -- display: flex
 
 - 只需要在outer中定义了该属性，则该盒子就变成了伸缩容器
+- 里面的伸缩项目，就会沿着主轴方向排列
 
 ```css
      .outer {
@@ -2317,7 +2316,7 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240721095127813](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095127813.png)
 
-### 2.3 Flex容器的子元素是flex项目
+### 2.3 伸缩容器的子元素是伸缩项目
 
 - 对当前容器开启了Flex布局后，里面所有的子元素，都变成了flex项目，但孙子元素，不是
 - 如果想要孙子元素还能是flex项目，对该孙子元素的父元素，同样开启flex布局即可
@@ -2362,10 +2361,10 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240721095238467](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095238467.png)
 
-### 2.4 Flex容器内都是块元素
+### 2.4 伸缩容器内都是块元素
 
 - 一旦一个容器开启了flex布局，里面所有的项目都变成了块元素
-- 块元素就可以设置宽高
+- 块元素就可以设置宽高，比如伸缩容器中非span元素
 
 ```html
 <!DOCTYPE html>
@@ -2411,15 +2410,14 @@ margin-right:auto   距离右边，能有多远就多远
 
 ## 3. 主轴
 
-### 3.1 主轴方向
-
 - 关注的是方向，主轴和侧轴垂直
 - 主轴：红色，默认水平，从左到右
 - 侧轴：蓝色，默认垂直，从上到下
+- 伸缩元素会在主轴上进行排列
 
 ![image-20240721095952443](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721095952443.png)
 
-### 3.2 主轴切换--flex-direction
+### 3.1 主轴切换--flex-direction
 
 - 伸缩容器的主轴
 - 切换后，一般侧轴跟着变化
@@ -2465,7 +2463,7 @@ flex-direction: column-reverse;
 
 ![image-20240721100639664](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721100639664.png)
 
-### 3.3 主轴换行--flex-wrap
+### 3.2 主轴换行--flex-wrap
 
 - 当伸缩容器中，沿着主轴的伸缩项目很多时，换行的处理方式
 
@@ -2498,7 +2496,6 @@ flex-direction: column-reverse;
 <body>
 
 <div class="outer">
-    <!--span本来是行内元素，但是变成了flex项目，宽高依然起作用-->
     <span class="inner">1</span>
     <span class="inner">2</span>
     <span class="inner">3</span>
@@ -2540,9 +2537,10 @@ flex-wrap: wrap
 
 ![image-20240721101225474](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721101225474.png)
 
-### 3.4 主轴对齐--justify-content
+### 3.3 主轴对齐--justify-content
 
 - 元素在主轴的对齐方式
+- 可以在子元素中设置margin，实现微调
 
 #### flex-start
 
@@ -2607,62 +2605,46 @@ justify-content: center;
 
 ### 4.1 单行对齐--align-items
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+```css
+<style>
+      .outer {
+          width: 1000px;
+          height: 600px;
+          background-color: gray;
+          margin: 0 auto; 
 
-    <style>
-        .outer {
-            width: 1000px;
-            height: 600px;
-            background-color: gray;
-            margin: 0 auto; /*让该盒子水平居中*/
-            /*开启了该元素的flex布局*/
-            display: flex;
-            /*默认主轴方向*/
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            align-items: flex-start;
-        }
+          display: flex;
+          /*默认主轴方向*/
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          align-items: flex-start;
+      }
 
-        .inner1 {
-            width: 200px;
-            height: 200px;
-            background-color: skyblue;
-            border: 1px solid black;
-            box-sizing: border-box;
-        }
+      .inner1 {
+          width: 200px;
+          height: 200px;
+          background-color: skyblue;
+          border: 1px solid black;
+          box-sizing: border-box;
+      }
 
-        .inner2 {
-            width: 200px;
-            height: 300px;
-            background-color: skyblue;
-            border: 1px solid black;
-            box-sizing: border-box;
-        }
+      .inner2 {
+          width: 200px;
+          height: 300px;
+          background-color: skyblue;
+          border: 1px solid black;
+          box-sizing: border-box;
+      }
 
-        .inner3 {
-            width: 200px;
-            height: 100px;
-            background-color: skyblue;
-            border: 1px solid black;
-            box-sizing: border-box;
-        }
-    </style>
-</head>
-<body>
-
-<div class="outer">
-    <div class="inner1">1</div>
-    <div class="inner2">2</div>
-    <div class="inner3">3</div>
-</div>
-</body>
-</html>
+      .inner3 {
+          width: 200px;
+          height: 100px;
+          background-color: skyblue;
+          border: 1px solid black;
+          box-sizing: border-box;
+      }
+  </style>
 ```
 
 #### flex-start
@@ -2806,7 +2788,9 @@ align-content: space-evenly;
 - 尽可能保证各个伸缩项目都能显示
 ```
 
-## 6. 项目排序-order
+## 6. 伸缩项目
+
+### 6.1 排序-order
 
 ```bash
 # 在伸缩项目中定义
@@ -2818,7 +2802,7 @@ align-content: space-evenly;
 
 ![image-20240721093453108](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721093453108.png)
 
-## 7. 单独对齐-align-self
+### 6.2 单独对齐-align-self
 
 - 某个元素，希望可以单独在侧轴对齐
 - 声明在伸缩项目中
