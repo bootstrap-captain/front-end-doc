@@ -2755,7 +2755,7 @@ align-content: space-evenly;
 # 伸法则
 - 检查当前主轴的剩余长度
 - 每个伸缩项目可以定义权重，flex-grow: 1; 通过计算权重后，进行伸
-- 默认是0
+- 默认是0,不会伸缩
 
 # 一般情况
 - 各个伸缩项目的权重定义成一个，有钱了大家一起分
@@ -2770,21 +2770,70 @@ align-content: space-evenly;
 
 ![image-20240721090848699](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721090848699.png)
 
+#### 水平划分
+
+![image-20240723122952843](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240723122952843.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .outer {
+            display: flex;
+            height: 400px;
+            background-color: gray;
+            /*宽度默认是铺满整个视口*/
+        }
+
+        .inner {
+            height: 200px;
+        }
+
+        .inner1 {
+            /*默认值*/
+            flex-grow: 0;
+            background-color: skyblue;
+            /*给定宽度，也可以通过给padding的方式来定型宽度*/
+            width: 100px;
+        }
+
+        .inner2 {
+            /*权重为1，其他两个是0，则就只会把当前的伸展开
+            不用专门给宽度*/
+            flex-grow: 1;
+            background-color: green;
+        }
+
+        .inner3 {
+            flex-grow: 0;
+            background-color: orange;
+            /*给定宽度*/
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+<div class="outer">
+    <div class="inner inner1">1</div>
+    <div class="inner inner2">2</div>
+    <div class="inner inner3">3</div>
+</div>
+</body>
+</html>
+```
+
 ### 5.2 缩-flex-shrink
 
 - 只有当父元素的宽度小于各个伸缩项目的宽度和时，才会缩
 - 必须设置成换行方式为nowrap才可以缩，不然就换行了
+- 默认值为1
 
 ```bash
 # 父元素宽度不够了，压缩时
-- 分母  （伸缩项目宽度1 * flex-shrink）+（伸缩项目宽度2 * flex-shrink）+（伸缩项目宽度3 * flex-shrink）=700
-- 盒子一收缩比： （200*1）/700=比例值1
-- 盒子二收缩比： （300*1）/700=比例值2
-- 盒子三收缩比： （200*1）/700=比例值3
-
-- 盒子一收缩： 比例值1*300
-
-# 能力越大，职责越大，权重
+- 能力越大，职责越大，权重
 - 尽可能保证各个伸缩项目都能显示
 ```
 
@@ -2929,18 +2978,68 @@ align-content: space-evenly;
 
 # 布局
 
-## 1. 常用类名
+## 1. 页头/内容/页脚
 
-```bash
-顶部导航条         topbar
-页头              header     page-header
-导航              nav        navigator      navbar
-搜索框            search     search-box
-横幅/广告/宣传图    banner
-主要内容           content    main
-侧边栏             aside   sidebar
-页脚              footer  page-footer
+### 1.1 Flex布局
+
+- 页头+内容+页脚
+- 利用Flex的垂直分布，和项目的伸缩性，随着内容的增多，页脚自动向下移动
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+        .outer {
+            /*开启Flex布局*/
+            display: flex;
+            /*主轴方向为列*/
+            flex-direction: column;
+            /*高度为视口的100%高度*/
+            height: 100vh;
+        }
+
+        .header {
+            background-color: skyblue;
+            /*1. 通过设置padding，高度就是padding+header的高度
+              2. 不要用指定height的方式，因为主体内容的扩张，会导致header的指定形式的height变小*/
+            padding: 10px;
+            text-align: center;
+        }
+
+        .content {
+            background-color: pink;
+            /*主体区域可伸缩，
+            1. 初始时，先伸，占据剩余空间
+            2. 后续扩张时，会使用默认值 flex-shrink:1*/
+            flex-grow: 1;
+        }
+
+        .footer {
+            padding: 10px;
+            background-color: gray;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="outer">
+    <div class="header">我是页头</div>
+    <div class="content"> lorem2000
+    </div>
+    <div class="footer">我是页脚</div>
+</div>
+
+</body>
+</html>
 ```
+
+
 
 # WebStorm快捷键
 
