@@ -61,38 +61,38 @@ export class HomeComponent {
 
 ### 2.1 输入绑定
 
+- 父组件传入到子组件的数据，父组件的数据发生变化后，子组件会重新渲染
+
 #### 父
 
 ```ts
 import {Component} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {ChildComponent} from "./child/child.component";
-import {NgForOf} from "@angular/common";
+import {ChildComponent} from "../child/child.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ChildComponent, NgForOf],
+  imports: [RouterOutlet, ChildComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
   /*父组件的属性*/
-  masterName = 'Jack Sparrow';
-  slaveNames = ['Lucy', 'Tom', 'Nancy']
+  parentTimes: number = 1;
+
+  addParentTimes = () => {
+    this.parentTimes++;
+  }
 }
 ```
 
 ```html
-<!--父组件渲染-->
-<h2>{{ masterName }} controls {{ slaveNames.length }} slaves</h2>
-<!--渲染子组件，利用ngFor可渲染多次-->
-<app-child *ngFor="let slaveName of slaveNames"
-           [slaveName]="slaveName"
-           [masterName]="masterName">
+<div>我是父组件{{ parentTimes }}</div>
 
-</app-child>
-<router-outlet/>
+<button (click)="addParentTimes()">父组件数据变化</button>
+<!--子组件事件的响应方式-->
+<app-child [parentTimes]="parentTimes"></app-child>
 ```
 
 #### 子
@@ -108,16 +108,13 @@ import {Component, Input} from '@angular/core';
   styleUrl: './child.component.css'
 })
 export class ChildComponent {
-  /*接收父组件的传递值*/
-  @Input() slaveName = '';
-  @Input() masterName = '';
+  /*从父组件接收收据*/
+  @Input() parentTimes: number = -1;
 }
 ```
 
 ```html
-<h3>
-  {{ slaveName }} says: I, {{ slaveName }}, at your service, {{ masterName }}
-</h3>
+<div>我是子组件{{ parentTimes }}</div>
 ```
 
 ### 2.2 getter/setter
@@ -257,6 +254,7 @@ export class ChildComponent implements OnChanges {
 ## 3. 子传父
 
 - 子组件作为事件源，父组件绑定到该事件属性，做出回应
+- 父组件可以定义一个数据，子组件通过事件属性，来修改父组件的值
 
 ### 子
 
@@ -491,6 +489,66 @@ export class AppComponent implements AfterViewInit {
 
 <router-outlet/>
 ```
+
+## 6. 子组件调用父组件的方法
+
+### 父
+
+```ts
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {ChildComponent} from "../child/child.component";
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, ChildComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+
+  /*父组件的方法*/
+  parentSay = () => {
+    console.log('Hi, I am parent')
+  }
+}
+```
+
+```html
+<div>我是父组件</div>
+<!--子组件事件的响应方式-->
+<app-child (childEvent)="parentSay()"></app-child>
+```
+
+### 子
+
+```ts
+import {Component, EventEmitter, Output} from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  standalone: true,
+  imports: [],
+  templateUrl: './child.component.html',
+  styleUrl: './child.component.css'
+})
+export class ChildComponent {
+  /*定义一个事件*/
+  @Output() childEvent = new EventEmitter<void>();
+
+  childSay = () => {
+    this.childEvent.emit();
+  }
+}
+```
+
+```html
+<div>我是子组件</div>
+<button (click)="childSay()">点击查看</button>
+```
+
+
 
 # 模版
 

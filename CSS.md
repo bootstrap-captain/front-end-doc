@@ -1114,6 +1114,42 @@ p {
 </style>
 ```
 
+### 5.4 vw/vh为100-滚动条问题
+
+- 当指定一个div宽为100vw，高为100vh，会出现一开始横向和纵向就有滚动条的问题
+- 这是因为body的默认的margin为8px
+
+![image-20240724210051940](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240724210051940.png)
+
+- 为了避免这种情况，需要将body的默认的margin进行重写为0
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .outer {
+            background-color: gray;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div class="outer">
+</div>
+</body>
+</html>
+```
+
+
+
 # 显示模式
 
 - 标签元素以什么方式进行显示，比如div独占一行，一行可以放多个span
@@ -2992,6 +3028,11 @@ align-content: space-evenly;
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
+
+        body {
+            /*防止一开始页面就有滚动条*/
+            margin: 0;
+        }
 
         .outer {
             /*开启Flex布局*/
