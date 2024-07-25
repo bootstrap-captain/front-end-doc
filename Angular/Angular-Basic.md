@@ -255,74 +255,94 @@ export class ChildComponent implements OnChanges {
 
 - 子组件作为事件源，父组件绑定到该事件属性，做出回应
 - 父组件可以定义一个数据，子组件通过事件属性，来修改父组件的值
+- 子组件数据变化了，父组件会跟着渲染
 
 ### 子
 
 ```ts
 import {Component, EventEmitter, Output} from '@angular/core';
-import {NgForOf} from "@angular/common";
 
 @Component({
   selector: 'app-child',
   standalone: true,
-  imports: [
-    NgForOf
-  ],
+  imports: [],
   templateUrl: './child.component.html',
   styleUrl: './child.component.css'
 })
 export class ChildComponent {
 
-  /*输出源*/
-  @Output() childName = new EventEmitter<string>();
+  /*暴露出去的某个对象数据*/
+  @Output() childAgeEvent: EventEmitter<ChildAge> = new EventEmitter();
 
-  /*对父暴露*/
-  childChangeName = (name: string) => {
-    this.childName.emit(name);
+  public firstChildAge = 6;
+  public secondChildAge = 16;
+  public thirdChildAge = 26;
+
+  updateAge = () => {
+    this.firstChildAge++;
+    this.secondChildAge++;
+    this.thirdChildAge++;
+
+    const childAge = {
+      firstChildAge: this.firstChildAge,
+      secondChildAge: this.secondChildAge,
+      thirdChildAge: this.thirdChildAge
+    }
+     // 发送事件
+    this.childAgeEvent.emit(childAge);
   }
+}
+
+export interface ChildAge {
+  firstChildAge: number,
+  secondChildAge: number,
+  thirdChildAge: number
 }
 ```
 
 ```html
-<!--#name:存储了输入的input的输入框，可以通过value获取到其值-->
-<input type="text" #name>
+<div>子组件的第一个孩子{{ firstChildAge }}</div>
+<div>子组件的第一个孩子{{ secondChildAge }}</div>
+<div>子组件的第一个孩子{{ thirdChildAge }}</div>
 
-<!--点击事件-->
-<button type="button" (click)="childChangeName(name.value)">输入姓名</button>
+<button (click)="updateAge()">一年过去了</button>
 ```
 
 ### 父
 
+```html
+<div>我第一个孙子{{ first }}</div>
+<div>我第二个孙子{{ second }}</div>
+<div>我第三个孙子{{ third }}</div>
+<!--子组件事件的响应方式-->
+<app-child (childAgeEvent)="parentReceiveEvent($event)"></app-child>
+```
+
 ```ts
 import {Component} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {ChildComponent} from "./child/child.component";
-import {NgForOf} from "@angular/common";
+import {ChildAge, ChildComponent} from "../child/child.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ChildComponent, NgForOf],
+  imports: [RouterOutlet, ChildComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  names = ['lucy', 'tom'];
+  /*父组件的属性*/
+  public first: number = -1;
+  public second: number = -1;
+  public third: number = -1;
 
-  fatherAddName = (name: string) => {
-    this.names.push(name);
+  /*接收数据的具体类型*/
+  parentReceiveEvent = (childAge: ChildAge) => {
+    this.first = childAge.firstChildAge;
+    this.second = childAge.secondChildAge;
+    this.third = childAge.thirdChildAge;
   }
 }
-```
-
-```html
-<!--将子属性的event，和父关联起来-->
-<app-child (childName)="fatherAddName($event)"></app-child>
-
-<ul>
-  <li *ngFor="let name of names">{{ name }}</li>
-</ul>
-<router-outlet/>
 ```
 
 ## 4. 父调用子的方法和属性
