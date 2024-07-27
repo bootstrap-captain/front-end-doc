@@ -437,6 +437,21 @@ console.log("nihao");
 
 # 面向对象
 
+## 1. null
+
+- 如果一个值类型为null|string, 则赋值给其他的string时候，会报错
+
+```ts
+let a : string|null = '1'
+let b: string = a;
+
+// 确定该值不会为null
+let a : string|null = '1'
+let b: string = a!;
+```
+
+
+
 ## 1. 定义对象
 
 ### 1.1 别名定义
