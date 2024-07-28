@@ -2040,6 +2040,705 @@ margin-right:auto   距离右边，能有多远就多远
 
 ![image-20240721195313586](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240721195313586.png)
 
+# 浮动
+
+## 1. 文字环绕图片
+
+### 1.1 未环绕
+
+![image-20240728160331890](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728160331890.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        div {
+            width: 600px;
+            height: 400px;
+            background-color: skyblue;
+        }
+
+        img {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <img src="1.jpg">
+    <div>
+        lorem100
+    </div>
+   
+</div>
+</body>
+</html>
+```
+
+### 1.2 环绕--float: left
+
+- 在图片身上开启左浮动
+
+![image-20240728160409060](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728160409060.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        div {
+            width: 600px;
+            height: 400px;
+            background-color: skyblue;
+        }
+
+        img {
+            width: 200px;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <img src="1.jpg">
+    <div>
+        lorem100
+    </div>
+
+</div>
+</body>
+</html>
+```
+
+## 2. 文字环绕文字
+
+### 2.1 未环绕
+
+![image-20240728160937361](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728160937361.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        div {
+            width: 600px;
+            height: 400px;
+            background-color: skyblue;
+        }
+
+        /*伪类选择器：选择第一个字符*/
+        .test::first-letter {
+            font-size: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <div class="test">
+       lorem100 
+    </div>
+
+</div>
+</body>
+</html>
+```
+
+### 2.2 环绕
+
+![image-20240728161111042](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728161111042.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        div {
+            width: 600px;
+            height: 400px;
+            background-color: skyblue;
+        }
+
+        /*伪类选择器：选择第一个字符*/
+        .test::first-letter {
+            font-size: 50px;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <div class="test">
+        lorem100
+    </div>
+
+</div>
+</body>
+</html>
+```
+
+## 3. 浮动元素特点
+
+![image-20240727105323015](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240727105323015.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            height: 300px;
+            background-color: gray;
+            padding: 10px;
+        }
+
+        .box {
+            font-size: 20px;
+            padding: 10px;
+        }
+
+        .box1 {
+            background-color: skyblue;
+        }
+
+        .box2 {
+            background-color: orange;
+        }
+
+        .box3 {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="box box1">盒子一</div>
+    <div class="box box2">盒子二</div>
+    <div class="box box3">盒子三</div>
+</div>
+</body>
+</html>
+```
+
+### 3.1 脱离文本流
+
+- 盒子二左浮
+
+```bash
+# 让出位置，下面的会跑上来
+- 本来盒子二是在第二行，盒子三在第三行
+- 浮动后盒子二漂浮在第二行，盒子二上位到第二行
+- 盒子二背后也是绿色的(可以设置盒子三的宽度来观察)
+
+# 文字被甩出来
+- 类似文字环绕图片案例，盒子三的文字会被浮动盒子挤到后面去
+
+# 标准流
+- 紧紧贴着第一层来排列
+
+# 脱离文本流
+- 飘起来了，相当于添加了z轴
+```
+
+![image-20240727105530203](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240727105530203.png)
+
+```css
+  .box2 {
+      background-color: orange;
+      /*给盒子二开启左浮*/
+      float: left;
+  }
+```
+
+### 3.2 宽/高
+
+```bash
+# 默认值
+- 浮动元素，宽/高尽可能的小，通过内容撑开。越瘦越小，越好飘
+
+# 可显示的设置宽高
+- 设置浮动盒子的宽和高，就不会用内容撑开
+```
+
+![image-20240727110256278](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240727110256278.png)
+
+![image-20240727110325159](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240727110325159.png)
+
+### 3.3 和其他元素共用一行
+
+- 共用一行，但是其实是在同一行的，z轴不一样
+- 上面的元素占据自己的位置，下面的第一个元素浮动后，再下面的元素上位，浮动元素和上位元素就共用一行
+
+### 3.4 margin完美设置
+
+- 浮动元素，不存在margin塌陷，margin合并问题，可以完美设置
+- padding类似
+
+### 3.5 浮动起来的元素在一层
+
+- 给box2开启浮动后，再给box3开启浮动
+- box2已经浮动了，box3开启浮动后，会贴着box2，跑到第二层
+
+![image-20240727111129127](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240727111129127.png)
+
+## 4. 浮动影响
+
+### 4.1 父元素 - 高度塌陷
+
+- 父元素不给高度的情况下，高度默认是由内容撑开
+- 父元素中所有的子元素都浮动后，父元素就塌陷了，就变成了一条线
+
+![image-20240728165351959](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728165351959.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            background-color: gray;
+            /*父元素不给高度*/
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+
+
+        /*子元素都浮动*/
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+</div>
+</body>
+</html>
+```
+
+### 4.2 父元素 - 高度塌陷 - 父元素的兄弟元素顶上来
+
+- 父元素中的所有子元素浮动后，父元素塌陷了，对应的父元素的兄弟元素就会顶上来
+
+![image-20240728171009664](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728171009664.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            background-color: gray;
+            /*父元素不给高度*/
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+
+
+        /*子元素都浮动*/
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<!--父元素高度塌陷-->
+<div class="outer">
+    <!--子元素全部浮动-->
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+</div>
+
+<!--父元素的兄弟元素-->
+<div style="background-color: orange">
+    lorem100
+</div>
+</body>
+</html>
+```
+
+### 4.3 父元素 - 宽度依然束缚浮动元素
+
+- 父元素是有宽度的，三个盒子的总宽如果大于了父元素的宽度，就会换行
+- 父元素的宽度会束缚浮动的子元素的宽度
+
+![image-20240728165437743](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728165437743.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 600px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 220px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+</div>
+</body>
+</html>
+```
+
+### 4.4 兄弟元素 - 浮动元素的兄弟元素被遮挡
+
+- 浮动元素的前面的兄弟元素不会受到影响
+- 浮动元素的后面的兄弟元素，会占据浮动元素之前的位置，在浮动元素的下面，同时后面的兄弟元素的文字会被甩出来
+
+![image-20240728171532553](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728171532553.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            background-color: gray;
+            /*父元素不给高度*/
+            border: 1px solid black;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+        
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<!--父元素高度塌陷-->
+<div class="outer">
+    <!--子元素全部浮动-->
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+
+    <!--后面的兄弟元素-->
+    <div class="box">4</div>
+</div>
+
+</body>
+</html>
+```
+
+## 5. 消除浮动影响
+
+- 消除影响1：子元素都浮动后，父元素高度别塌陷
+- 消除影响2:   后面的兄弟元素被遮挡的问题
+
+### 5.1 清除浮动
+
+```bash
+# 父元素中
+- 前面几个子元素都浮动
+- 后面的子元素的兄弟元素，可以选择清空上面几个浮动的影响
+      # 清除浮动的元素，必须本身不能浮动
+      # 清除浮动的元素，必须是块元素或者行内块元素
+```
+
+- 父元素高度塌陷：会被盒子4撑开，不会塌陷
+- 子元素被遮挡：不会被遮挡，单独成为一行
+
+![image-20240728174651349](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728174651349.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            background-color: gray;
+            border: 1px solid black;
+            /*高度会被盒子4撑开*/
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+
+        .box4 {
+            /*left：如果上面的子元素中有左浮的，清空浮动元素对后面元素的影响
+              right：同理
+              both：清空left和right*/
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <!--子元素全部浮动-->
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+    <div class="box box4">4</div>
+</div>
+
+</body>
+</html>
+```
+
+### 5.2 清除浮动 -- 设置魔法块
+
+- 父元素中所有元素都浮动了，但是希望父元素不会塌陷
+- 再加一个块元素，不给宽和高以及内容，自动撑起来
+
+![image-20240728180341859](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728180341859.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            background-color: gray;
+            border: 1px solid black;
+            /*高度会被盒子4撑开*/
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+
+        .magic {
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <!--子元素全部浮动-->
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+    <div class="magic">4</div>
+</div>
+
+</body>
+</html>
+```
+
+### 5.3 优化版本
+
+- 针对上面方案的优化
+- 布局原则：父元素中的子元素，要么都float，要么都不float，否则就会出现问题
+
+![image-20240728180627486](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240728180627486.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .outer {
+            width: 1200px;
+            background-color: gray;
+            border: 1px solid black;
+        }
+
+        /*在outer中设置一个空的*/
+        .outer::after {
+            content: '';
+            display: block; /*默认是inline*/
+            clear: both;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: skyblue;
+            border: 1px solid black;
+        }
+
+        .box1 {
+            float: left;
+        }
+
+        .box2 {
+            float: left;
+        }
+
+        .box3 {
+            float: left;
+        }
+        
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <!--子元素全部浮动-->
+    <div class="box box1">1</div>
+    <div class="box box2">2</div>
+    <div class="box box3">3</div>
+</div>
+
+</body>
+</html>
+```
+
+
+
 # 定位
 
 ## 1. 相对定位--position: relative
