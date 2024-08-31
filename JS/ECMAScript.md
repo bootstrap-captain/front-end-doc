@@ -8,6 +8,8 @@
 - 脚本语言：逐行执行，如果某行报错，下面不再执行
 - JS 属于脚本语言
 
+![image-20240819154941008](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240819154941008.png)
+
 ## 2. 组成
 
 ```bash
@@ -66,12 +68,16 @@ alert('外部引入')
     <title>Title</title>
 
     <script>
-       <!--显示一个对话框，用来提示用户输入文字-->
-        prompt('输入东西到屏幕')
+        /*可以向DOM中插入具体的标签*/
+        document.write('hello');
+        document.write('<h1>我是h1</h1>');
+
+        <!--显示一个对话框，用来提示用户输入文字-->
+        let val = prompt('输入东西到屏幕');
+
+        console.log(val);
 
         alert('弹出东西到页面')
-
-        console.log('erick')
     </script>
 </head>
 <body>
@@ -82,11 +88,9 @@ alert('外部引入')
 
 # 变量
 
-## 1. 变量/常量
+## 1. 变量
 
 - 一般使用let或者const，尽量不要使用var(过时)
-
-### 1.1 变量
 
 ```js
 // 先声明再赋值，也可一步到位
@@ -117,18 +121,18 @@ name = 'nike';
 console.log(name)
 ```
 
-### 1.2 常量
+## 2. 常量
 
 - 常量的值不能改变，声明的时候必须赋值
 - 一般使用大写
 
 ```js
-const AGE = 19
+const AGE = 19;
 ```
 
-## 2. 作用域
+## 3. 作用域
 
-### 2.1 局部作用域
+### 3.1 局部作用域
 
 #### 函数作用域
 
@@ -165,18 +169,18 @@ console.log(name) // undefined
 console.log(name) // 不能使用
 ```
 
-### 2.2 全局作用域
+### 3.2 全局作用域
 
 - 写在当前js文件最外层的变量，就是当前js的全局作用域
 
-### 2.3 作用域链
+### 3.3 作用域链
 
 - 底层的变量查找机制
 - 在函数被执行时，优先查找当前函数作用域中查找变量
 - 如果当前查找不到，则依次逐级查找父级作用域直到全局作用域
 - 子可访问父，父不可访问子
 
-## 3. 闭包
+## 4. 闭包
 
 - 内层函数加外层函数的变量，一起构成了闭包
 - 并返回内层函数
@@ -206,11 +210,9 @@ const fn = outer();
 fn();
 ```
 
+# 数据类型
 
-
-# 语法
-
-## 1. 数据类型
+## 1. 监测数据类型
 
 - 弱类型语言：只有在程序运行时，根据具体的赋值结果，才会进行类型划分
 - 动态类型：变量的数据类型是可以变化的
@@ -218,8 +220,11 @@ fn();
 
 ```js
 let info = 'erick'
-console.log(typeof info)    // 得到具体的类型数据
+console.log(typeof info);  // 得到具体的类型数据
+console.log(typeof (info));
 ```
+
+## 2. 数据类型
 
 ### number
 
@@ -228,16 +233,18 @@ let age = 19;
 console.log(typeof age)
 ```
 
-#### NAN
-
 ```js
-let age = 19
-let name ='erick'
+let age = 19;
+let count = '12';
+let name = 'erick';
 
-// isNaN: 将一个变量转换为数字，如果不能转换，则得到NAN
+// isNotANumber: 尝试将一个变量转换为number
+
 // NAN和任何其他数字处理的结果，都是NAN
-console.log(isNaN(age))
-console.log(isNaN(name))
+console.log(isNaN(age));   // false
+console.log(isNaN(count))  // false
+console.log(isNaN(name));  // true
+console.log('eri' - 1);      // NAN
 ```
 
 ### string
@@ -266,7 +273,7 @@ console.log(`我是${name}, 今年${age}岁了`)
 ```
 
 ```js
-// 可以换行
+// 可以换行，保留格式
 let str = `<ul>
 <li>he</li>
 <li>ha</li>
@@ -275,8 +282,6 @@ let str = `<ul>
 
 console.log(str)
 ```
-
-
 
 ### boolean
 
@@ -287,8 +292,9 @@ console.log(str)
 - 声明了变量，但是没有赋值，默认值就是undefined
 
 ```js
-let name
-console.log(typeof name)
+let name;
+console.log(name);     // undefined
+console.log(typeof name); // undefined
 ```
 
 ### null
@@ -334,35 +340,34 @@ console.log(b1 === b2);  // true
 console.log(b1 + 'erick');
 ```
 
-## 2. 类型转换
+## 3. 类型转换
 
-### 2.1 转换为string
-
-```js
-let age = 10
-
-let age1 = age + ''
-let age2 = String(age)
-let age3 = age.toString()
-
-console.log(typeof age1 + typeof age2 + typeof age3)
-```
-
-### 2.2 转换为number
+### 转string
 
 ```js
-let age1 = parseInt('18')         // 整数
-let age2 = parseFloat('19.12')    // 浮点型
-let age3 = parseInt('18px')
-let age4 = Number(20)
+let age = 10;
 
-console.log(age1)
-console.log(age2)
-console.log(age3)
-console.log(age4)
+let age1 = age + '';
+let age2 = String(age);
+let age3 = age.toString();
+
+console.log(typeof age1 + typeof age2 + typeof age3);
 ```
 
-### 2.3 转换为boolean
+### 转number
+
+```js
+let age1 = parseInt('18');        // 整数
+let age2 = parseFloat('19.12');    // 浮点型
+let age3 = parseInt('18px');
+let age4 = Number(20);
+
+console.log(parseInt('18.91')); // 只取正数部分
+
+console.log(typeof age1 + typeof age2 + typeof age3 + typeof age4);
+```
+
+### 转boolean
 
 ```js
 let flag = Boolean('1')
@@ -401,12 +406,6 @@ Object.assign(p, people);  // 对象拷贝
 console.log(p)
 ```
 
-```ts
-
-```
-
-
-
 ## 5. 展开运算符
 
 ```js
@@ -432,7 +431,18 @@ let dog2 = {...dog, name: 'xiaohua'};
 console.log(dog, dog2);
 ```
 
+# 断点调试
 
+## 1. 浏览器
+
+- 在浏览器中对应的source中，找到对应的js文件，在对面里面添加断点
+- 重新刷新页面，就会进入到断点里面
+
+![image-20240823095050469](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240823095050469.png)
+
+## 2. Webstorm
+
+- 在IDEA中，添加对应的断点，debug模式启动项目
 
 # 数组
 
@@ -442,11 +452,13 @@ console.log(dog, dog2);
 
 ```js
 /*1. 创建数组*/
-let arr01 = ['a','b','c']
+let arr01 = ['a', 'b', 'c']
 let arr02 = new Array();
-let arr03 = new Array(3);
-console.log(arr01[0])
-console.log(arr01.length)
+let arr03 = [];
+let arr04 = new Array(3);
+let arr05 = new Array('a', 'd', 'c');
+console.log(arr01[0]);
+console.log(arr01.length);
 ```
 
 ### 1.2 增删改查
@@ -459,6 +471,8 @@ arr01.push('d');                   // 尾插
 arr01.unshift('z')           // 头插
 let pop = arr01.pop();      // 尾删，返回删除的元素
 let shift = arr01.shift();   // 头删， 返回删除的元素
+
+arr01.splice(0,5);  // 起始索引，删除几个元素
 ```
 
 ### 1.3 遍历
@@ -476,17 +490,24 @@ for (let i = 0; i < arr.length; i++) {
 ```js
 let arr = ['red', 'green', 'pink'];
 
-/*foreach*/
+/*foreach: 普通函数*/
 arr.forEach(function (item, index) {
     console.log(item);
     console.log(index)
 });
+
+/*foreach：箭头函数*/
+arr.forEach((item, index) => {
+    console.log(item);
+    console.log(index);
+})
 ```
 
 ```js
 let arr = ['appLe', 'HAHA', 'HEHE'];
 /*传递一个参数：就是当前元素内容*/
 let newArr1 = arr.map((item) => {
+    /*遍历并处理：不改变之前的数组，创建一个新的数组*/
     return item.toUpperCase();
 });
 
@@ -503,28 +524,36 @@ console.log(newArr1); // [ 'APPLE', 'HAHA', 'HEHE' ]
 console.log(newArr2);  // [ 'APPLE0', 'HAHA1', 'HEHE2' ]
 ```
 
-
-
-### 1.4 其他
+### 1.4 反转
 
 ```js
-/*1. 反转数组*/
-arr01.reverse();
-console.log(arr01)
-/*2. 判断是否为数组*/
-console.log(arr01 instanceof Array)
-console.log(Array.isArray(arr01))
-
-/*3. 转换为字符串*/
-let str = arr01.toString();
-console.log(str)
-
-let res = arr01.join('-');
-console.log(res)
-console.log(arr01)
+let arr = ['appLe', 'HAHA', 'HEHE'];
+/*1. 反转数组，在原数组上操作*/
+arr.reverse();
+console.log(arr);
 ```
 
-### 1.5 删除指定索引元素
+### 1.5 判断
+
+```js
+let arr = ['appLe', 'HAHA', 'HEHE'];
+console.log(arr instanceof Array);
+console.log(Array.isArray(arr));
+```
+
+### 1.6 拼接
+
+```js
+let arr = ['appLe', 'HAHA', 'HEHE'];
+
+let str = arr.toString();
+console.log(str); // appLe,HAHA,HEHE
+
+let res = arr.join('-');
+console.log(res); // appLe-HAHA-HEHE
+```
+
+### 1.7 删除指定索引元素
 
 #### filter+箭头函数
 
@@ -539,8 +568,6 @@ let newArr = arr.filter((item) => {
 console.log(arr);    // 原数组不变
 console.log(newArr); // 过滤后的数组
 ```
-
-
 
 ## 2. 解构赋值
 
@@ -650,27 +677,22 @@ for (let v of map) {
 - 具名函数的调用，可以在函数声明前或者声明后，都可以调用
 
 ```js
-/*无参无返回值*/
 function work() {
     console.log('work')
 }
 
-/*有参无返回值*/
 function eat(food) {
     console.log(`吃${food}`)
 }
 
-/*无参有返回值*/
 function getAge() {
     console.log('get age from db')
     return 20
 }
 
-/*有参有返回值*/
 function getName(id) {
     return 'erick' + id;
 }
-
 
 /*函数的具体调用*/
 work()
@@ -683,56 +705,56 @@ console.log(getName(2))
 
 ### 2.1 函数表达式
 
-- 将匿名函数赋值给一个变量，然后通过变量名来进行调用
+- 将匿名函数赋值给一个变量，然后通过变量名()来进行调用
+- 可以将变量名()继续赋值给新变量，然后用新变量名来调用
 - 只能先声明函数，再调用，不能反
 
 ```js
-/*无参无返回值*/
+/*1. 无参无返回值*/
 let work = function () {
     console.log('hello')
-}
+};
+work();
 
-work()
-
-/*有参无返回值*/
+/*2.有参无返回值*/
 let eat = function (food) {
     console.log(`eat ${food}`)
-}
+};
+eat('apple');
 
-eat('apple')
-
-/*无参有返回值*/
+/*3. 无参有返回值*/
 let age = function () {
-    return 20
+    return 20;
 }
+let manAge = age(); // 将一个函数，用一个变量来接收，后面调用就这个变量来调用，不用带 ()
+console.log(manAge);   // 函数调用
 
-let manAge = age();
-console.log(manAge)
-
-/*有参有返回值*/
+/*4.有参有返回值*/
 let getSum = function (a, b) {
     return a + b
 }
-
 let sum = getSum(10, 20);
 console.log(sum)
 ```
 
 ### 2.2 立即执行函数
 
+-  防止变量污染
 -  如果函数有返回值，则用立即执行函数，不能获取返回值
 
 ```js
 /*无参无返回值*/
 (function () {
-    console.log('hello')
+    let num = 1;
+    console.log('hello');
 })
 ();     // 必须用; 分开，第二个()其实就是调用
 
 
 /*有参无返回值*/
 (function (food) {
-    console.log(`eat ${food}`)
+    let num = 2;
+    console.log(`eat ${food}`);
 })
 ('apple');
 ```
@@ -982,8 +1004,6 @@ let nancy = {
 
 nancy.say();
 ```
-
-
 
 # 对象
 

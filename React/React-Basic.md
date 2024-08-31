@@ -252,8 +252,6 @@ create-react-app react-ts-demo --template typescript
 }
 ```
 
-
-
 # JSX
 
 ## 1. JSX/Js

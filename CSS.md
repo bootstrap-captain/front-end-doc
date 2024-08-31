@@ -1,4 +1,4 @@
-# 简介
+# 引入方式
 
 - CSS: Cascading Style Sheets
 - 组成：选择器和对应的属性声明
@@ -24,15 +24,13 @@
 </html>
 ```
 
-## 1. 引入方式
-
 | 样式表             | 作用域   | 优点             | 缺点                   | 场景            |
 | ------------------ | -------- | ---------------- | ---------------------- | --------------- |
 | 行内样式(内联样式) | 当前标签 | 书写简单样式     | 结构样式混合，不能复用 | 较少使用        |
 | 内部样式           | 当前页面 | 结构样式部分分离 | 没彻底分离             | 较多            |
 | 外部样式           | 多页面   | 结构样式完全分离 | NA                     | **Recommended** |
 
-### 1.1 行内样式
+## 1. 行内样式
 
 ```html
 <!DOCTYPE html>
@@ -47,8 +45,9 @@
 </html>
 ```
 
-### 1.2 内部样式
+## 2. 内部样式
 
+- style理论上可以放在html中任何位置，但是不管如何，最终浏览器会把style放在head中
 - 一般会放在head中
 
 ```html
@@ -70,7 +69,7 @@
 </html>
 ```
 
-### 1.3 外部样式
+## 3. 外部样式
 
 ```css
 p {
@@ -84,7 +83,8 @@ p {
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <!--引进来-->
+    <!--引进来
+       rel: relation-->
     <link rel="stylesheet" href="first.css">
 </head>
 <body>
@@ -94,27 +94,30 @@ p {
 </html>
 ```
 
-## 2. 样式表优先级
+## 4. 引入方式的优先级
 
 ```bash
 # 不同名的
-- merge操作：行内+内部+外部
+- merge操作：行内 + 内部 + 外部
 
 # 同名
 - 行内 > 内部 = 外部
-- 内部和外部的优先级：取决于在html中的声明顺序(后写的会覆盖前面的)
-- 同一个样式表：优先级和编写顺序有关，后面的会覆盖前面的
+
+- 内部样式和外部样式的优先级：取决于在html中的声明顺序(后写的会覆盖前面的，指的是在style中声明顺序)
+
+- 同一个样式表(内部或者外部)：优先级和编写顺序有关，后面的会覆盖前面的
 ```
 
-# 基础选择器
+# 选择器
+
+## 1. 基础选择器
 
 - 根据不同需求，把不同的标签选择出来
 - 由单个选择器组成
 
-## 1. 通配符选择器
+### 1.1 通配符选择器
 
-- 选取页面中所有的标签
-- 当前页面的所有标签的通用属性
+- 选取html中所有的标签，设置当前页面的所有标签的通用属性
 - 一般用来样式清除
 
 ```html
@@ -139,7 +142,7 @@ p {
 </html>
 ```
 
-## 2. 元素选择器
+### 1.2 元素选择器
 
 - 以HTML的标签作为选择器
 - 将页面某一类的标签全部选择出来，比如所有的p和div标签
@@ -176,9 +179,9 @@ p {
 </html>
 ```
 
-## 3. 类选择器
+### 1.3 类选择器
 
-### 3.1 单class
+#### 单class
 
 - 单独选择一个或者某几个标签
 - 开发最常用
@@ -226,7 +229,7 @@ p {
 </html>
 ```
 
-### 3.2 多class
+#### 多class
 
 - 可以为某个标签指定多个类名，从而达到更多的选择目的
 - 多个不同的组件： 公共的样式和个性化的样式，可以通过多class来定义
@@ -256,7 +259,7 @@ p {
 </html>
 ```
 
-## 4. id选择器
+### 1.4 ID选择器
 
 - 和类选择器比较类似
 - 缺陷：id只能是页面唯一一个节点，因此一个id选择器对应的css样式，只能被使用一次
@@ -270,25 +273,25 @@ p {
     <style>
         /*id选择器
          # ： 表明是一个id选择器*/
-        #nav {
+        #erick {
             color: red;
         }
     </style>
 </head>
 <body>
 
-<p id="nav">Hello Word</p>
+<p id="erick">Hello Word</p>
 </body>
 </html>
 ```
 
-# 复合选择器
+## 2. 复合选择器
 
 - 建立在基础选择器上，对基本选择器进行组合
 
-## 1. 交集选择器
+### 2.1 交集选择器
 
-- 两个基础选择器，链接在一起
+- 多个基础选择器，连接在一起
 - 某个页面元素，同时符合两种基础选择器才能选中的
 
 ```html
@@ -315,7 +318,10 @@ p {
 </html>
 ```
 
-## 2. 并集选择器
+### 2.2 并集选择器
+
+- 多种不同的基础选择器，或
+- 一般竖着写
 
 ```html
 <!DOCTYPE html>
@@ -325,7 +331,8 @@ p {
     <title>Title</title>
     <style>
         /*目标元素： div或者p标签*/
-        div, p {
+        div,
+        p {
             color: red;
         }
     </style>
@@ -338,7 +345,9 @@ p {
 </html>
 ```
 
-## 3. 后代选择器
+## 3. 父子选择器
+
+### 3.1  后代选择器
 
 - 选择父元素里面的子元素，孙子元素
 
@@ -348,44 +357,28 @@ p {
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
     <style>
-        /*后代选择器：可以按照页面元素，自定义若干个子孙*/
+        /*选中ul中的所有后代的li： 儿子以及孙子元素*/
         ul li {
             color: red;
-        }
-
-        ul li a {
-            color: blue;
-        }
-
-        /*类名为 .nava的，后代选择器*/
-        .nav li a {
-            color: gray;
         }
     </style>
 </head>
 <body>
 
 <ul>
-    <li>hello</li>
-    <li>hello</li>
-    <li>hello</li>
-    <li><a href="#">孙子</a></li>
+    <li>抽烟</li>
+    <li>喝酒</li>
+    <li>烫头</li>
+    <div>
+        <li>踢球</li>
+    </div>
 </ul>
-
-<ol class="nav">
-    <li>hello</li>
-    <li>hello</li>
-    <li>hello</li>
-    <li><a href="#">孙子</a></li>
-</ol>
-
 </body>
 </html>
 ```
 
-## 4. 子选择器
+### 3.2 子选择器
 
 - 某元素的最近一级子元素，亲儿子元素
 
@@ -418,9 +411,9 @@ p {
 </html>
 ```
 
-## 5. 兄弟选择器
+### 3.3 兄弟选择器
 
-### 5.1 紧紧相联
+#### 紧紧相联
 
 ```html
 <!DOCTYPE html>
@@ -449,7 +442,7 @@ p {
 </html>
 ```
 
-### 5.2 非紧紧相连
+#### 非紧紧相连
 
 ```html
 <!DOCTYPE html>
@@ -478,26 +471,26 @@ p {
 </html>
 ```
 
-## 6. 伪类选择器
+## 4. 伪类选择器
 
 - 用于向某些选择器添加特殊的效果，比如给链接添加特殊效果，或选择第一个，第n个元素
 - 很像类，但不是类，是元素特殊状态的一种描述
 - 非常重要
 
-### 6.1 动态伪类
+### 4.1 动态伪类
 
-#### 链接伪类
+#### link伪类
 
-- 书写的时候，按照顺序来写， LVHV
+- 书写的时候，按照顺序来写， LVHA
 - a链接在浏览器中具有默认样式，实际工作中都需要给链接单独指定样式
 - 一般是指定： a:link  和 a.hover即可
 
-| 选择器    | Desc                               | 使用场景      |
-| --------- | ---------------------------------- | ------------- |
-| a:link    | 选择所有未被访问的链接             | a             |
-| a:visited | 选择所有已被访问的链接             | a             |
-| a:hover   | 选择鼠标指针位于其上的链接         | 其他也可 span |
-| a:active  | 选择活动链接(鼠标按下未弹起的链接) | 其他也可 span |
+| 选择器    | Desc                               | 使用场景            |
+| --------- | ---------------------------------- | ------------------- |
+| a:link    | 选择所有未被访问的链接             | a                   |
+| a:visited | 选择所有已被访问的链接             | a                   |
+| a:hover   | 选择鼠标指针位于其上的链接         | 其他元素也可 span等 |
+| a:active  | 选择活动链接(鼠标按下未弹起的链接) | 其他元素也可 span等 |
 
 ```html
 <!DOCTYPE html>
@@ -566,7 +559,7 @@ p {
 
 ## 1. 层叠性
 
-- 相同选择器，相同样式(**冲突的属性：就近原则**)
+- 相同选择器，相同样式(**冲突的属性：就近原则，后来者居上**)
 - 可以通过chrom的console来检查
 
 ```html
@@ -685,37 +678,6 @@ p {
 </html>
 ```
 
-### 行高属性
-
-- 行高可以跟单位，也可以不跟单位
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <style>
-        /*line-height是font-size的1.5倍*/
-        body {
-            color: pink;
-            font: 12px/1.5 'Times New Roman';
-        }
-
-        /*line-height继承父元素*/
-        div {
-            font-size: 20px;
-        }
-
-    </style>
-</head>
-<body>
-<div>hello</div>
-<p>word</p>
-</body>
-</html>
-```
-
 ## 3. 优先级
 
 ### 基础选择器
@@ -727,11 +689,11 @@ p {
 ![image-20230703224943530](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20230703224943530.png)
 
 ```css
-    <style>
-        div {
-            font-size: 20px !important;
-        }
-    </style>
+<style>
+    div {
+        font-size: 20px !important;
+    }
+</style>
 ```
 
 ### 复合选择器
@@ -776,13 +738,14 @@ p {
 - blue 
 - 表示的颜色少(使用较少） 
 
-# 十六进制(HEX)
+# 十六进制(HEX)/HEXA
 - #0e1b6d
 - 最常用
 - 可以用snipaste取色
-
+ 
 # rgb
--  rgb(200,0,0)
+-  rgb(200,0,0)      rgb(90%，5%,5%)
+-  rgba(90%，5%,5%,0.5)      # 带透明的：0-1
 - 可以用snipaste取色 
 ```
 
@@ -836,8 +799,6 @@ p {
 - 文字相对字体设计框，并不是垂直居中的，一般都靠小一些
 
 ![image-20240616133932500](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240616133932500.png)
-
-
 
 ## 3. 文本
 
@@ -1082,6 +1043,72 @@ p {
 ### 5.1 像素--px
 
 - 具体的像素
+
+### 5.2 em
+
+- 当前元素的font-size的倍数
+
+```css
+<style>
+    /*10*font-size = 200px     默认font-size：16px
+      如果没定义，则向上找父亲的font-size， font-size也可以用 em 表示*/
+    div {
+        width: 10em;
+        height: 10em;
+        font-size: 20px;
+        background-color: skyblue;
+    }
+</style>
+```
+
+### 5.3 rem
+
+- 相对于根元素html的font-size
+
+```css
+<style>
+    div {
+        width: 10rem;
+        height: 10rem;
+        background-color: skyblue;
+    }
+</style>
+```
+
+### 5.4 10%
+
+- 相对父元素的宽和高
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .outer {
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+        }
+
+        /*相对父元素的宽和高的百分比*/
+        .inside {
+            width: 20%;
+            height: 50%;
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer">
+    <div class="inside"></div>
+</div>
+
+</body>
+</html>
+```
 
 ### 5.2 视口宽度--vw
 

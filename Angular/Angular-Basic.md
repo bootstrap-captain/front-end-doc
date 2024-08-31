@@ -7,7 +7,7 @@ sudo npm install -g @angular/cli
 sudo npm install -g @angular/cli@16.2.0
 
 # 2. 创建项目: 不要用sudo来创建项目，不然文件就只是可读
-ng new erick-angular-demo
+ ng new replay-ui-service
 
 # 3. 进入项目
 cd erick-angular-demo 
@@ -22,13 +22,16 @@ ng serve
 
 # 组件
 
+- 组件就是ts形式的class类，对应的html，css和测试的ts
+
 ## 1. 创建组件
 
-### 1.1 Angular Cli
+### Angular Cli
 
 - 比较推荐的方式
 
 ```bash
+# 进入对应的文件目录
 # ng generate component home
 # ng g component home
 
@@ -44,16 +47,232 @@ ng serve
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-home',/*在html中，可以用该名称来实例化该组件*/
+  selector: 'app-home', /*在html中，可以用该名称来实例化该组件*/
   standalone: true,
   imports: [],
-  templateUrl: './home.component.html',/*对应的html，两种方式*/
-  styleUrl: './home.component.css'/*对应的css，两种方式*/
+  templateUrl: './home.component.html', /*对应的html，两种方式: templateUrl或者template*/
+  styleUrl: './home.component.css'   /*对应的css，两种方式：styleUrl或者style，默认组件的样式仅影响该组件模版定义的元素*/
 })
 export class HomeComponent {
 
 }
 ```
+
+## 2. 使用组件
+
+- 会为每个遇到的组件创建组件一个实例对象
+
+### 2.1 独立组件
+
+- 一个独立组件，是在组件元数据中设置 standalone: true, 官方推荐，新开发的项目都使用独立组件
+
+#### app.component.ts
+
+```ts
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {HomeComponent} from "../home/home.component"; /*在该组件导入到对应的html后，就会添加该依赖*/
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, HomeComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+
+}
+```
+
+#### app.component.html
+
+```html
+<h2>hello</h2>
+
+<!--使用独立组件-->
+<app-home></app-home>
+```
+
+## 3. 输入属性
+
+- 将特定属性标记为可绑定，该带有输入属性的组件，可以从起父元素的html中进行获取到对应的值
+
+### home.component.ts
+
+```ts
+import {Component, Input} from '@angular/core';
+
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
+})
+export class HomeComponent {
+  /*1.输入的值*/
+  @Input() value = 0;
+
+  /*2. 自定义输入类型*/
+  @Input() person: Person = {
+    name: '',
+    age: 0,
+  }
+
+  /*3. 属性必选: 上面的可以不给值，不会报错*/
+  @Input({required: true}) address = '';
+
+  /*4. 输入转换：transform函数来处理,必须是纯函数*/
+  @Input({transform: toUpperCase}) label = '';
+
+  /*5. 输入别名*/
+  @Input({alias: 'erickName'}) myName = '';
+}
+
+/*外部的纯函数*/
+function toUpperCase(value: string) {
+  return value.toUpperCase();
+}
+
+export type Person = {
+  name: string,
+  age: number,
+}
+```
+
+```html
+<p>{{ value }}</p>
+<p>{{ person.name }}==={{ person.age }}</p>
+<p>{{ address }}</p>
+<p>{{ label }}</p>
+<p>{{ myName }}</p>
+```
+
+### app.component.html
+
+```html
+<h2>hello</h2>
+
+<!--使用组件: 传递值，[]注意用法
+ address：直接传递一个static的值
+ [value]: 可以传递一个该父组件的值-->
+<app-home [value]="60"
+          [person]="{name:'erick',age:18}"
+          address="beijing"
+          label="sfsdf"
+          erickName="shuzhan"
+></app-home>
+```
+
+## 4. 输出属性-子传数据给父 & 子调父方法
+
+- 通过将属性赋值为新的 EventEmitter 并添加@Output装饰器来定义自定义事件
+
+```bash
+# 场景一：子传数据给父
+emit的时候可以传递具体的数据
+
+# 场景二：子调用父的方法
+```
+
+### 子
+
+```ts
+import {Component, EventEmitter, Output} from '@angular/core';
+
+@Component({
+  selector: 'app-cart',
+  standalone: true,
+  imports: [],
+  templateUrl: './cart.component.html',
+  styleUrl: './cart.component.css'
+})
+export class CartComponent {
+  /*1. 指定要发射出去的数据类型*/
+  @Output() nameEvent: EventEmitter<string> = new EventEmitter();
+
+  /*2. 发射自定义的数据类型*/
+  @Output() phoneEvent: EventEmitter<Phone> = new EventEmitter();
+
+  /*3. 子调用父的方法*/
+  @Output() childSayEvent: EventEmitter<void> = new EventEmitter();
+
+  childNameChange = (name: string) => {
+    this.nameEvent.emit(name);
+  }
+
+  childPhoneChange = (brand: string, price: number) => {
+    this.phoneEvent.emit({brand: brand, price: price})
+  }
+
+  childSay = () => {
+    this.childSayEvent.emit();
+  }
+}
+
+export type Phone = {
+  brand: string,
+  price: number,
+}
+```
+
+```html
+<!--发射普通对象-->
+<button (click)="childNameChange('hello')">发射普通数据</button><br/>
+
+<!--发射自定义对象-->
+<button (click)="childPhoneChange('iphone',5999)">发射自定义数据</button><br/>
+
+<!--子调用父的方法-->
+<button (click)="childSay()">子调用父的方法</button>
+```
+
+### 父
+
+```html
+<h2>hello</h2>
+<app-cart (nameEvent)="fatherName($event)"
+          (phoneEvent)="fatherPhone($event)"
+          (childSayEvent)="fatherSay()"
+></app-cart>
+```
+
+```ts
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {CartComponent, Phone} from "../cart/cart.component";
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, CartComponent,],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+
+  /*event: 发射出去的数据类型*/
+  fatherName = (event: string) => {
+    console.log('string类型的', event);
+  }
+
+  fatherPhone = (event: Phone) => {
+    console.log('phone类型的', event)
+  }
+
+  fatherSay = () => {
+    console.log('parent say hello');
+  }
+}
+```
+
+## 5. 生命周期
+
+
+
+
 
 ## 2. 父传子
 
@@ -510,116 +729,66 @@ export class AppComponent implements AfterViewInit {
 <router-outlet/>
 ```
 
-## 6. 子组件调用父组件的方法
+# 模版
 
-### 父
+## 1. 文本插值
 
 ```ts
 import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {ChildComponent} from "../child/child.component";
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, ChildComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
-})
-export class AppComponent {
-
-  /*父组件的方法*/
-  parentSay = () => {
-    console.log('Hi, I am parent')
-  }
-}
-```
-
-```html
-<div>我是父组件</div>
-<!--子组件事件的响应方式-->
-<app-child (childEvent)="parentSay()"></app-child>
-```
-
-### 子
-
-```ts
-import {Component, EventEmitter, Output} from '@angular/core';
-
-@Component({
-  selector: 'app-child',
+  selector: 'app-apple',
   standalone: true,
   imports: [],
-  templateUrl: './child.component.html',
-  styleUrl: './child.component.css'
+  templateUrl: './apple.component.html',
+  styleUrl: './apple.component.css'
 })
-export class ChildComponent {
-  /*定义一个事件*/
-  @Output() childEvent = new EventEmitter<void>();
-
-  childSay = () => {
-    this.childEvent.emit();
-  }
+export class AppleComponent {
+  public name: string = 'erick';
+  address: string = 'beijing';
 }
 ```
 
 ```html
-<div>我是子组件</div>
-<button (click)="childSay()">点击查看</button>
+<!--文本插值-->
+<p>{{ name }}</p>
+<p>{{ address }}</p>
 ```
 
-
-
-# 模版
-
-## 1. 插值和模版语句
+## 2. 模版语句
 
 ```html
-<!--1. 插值：必须先在对应的ts中定义-->
-<h2>{{ address }}</h2>
-
-<!--2. 模版语句-->
-
-<!--2.1 直接传值-->
+<!--1 直接传值-->
 <button (click)="delete('12')">箭头函数-带参-直接给</button><br/>
-<!--2.2 传递ts中的变量-->
+<!--2 传递ts中的变量-->
 <button (click)="delete(id)">箭头函数-带参-变量</button><br/>
 
 <button (click)="say('shuzhan')">普通函数-带参-直接给</button><br/>
 <button (click)="say(name)">普通函数-带参-变量</button><br/>
 
 <button (click)="work()">无参</button><br/>
-
-<router-outlet/>
 ```
 
 ```ts
 import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {ChildComponent} from "./child/child.component";
-import {NgForOf} from "@angular/common";
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-apple',
   standalone: true,
-  imports: [RouterOutlet, ChildComponent, NgForOf],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  imports: [],
+  templateUrl: './apple.component.html',
+  styleUrl: './apple.component.css'
 })
-export class AppComponent {
+export class AppleComponent {
+  id: string = '123';
+  name: string = 'erick';
 
-  /*1. 插值语法：必须先在对应的ts中定义*/
-  address = '北京';
-
-  id = '14';
-  name = 'erick';
-
-  /*2. 箭头函数*/
+  /*1. 箭头函数*/
   delete = (id: string) => {
     console.log(id)
   }
 
-  /*3. 普通函数和箭头函数没区别*/
+  /*2. 普通函数和箭头函数没区别*/
   say(name: string) {
     console.log(name);
   }
@@ -630,9 +799,7 @@ export class AppComponent {
 }
 ```
 
-## 2. 绑定
-
-### 2.1 Property绑定
+## 3. Property绑定
 
 ```html
 <!--加[], 后面的属性就当作变量来解析，在对应的ts文件中，去找对应的变量-->
@@ -643,10 +810,85 @@ export class AppComponent {
 
 <!--组件传递中可以使用,作用同理-->
 <app-child [name]="erickName"></app-child>
-<router-outlet/>
 ```
 
-## 3. 模版引用变量
+## 4. 双向绑定
+
+- 共享数据的方式，使用双向绑定，来监听事件，并在父组件和子组件中同步更新值
+- 子组件更改了数据，父组件能及时的获取到更新后的最新值
+- 父组件提供初始化值，并在父组件中使用。子组件来更新该值，并在子组件中可以使用，更新后会同步到父组件中
+
+### 子
+
+```ts
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+
+@Component({
+  selector: 'app-brand',
+  standalone: true,
+  imports: [],
+  templateUrl: './brand.component.html',
+  styleUrl: './brand.component.css'
+})
+export class BrandComponent {
+
+  /*初始数据从父获取到*/
+  @Input() number = 0;
+
+  /*子改变了数据后，可以同步到父组件*/
+  @Output() numberChange: EventEmitter<number> = new EventEmitter();
+
+  incr() {
+    this.number++;
+    this.numberChange.emit(this.number);
+  }
+
+  desc() {
+    this.number--;
+    this.numberChange.emit(this.number);
+  }
+}
+```
+
+```html
+<button (click)="incr()">+</button><br/>
+<button (click)="desc()">-</button><br/>
+<p>儿子{{ number }}</p>
+```
+
+### 父
+
+```ts
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {BrandComponent} from "../brand/brand.component";
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, BrandComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  /*提供初始值*/
+  fatherNumber = 20;
+}
+```
+
+```html
+<p>父亲{{ fatherNumber }}</p>
+<!--双向绑定缩写-->
+<app-brand [(number)]="fatherNumber"></app-brand>
+```
+
+```html
+<p>父亲{{ fatherNumber }}</p>
+<!--双向绑定的展开写法-->
+<app-brand [number]="fatherNumber" (numberChange)="fatherNumber=$event"></app-brand>
+```
+
+## 5. 模版引用变量
 
 - 作用范围：声明他们的模版中
 
@@ -847,62 +1089,68 @@ export class AppComponent {
 
 # 依赖注入
 
-## 1. 子组件
+## 1. 基本使用
+
+- service：用来执行特定功能的一个class
+- component：不是UI的组件component类型的class
+
+### 1.1 service
+
+```bash
+# 创建一个名字为api.service.ts的文件
+ng generate service api
+ng g service api
+```
 
 ```ts
-import {Component, Injectable} from '@angular/core';
-import {NgForOf} from "@angular/common";
+import {Injectable} from '@angular/core';
 
-@Component({
-  selector: 'app-child',
-  standalone: true,
-  imports: [
-    NgForOf
-  ],
-  templateUrl: './child.component.html',
-  styleUrl: './child.component.css'
-})
-/*可以被注入的*/
 @Injectable({
+  /*真个应用级别的*/
   providedIn: 'root'
 })
-export class ChildComponent {
+export class ApiService {
 
-  name: string = 'erick';
+  /*也可以注入其他类型的Service*/
+  constructor() {
+  }
 
+  /*提供特定功能*/
   say() {
-    console.log('子组件说话')
+    console.log('hello');
   }
 }
 ```
 
-## 2. 父组件
+### 1.2 component
 
 ```ts
 import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {NgForOf, NgIf} from "@angular/common";
-import {ChildComponent} from "./child/child.component";
+import {ApiService} from "../api.service";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NgIf, ChildComponent, NgForOf],
+  imports: [],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  styleUrl:
+    './app.component.css'
 })
+
 export class AppComponent {
-  /*DI注入*/
-  constructor(private childComponent: ChildComponent) {
+
+  /*注入*/
+  constructor(private apiService: ApiService) {
   }
 
-  fruits: string[] = ["apple", "peach", "lemon"];
-
-  say() {
-    this.childComponent.say();
+  /*使用*/
+  use() {
+    this.apiService.say();
   }
 }
 ```
+
+
 
 # 独立组件
 
