@@ -1091,13 +1091,15 @@ export class AppComponent {
 
 ## 1. 基本使用
 
-- service：用来执行特定功能的一个class
+- service：用来执行特定功能的一个class，用@Injectable()来标注
 - component：不是UI的组件component类型的class
 
-### 1.1 service
+### service
+
+- 提供特定功能的，需要被注入的类
 
 ```bash
-# 创建一个名字为api.service.ts的文件
+# 创建一个名字为api.service.ts的文件，一般是以service结尾
 ng generate service api
 ng g service api
 ```
@@ -1122,7 +1124,9 @@ export class ApiService {
 }
 ```
 
-### 1.2 component
+### component
+
+- 使用定义好的依赖，一般是以component结尾
 
 ```ts
 import {Component} from '@angular/core';
@@ -1150,7 +1154,106 @@ export class AppComponent {
 }
 ```
 
+## 2. DI作用域
 
+### 2.1 Root级别
+
+- service在整个应用中可以直接使用
+
+#### 写法一
+
+- 在service上标记
+
+```ts
+import {Injectable} from '@angular/core';
+
+@Injectable({
+  /*整个应用级别的*/
+  providedIn: 'root',
+})
+export class ApiService {
+
+  say() {
+    console.log('hello');
+  }
+}
+```
+
+#### 写法二
+
+- 不在service上标记，在app.config.ts中通过provide识别
+
+```ts
+import {Injectable} from '@angular/core';
+
+@Injectable()
+export class ApiService {
+
+  say() {
+    console.log('hello');
+  }
+}
+```
+
+```ts
+import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
+import {provideRouter} from '@angular/router';
+
+import {routes} from './app.routes';
+import {ApiService} from "../api.service";
+
+export const appConfig: ApplicationConfig = {
+  /*在这里识别，这个类是框架生成的*/
+  providers: [provideZoneChangeDetection({eventCoalescing: true}), provideRouter(routes), {provide: ApiService}]
+};
+```
+
+```ts
+import {bootstrapApplication} from '@angular/platform-browser';
+import {appConfig} from './app/app.config';
+import {AppComponent} from './app/app.component';
+/*appConfig，框架生成的*/
+bootstrapApplication(AppComponent, appConfig)
+  .catch((err) => console.error(err));
+```
+
+### 2.2 Component级别
+
+```ts
+import {Injectable} from '@angular/core';
+
+/*不是在全局定义的*/
+@Injectable()
+export class ApiService {
+
+  say() {
+    console.log('hello');
+  }
+}
+```
+
+```ts
+import {Component} from '@angular/core';
+import {ApiService} from "../api.service";
+
+@Component({
+  selector: 'app-machine',
+  standalone: true,
+  /*在当前Component注入*/
+  providers: [{provide: ApiService}],
+  templateUrl: './machine.component.html',
+  styleUrl: './machine.component.css'
+})
+export class MachineComponent {
+
+  constructor(private apiService: ApiService) {
+  }
+
+  print() {
+    this.apiService.say();
+  }
+}
+```
 
 # 独立组件
 
@@ -1450,3 +1553,6 @@ export class CartComponent {
 ## 1. 开发者工具
 
 ![image-20240717170208866](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20240717170208866.png)
+
+# 测试
+
