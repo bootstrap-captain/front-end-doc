@@ -366,6 +366,15 @@ say = function (address: string, age: number) {
 }
 ```
 
+## 6. 非空断言
+
+```ts
+# 该变量，已经是非null和非undefined
+let a！：string
+```
+
+
+
 # 编译模式
 
 ## 1. 单个文件

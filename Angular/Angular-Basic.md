@@ -1556,3 +1556,200 @@ export class CartComponent {
 
 # 测试
 
+## Service
+
+### 1. 打桩-本类
+
+- 执行当前类的方法调用时候，跳过某个方法的执行
+
+```ts
+import {Injectable} from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ErickService {
+
+  constructor() {
+  }
+
+  /*single method*/
+  getName = (name: string): string => {
+    return name.toUpperCase();
+  }
+
+  work = (name: string): string => {
+    let res = this.getName(name);
+    return res + '123';
+  }
+}
+```
+
+```ts
+import {ErickService} from "../app/service/erick.service";
+import {TestBed} from "@angular/core/testing";
+
+describe('erick service', () => {
+  // 被测试类
+  let service: ErickService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+
+    // 实例化被测试类
+    service = TestBed.inject(ErickService);
+  })
+
+  /*测试1*/
+  it('getName', () => {
+    // 方法调用
+    let result = service.getName('erick');
+    // 验证
+    expect(result).toEqual('ERICK');
+  })
+
+  /*测试2:需要跳过getName的方法*/
+  it('work',()=>{
+    /*打桩：方法调用时，执行getName的方法时，跳过*/
+    spyOn(service, 'getName').and.returnValue('MOCK');
+
+    let res = service.work('erick');
+    expect(res).toEqual('MOCK123');
+  })
+})
+```
+
+### 2. 打桩-依赖类
+
+- 可以mock对应的方法和属性
+
+#### 依赖类
+
+```ts
+import {Injectable} from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AwsService {
+
+  /*属性*/
+  region: string = 'beijing';
+  price: string = '899';
+
+  constructor() {
+  }
+
+  /*方法*/
+  getSns = (region: string): string => {
+    return region.toUpperCase();
+  }
+}
+```
+
+#### 测试类
+
+```ts
+import {Injectable} from '@angular/core';
+import {AwsService} from "./aws.service";
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ErickService {
+
+  constructor(public awsService: AwsService) {
+  }
+
+  /*测试，想跳过被依赖的服务*/
+  getTargetInfra = (infra: string) => {
+    let name = 'erick';
+    return name + this.awsService.getSns(infra);
+  }
+
+  /*想跳过被依赖的服务的属性*/
+  getInfo = () => {
+    return this.awsService.price + this.awsService.region;
+  }
+}
+```
+
+#### UT
+
+```ts
+import {ErickService} from "../app/service/erick.service";
+import {TestBed} from "@angular/core/testing";
+import {AwsService} from "../app/service/aws.service";
+
+describe('erick service', () => {
+  // 被测试类
+  let service: ErickService;
+
+  // 依赖类的监控引用： 在后续方法中可以进行打桩
+  let awsServiceSpy: jasmine.SpyObj<AwsService>;
+
+  beforeEach(() => {
+    /*创建一个被依赖的类的Mock:
+    参数1: 类名
+    参数2: 方法名
+    参数3: 属性名: 可以mock具体的值*/
+    const spyAwsService = jasmine.createSpyObj<AwsService>('AwsService', ['getSns'], {
+      price: '123',
+      region: 'usd',
+    });
+
+    TestBed.configureTestingModule({
+      providers: [
+        /*注入被mock的类的时候，useValue用上面创建的spyAwsService*/
+        [{provide: AwsService, useValue: spyAwsService}]
+      ]
+    });
+
+    // 向测试引擎注入  被测试类
+    service = TestBed.inject(ErickService);
+    // 向测试引擎注入  依赖类
+    awsServiceSpy = TestBed.inject(AwsService) as jasmine.SpyObj<AwsService>;
+  })
+  
+  /*测试:需要跳过getSns的方法*/
+  it('getTargetInfra', () => {
+    // 监控指定方法的方式
+    awsServiceSpy.getSns.and.returnValue('1')
+
+    let res = service.getTargetInfra('SNS');
+    expect(res).toEqual('erick1');
+  })
+
+
+  /*测试:需要跳过g属性*/
+  it('getInfo', () => {
+    let info = service.getInfo();
+    expect(info).toEqual('123usd');
+  })
+})
+```
+
+### 3. 非Root的Service
+
+- 上面的Service，都是root级别的，如果是非Root的
+- 被测试类就用useClass，依赖类就用useValue
+
+```ts
+  beforeEach(() => {
+
+    const spyAwsService:AwsService = jasmine.createSpyObj('AwsService',['getSns']);
+
+    TestBed.configureTestingModule({
+      providers:[
+        /*注入被测试类: useClass, 就用实际的类, 默认值就是useClass*/
+        {provide: ErickService,useClass: ErickService},
+        /*注入被mock的类的时候，useValue用上面创建的spyAwsService*/
+        {provide: AwsService, useValue: spyAwsService}
+      ]
+    });
+
+    service = TestBed.inject(ErickService);
+    awsServiceSpy = TestBed.inject(AwsService) as jasmine.SpyObj<AwsService>;
+  })
+```
+
