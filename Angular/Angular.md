@@ -1,16 +1,19 @@
 # 搭建环境
 
+[Angular Cli依赖](https://www.npmjs.com/package/@angular/cli?activeTab=versions)
+
+- Angular Cli的版本，决定了通过该脚手架搭建的Angular的project的版本
+
 ```bash
 # 1. 安装Angular CLI
-sudo npm install -g @angular/cli
-
-sudo npm install -g @angular/cli@16.2.0
+sudo npm install -g @angular/cli@19.0.0
 
 # 2. 创建项目: 不要用sudo来创建项目，不然文件就只是可读
+# 创建好之后，本地依赖安装完成，删除.vscode文件
  ng new replay-ui-service
 
 # 3. 进入项目
-cd erick-angular-demo 
+cd replay-ui-service
 
 # 4. 安装开发者工具
 npm install @angular-devkit/build-angular --save-dev 
@@ -1087,28 +1090,35 @@ export class AppComponent {
 }
 ```
 
-# 依赖注入
+# DI
 
 ## 1. 基本使用
 
 - service：用来执行特定功能的一个class，用@Injectable()来标注
-- component：不是UI的组件component类型的class
+- component：UI对应的组件对应的数据，专注为对应的html服务。可以将具体的任务下放到serivce中，实现代码分离
 
 ### service
 
 - 提供特定功能的，需要被注入的类
+- service中可以继续去依赖其他的service
+- service最好放在单独的包中
 
 ```bash
 # 创建一个名字为api.service.ts的文件，一般是以service结尾
 ng generate service api
 ng g service api
+
+# 在/src/app目录下，在对应的cart包中，创建一个service
+ng g service cart/phone
+
+# 默认root级别，可以调整
 ```
 
 ```ts
 import {Injectable} from '@angular/core';
 
 @Injectable({
-  /*真个应用级别的*/
+  /*整个应用级别的*/
   providedIn: 'root'
 })
 export class ApiService {
@@ -1127,6 +1137,7 @@ export class ApiService {
 ### component
 
 - 使用定义好的依赖，一般是以component结尾
+- component可以注入多个不同的service
 
 ```ts
 import {Component} from '@angular/core';
@@ -1154,15 +1165,21 @@ export class AppComponent {
 }
 ```
 
-## 2. DI作用域
+### registry
 
-### 2.1 Root级别
+- 连接service的提供方和消费方的桥梁，类似spring中的容器
+
+## 2. 作用域
+
+### Root Level
 
 - service在整个应用中可以直接使用
+- 只有一个实例对象，可以用来存储整个project级别的信息
 
-#### 写法一
+#### 方式1-- tree-shaking
 
-- 在service上标记
+- 在service上标记，在component中直接注入
+- 如果项目中没有用到，则不会注入到项目中
 
 ```ts
 import {Injectable} from '@angular/core';
@@ -1179,9 +1196,10 @@ export class ApiService {
 }
 ```
 
-#### 写法二
+#### 写法2--app.config.ts
 
 - 不在service上标记，在app.config.ts中通过provide识别
+- 这种方式注入的，对应的Service不管用不用到，都会在registry中存在
 
 ```ts
 import {Injectable} from '@angular/core';
@@ -1200,60 +1218,394 @@ import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
 import {provideRouter} from '@angular/router';
 
 import {routes} from './app.routes';
-import {ApiService} from "../api.service";
+import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
+import {ApiService} from './api.service';
 
 export const appConfig: ApplicationConfig = {
-  /*在这里识别，这个类是框架生成的*/
-  providers: [provideZoneChangeDetection({eventCoalescing: true}), provideRouter(routes), {provide: ApiService}]
+  providers: [provideZoneChangeDetection({eventCoalescing: true}), provideRouter(routes), provideAnimationsAsync(),
+    /*在appconfig中提供*/
+    {provide: ApiService}]
 };
 ```
 
-```ts
-import {bootstrapApplication} from '@angular/platform-browser';
-import {appConfig} from './app/app.config';
-import {AppComponent} from './app/app.component';
-/*appConfig，框架生成的*/
-bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
-```
+### Component Level
 
-### 2.2 Component级别
+- 使用时候，每次都是新的实例，相当于spring的多例模式
+- 不能保存跨component的信息，因为是多个实例
+- 这种方式注入的，对应的Service不管用不用到，都会在registry中存在
 
 ```ts
 import {Injectable} from '@angular/core';
 
-/*不是在全局定义的*/
 @Injectable()
 export class ApiService {
 
-  say() {
-    console.log('hello');
+  /*不能保存跨component的信息*/
+  name: string = ''
+
+  constructor() {
+  }
+
+  sayHello() {
+    console.log("hello")
   }
 }
 ```
 
 ```ts
 import {Component} from '@angular/core';
-import {ApiService} from "../api.service";
+import {ApiService} from '../api.service';
 
 @Component({
-  selector: 'app-machine',
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
   standalone: true,
-  /*在当前Component注入*/
-  providers: [{provide: ApiService}],
-  templateUrl: './machine.component.html',
-  styleUrl: './machine.component.css'
+  styleUrl: './cart.component.css',
+  /*在当前component中注入：必须通过这种方式提供，不提供就会报错
+   NullInjectorError： No provider for _ApiService!*/
+  providers: [ApiService]
 })
-export class MachineComponent {
+export class CartComponent {
 
-  constructor(private apiService: ApiService) {
-  }
-
-  print() {
-    this.apiService.say();
+  /*public还是private，取决于是否在对应的html中调用service的方法*/
+  constructor(public apiService: ApiService) {
   }
 }
 ```
+
+### TIPS
+
+- 不推荐在root级别的service中，注入另外一个component级别的service
+
+## 3. 注入方式
+
+### construcotr
+
+- 最常用
+
+```ts
+import {Component} from '@angular/core';
+import {ApiService} from '../api.service';
+
+@Component({
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+})
+export class CartComponent {
+  constructor(public apiService: ApiService) {
+  }
+}
+```
+
+### inject
+
+```ts
+import {Component, inject} from '@angular/core';
+import {ApiService} from '../api.service';
+
+@Component({
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+})
+export class CartComponent {
+
+  /*通过inject注入*/
+  public apiService = inject(ApiService);
+
+  constructor() {
+  }
+}
+```
+
+## 4. provide
+
+- 进行DI的时候，注入的方式
+
+### useClass
+
+-  指定注入的Service的类，根据类名，创建一个新的类
+- 可以用在UT中
+
+#### 同名实现
+
+```ts
+import {Injectable} from '@angular/core';
+import {AbstractSearchService} from './abstract.search.service';
+
+@Injectable()
+export class HomeSearchService extends AbstractSearchService {
+
+  constructor() {
+    super();
+  }
+
+  /*对某些方法进行重写*/
+  override sayHello() {
+    console.log("Home Search Service")
+  }
+}
+```
+
+```ts
+import {Component, inject} from '@angular/core';
+import {HomeSearchService} from '../home-search.service';
+
+@Component({
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+  /*
+  * provide:  需要注入的类的类名
+  * useClass: 具体用的类*/
+  providers: [
+    {
+      provide: HomeSearchService,
+      useClass: HomeSearchService // 可以省略，默认写法
+    }],
+})
+export class CartComponent {
+
+  /*provide对应的类*/
+  public searchService = inject(HomeSearchService);
+
+  constructor() {
+  }
+
+  check = () => {
+    this.searchService.sayHello();
+    this.searchService.work();
+  }
+}
+```
+
+#### 抽象类-接口
+
+```ts
+export abstract class AbstractSearchService {
+  name: string = '';
+
+  /*抽象方法*/
+  abstract sayHello(): void
+
+  /*具体方法*/
+  work = () => {
+    console.log("Base Work");
+  }
+}
+```
+
+```ts
+import {Injectable} from '@angular/core';
+import {AbstractSearchService} from './abstract.search.service';
+
+@Injectable()
+export class HomeSearchService extends AbstractSearchService {
+
+  constructor() {
+    super();
+  }
+
+  /*对某些方法进行重写*/
+  override sayHello() {
+    console.log("Home Search Service")
+  }
+}
+```
+
+```ts
+import {Component, inject} from '@angular/core';
+import {HomeSearchService} from '../home-search.service';
+import {AbstractSearchService} from '../abstract.search.service';
+
+@Component({
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+  /*
+  * provide:  注入的类的基类，可以为抽象类，无需@Injectable()修饰
+  * useClass: 具体实现类，必须 @Injectable()修饰
+  * 一个component中，只能使用一次继承同一个类的实现类*/
+  providers: [
+    {
+      provide: AbstractSearchService,
+      useClass: HomeSearchService
+    }
+  ],
+})
+export class CartComponent {
+
+  /*provide对应的类：基类*/
+  public searchService = inject(AbstractSearchService);
+
+  constructor() {
+  }
+
+  check = () => {
+    this.searchService.sayHello();
+    this.searchService.work();
+  }
+}
+```
+
+### useExisting
+
+
+
+### useValue
+
+#### non-class依赖
+
+- 可以注入interface，等，利用@InjectionToken
+
+```ts
+import {InjectionToken} from '@angular/core';
+
+/*要依赖的non-class的类型:  定义一个类*/
+export interface UI_CONFIG {
+  host: string;
+  port: string;
+  address: string;
+}
+
+/*具体的token定义的值
+* 1.不通过DEV_UI_CONFIG.xxx直接引入，而是通过token的方式
+* 2.方便测试，不然后续测试不方便*/
+export const DEV_UI_CONFIG: UI_CONFIG = {
+  host: '192.168.134',
+  port: '9090',
+  address: 'NEW YORK',
+}
+
+export const UAT_UI_CONFIG: UI_CONFIG = {
+  host: '9999999',
+  port: '8080',
+  address: 'BEIJING',
+}
+
+/* 变量名：token名
+ * 参数一：token的类型
+* 参数二：token的描述*/
+export const UI_CONFIG_TOKEN = new InjectionToken<UI_CONFIG>('erick_config desc token');
+```
+
+```ts
+import {Component, Inject} from '@angular/core';
+import {UAT_UI_CONFIG, UI_CONFIG, UI_CONFIG_TOKEN} from '../UI_CONFIG';
+
+@Component({
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+
+  providers: [
+    { 
+       // 必须是wrapper类型的
+      provide: UI_CONFIG_TOKEN,
+      useValue: UAT_UI_CONFIG
+    }
+  ],
+})
+export class CartComponent {
+  host: string = '';
+  port: string = '';
+  address: string = '';
+
+  /*这种方式的数据不能通过this获取到，需要先在constructor中做转化*/
+  constructor(@Inject(UI_CONFIG_TOKEN) config: UI_CONFIG) {
+    this.host = config.host;
+    this.port = config.port;
+    this.address = config.address;
+  }
+
+  check = () => {
+    console.log(this.host);
+    console.log(this.port);
+    console.log(this.address);
+  }
+}
+```
+
+#### UT中
+
+- 被测试的类，依赖于其他service的类的时候，可以使用jasmi创造的mock的类去替换
+
+## 5. Inject Context
+
+### 构造器+字段
+
+- 可以在@Component或@Injectable修饰的class的，
+- 构造器中或者方法中直接注入
+
+```ts
+import {Component, inject} from '@angular/core';
+import {HomeSearchService} from '../home-search.service';
+import {NG_VALUE_ACCESSOR} from '@angular/forms';
+import {ApiService} from '../api.service';
+
+@Component({
+  selector: 'app-cart',
+  imports: [],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+
+  providers: [
+    {
+      provide: ApiService,
+    },
+    {
+      provide: HomeSearchService,
+      useClass: HomeSearchService
+    }
+  ],
+})
+export class CartComponent {
+
+  /*1.在类初始化的时候*/
+  private apiService: ApiService = inject(ApiService);
+
+  /*2. 在constructor中注入*/
+  constructor(private homeSearchService: HomeSearchService) {
+  }
+
+  check = () => {
+    this.homeSearchService.work();
+    this.apiService.sayHello();
+  }
+}
+```
+
+### Stack-Frame
+
+- 在Angular中，有一些特殊的函数，可以进行DI，比如AuthGurard
+
+```ts
+import {CanActivateFn} from '@angular/router';
+import {inject} from '@angular/core';
+import {UpdateService} from './update.service';
+
+export const basicGuard: CanActivateFn = (route, state) => {
+  // 注入，必须是root级别的
+  let updateService = inject(UpdateService);
+  updateService.update();
+  return true;
+};
+```
+
+
 
 # 独立组件
 
@@ -1288,37 +1640,37 @@ export class AppComponent {
 
 # 路由
 
-## 1. SPA路由
+## 基本路由
 
-### 1.1 两个路由页面
+### 1. 两个路由页面
 
-- 创建两个页面的组件
+- 创建两个页面的 component的组件
 
 ```html
 <p>Hi,I am home</p>
 ```
 
-### 1.2 app.routes.ts
+### 2. app.routes.ts
 
 - 在该文件中定义路由
 
 ```ts
 import {Routes} from '@angular/router';
-import {HomeComponent} from "./home/home.component";
-import {CartComponent} from "./cart/cart.component";
+import {FirstComponent} from './first/first.component';
+import {SecondComponent} from './second/second.component';
 
-/*添加路由*/
+/*定义好两个路由*/
 export const routes: Routes = [
   {
-    path: 'home', component: HomeComponent
+    path: 'erick-first', component: FirstComponent
   },
   {
-    path: 'cart', component: CartComponent
+    path: 'erick-second', component: SecondComponent
   }
 ];
 ```
 
-### 1.3 app.config.ts
+### 3. app.config.ts
 
 - 不用做任何变化
 
@@ -1330,19 +1682,23 @@ import {routes} from './app.routes';
 
 /*自动集成了router*/
 export const appConfig: ApplicationConfig = {
+  /*providerRouter(routes)：导入后续的路由*/
   providers: [provideZoneChangeDetection({eventCoalescing: true}), provideRouter(routes)]
 };
 ```
 
-### 1.4 app页面
+### 4. app页面
 
 ```html
 <h1>Common Title</h1>
-<!--路由定义的地方：定位到具体元素，存放未知-->
+
+<!--路由定义的地方：定位到具体元素，存放位置-->
 <router-outlet/>
 ```
 
-### 1.5 访问
+### 访问
+
+#### URl访问
 
 - 现在可以通过在浏览器中输入地址，来访问不同的页面
 
@@ -1350,144 +1706,554 @@ export const appConfig: ApplicationConfig = {
 # http://localhost:4200/
 - 显示title
 
-# http://localhost:4200/home
-- 显示title和home界面
+# http://localhost:4200/erick-first
+- 显示title和first界面
 
-# http://localhost:4200/cart
-- 显示title和cart界面
+# http://localhost:4200/erick-second
+- 显示title和second界面
 ```
 
-### 1.6 使用UI元素控制导航
+#### UI元素访问
 
 - 上面的方式，只能让用户在浏览器中的地址栏中手动输入路径才能改变
+- 通过在页面创建link，button类似的东西，从而点击后跳转到指定路由
 
 ```html
 <h1>Common Title</h1>
-<!-- a标签：用来跳转路由
-     routerLink: Angular的组件-->
-<nav>
-  <a routerLink="/home">Home</a><br/>
-  <a routerLink="/cart">Cart</a>
-</nav>
 
-<!--路由定义的地方：定位到具体元素，存放未知-->
+<!-- a标签：用来跳转路由
+     routerLink: Angular的组件,需要自动导入到app.component.ts中-->
+<nav>
+  <a routerLink="/erick-first">first</a><br/>
+  <a routerLink="/erick-second">second</a>
+</nav>
+<!--路由定义的地方：定位到具体元素，存放位置-->
 <router-outlet/>
 ```
 
-### 1.7 重定向 & 统配符
+### 5. 匹配顺序 &  重定向 & 统配符 & Title
 
-```ts
-import {Routes} from '@angular/router';
-import {HomeComponent} from "./home/home.component";
-import {CartComponent} from "./cart/cart.component";
-import {PageNotFoundComponent} from "./page-not-found/page-not-found.component";
-
-/*添加路由*/
-export const routes: Routes = [
-  {
-    path: 'home', component: HomeComponent
-  },
-  {
-    path: 'cart', component: CartComponent
-  },
-  /*重定向：跳转前：http://localhost:4200/
-  *        跳转后：http://localhost:4200/home */
-  {
-    path: '', redirectTo: 'home', pathMatch: 'full',
-  },
-  /*统配符： 1. 如果任何路径都没匹配上，则使用该叶敏啊
-  *         2. 通配符一般放在数组的末尾，因为一般找到就不再向后匹配了*/
-  {
-    path: '**', component: PageNotFoundComponent
-  }
-];
-```
-
-## 2. 页面标题
-
+- 第一个匹配上后，后面就不再匹配了
 - 跳转到不同的页面时候，浏览器中的标签，会跟随着变
 - 使用title属性，应用中的每个页面都应该有一个唯一的标题
 
 ```ts
 import {Routes} from '@angular/router';
-import {HomeComponent} from "./home/home.component";
-import {CartComponent} from "./cart/cart.component";
-import {PageNotFoundComponent} from "./page-not-found/page-not-found.component";
+import {FirstComponent} from './first/first.component';
+import {SecondComponent} from './second/second.component';
+import {PageNotFoundComponent} from './page-not-found/page-not-found.component';
 
-/*添加路由*/
+/*定义好两个路由*/
 export const routes: Routes = [
+
+  /*指定的路由*/
   {
-    path: 'home', title:'erick-home',component: HomeComponent
+    path: 'erick-first', component: FirstComponent, title: 'first-page'
   },
   {
-    path: 'cart', title:'erick-cart',component: CartComponent
+    path: 'erick-second', component: SecondComponent, title: 'second-page'
   },
-  /*重定向：跳转前：http://localhost:4200/
-  *        跳转后：http://localhost:4200/home */
+
+  /* redirect
+  * 1. 跳转前： http://localhost:4200/first
+  * 2. 跳转后： http://localhost:4200/erick-first */
   {
-    path: '', redirectTo: 'home', pathMatch: 'full',
+    path: 'first', redirectTo: 'erick-second', pathMatch: 'full',
   },
+
+  /*默认跳转： http://localhost:4200/*/
+  {
+    path: '', component: FirstComponent
+  },
+
   /*统配符： 1. 如果任何路径都没匹配上，则使用该叶敏啊
-  *         2. 通配符一般放在数组的末尾，因为一般找到就不再向后匹配了*/
+   *        2. 通配符一般放在数组的末尾，因为一般找到就不再向后匹配了
+   *        3. 可以展示一个自定义的404页面，或者redirect到其他页面/
   {
-    path: '**', component: PageNotFoundComponent
+    path: '**', component: PageNotFoundComponent, title: 'not-found-page'
   }
 ];
 ```
 
-## 3. 路由守卫
+![image-20241121160151171](https://erick-typora-image.oss-cn-shanghai.aliyuncs.com/img/image-20241121160151171.png)
 
-### 3.1 auth.ts
+## Nesting Routes
+
+### 1. app.routes.ts
 
 ```ts
-import {ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot} from "@angular/router";
-import {inject} from "@angular/core";
+import {Routes} from '@angular/router';
+import {HomeComponent} from './home/home.component';
+import {CartComponent} from './cart/cart.component';
+import {ErickComponent} from './home/erick/erick.component';
+import {LucyComponent} from './home/lucy/lucy.component';
+import {TomComponent} from './home/tom/tom.component';
 
-let login = false;
+/*定义好两个路由*/
+export const routes: Routes = [
+  {
+    path: 'home', component: HomeComponent, children: [
+      {
+        path: 'erick', component: ErickComponent
+      },
+      {
+        path: 'lucy', component: LucyComponent
+      },
+      {
+        path: 'tom', component: TomComponent
+      }
+    ]
+  },
+  {
+    path: 'cart', component: CartComponent
+  }
+];
+```
 
-export const AuthGuard: CanActivateFn = (next: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+### 2. app页面
+
+```html
+<h1>Common Title</h1>
+
+<router-outlet/>
+```
+
+### 3. 一级路由页面
+
+```html
+<!--在子路由中的位置-->
+<router-outlet></router-outlet>
+
+<p>home works!</p>
+```
+
+### 访问
+
+#### URL访问
+
+```bash
+# http://localhost:4200/home
+
+# http://localhost:4200/home/lucy
+
+# http://localhost:4200/home/tom
+```
+
+#### UI元素访问
+
+- 定义在对应的父级路由中：home.component.html
+
+```html
+<!--在子路由中的位置-->
+<router-outlet></router-outlet>
+
+<nav>
+  <a routerLink="erick">erick</a><br/>
+  <a routerLink="lucy">lucy</a><br/>
+  <a routerLink="tom">tom</a><br/>
+
+</nav>
+
+<p>home works!</p>
+```
+
+## AuthGuard
+
+```bash
+ng g guard basic
+```
+
+### basicGuard
+
+```ts
+import {CanActivateFn, Router} from '@angular/router';
+import {inject} from '@angular/core';
+
+let login = true;
+export const basicGuard: CanActivateFn = (next, state) => {
   /*导入Router，操作路由*/
-  const router: Router = inject(Router);
+  const router = inject(Router);
 
-  /*如果当前登陆成功，则返回成功，从而对应的那个路由就能加载*/
   if (login) {
-    return true;
+    /*返回true，则到对应页面*/
+    return true
   } else {
-    router.navigate(['/login']);
+    /*返回false，则需要异常处理，或者对应的跳转*/
+    router.navigate(['/home/erick']);
     return false;
+  }
+};
+```
+
+### app.routes.ts
+
+```ts
+import {Routes} from '@angular/router';
+import {CartComponent} from './cart/cart.component';
+import {basicGuard} from './basic.guard';
+
+/*定义好两个路由*/
+export const routes: Routes = [
+  {
+    /*可添加多个guard*/
+    path: 'cart', component: CartComponent, canActivate: [basicGuard]
+  }
+];
+```
+
+## 路径传参
+
+### 1. Path Parameters
+
+- 路由参数，会在URL中进行显示
+- 刷新页面，参数不会丢失
+
+```bash
+# 跳转后的路由
+http://localhost:4200/hyperlink/erick/Beijing
+```
+
+#### app.route.ts
+
+```ts
+import {Routes} from '@angular/router';
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {HyberlinkComponent} from './hyberlink/hyberlink.component';
+
+/*定义好两个路由*/
+export const routes: Routes = [
+  /*src路由*/
+  {
+    path: 'dashboard', component: DashboardComponent
+  },
+
+  /*dest路由*/
+  {
+    path: 'hyperlink/:name/:address', component: HyberlinkComponent
+  }
+];
+```
+
+#### SRC
+
+```ts
+import {Component} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [],
+  templateUrl: './dashboard.component.html',
+  standalone: true,
+  styleUrl: './dashboard.component.css'
+})
+export class DashboardComponent {
+
+  constructor(private router: Router) {
+  }
+
+  /*带着参数，跳转到指定路由*/
+  gotoDashboard() {
+    this.router.navigate(['hyperlink', 'erick', 'Beijing'],);
   }
 }
 ```
 
-### 3.2 路由
+```html
+<button (click)="gotoDashboard()">hyperlink click</button>
+```
+
+#### DEST
+
+```ts
+import {Component} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+
+@Component({
+  selector: 'app-hyberlink',
+  imports: [],
+  templateUrl: './hyberlink.component.html',
+  standalone: true,
+  styleUrl: './hyberlink.component.css'
+})
+export class HyberlinkComponent {
+  /*注入当前活动的路由*/
+  constructor(private router: ActivatedRoute) {
+  }
+
+  checkParams = () => {
+    /*能够拿到对应的路由参数*/
+    this.router.params.subscribe(params => {
+      console.log(params['name']);
+      console.log(params['address']);
+    })
+  }
+}
+```
+
+```html
+<button (click)="checkParams()">check</button>
+```
+
+### 2. Query Parameters
+
+- 路由参数，会在URL中进行显示
+- 刷新页面，参数不会丢失
+
+```bash
+http://localhost:4200/hyperlink?name=lucy&address=NewYork
+```
+
+#### app.route.ts
 
 ```ts
 import {Routes} from '@angular/router';
-import {HomeComponent} from "./home/home.component";
-import {CartComponent} from "./cart/cart.component";
-import {PageNotFoundComponent} from "./page-not-found/page-not-found.component";
-import {AuthGuard} from "./auth/auth";
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {HyberlinkComponent} from './hyberlink/hyberlink.component';
 
-/*添加路由*/
+/*定义好两个路由*/
 export const routes: Routes = [
+  /*src路由*/
   {
-    path: 'home', title: 'erick-home', component: HomeComponent, canActivate: [AuthGuard]
+    path: 'dashboard', component: DashboardComponent
   },
+
+  /*dest路由*/
   {
-    path: 'cart', title: 'erick-cart', component: CartComponent, canActivate: [AuthGuard]
-  },
-  /*重定向：跳转前：http://localhost:4200/
-  *        跳转后：http://localhost:4200/home */
-  {
-    path: '', redirectTo: 'home', pathMatch: 'full',
-  },
-  /*统配符： 1. 如果任何路径都没匹配上，则使用该叶敏啊
-  *         2. 通配符一般放在数组的末尾，因为一般找到就不再向后匹配了*/
-  {
-    path: '**', component: PageNotFoundComponent
+    path: 'hyperlink', component: HyberlinkComponent
   }
 ];
 ```
+
+#### SRC
+
+```ts
+import {Component} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [],
+  templateUrl: './dashboard.component.html',
+  standalone: true,
+  styleUrl: './dashboard.component.css'
+})
+export class DashboardComponent {
+
+  constructor(private router: Router) {
+  }
+
+  /*带着参数，跳转到指定路由*/
+  gotoDashboard() {
+    this.router.navigate(['hyperlink'], {
+      /*参数必须是：queryParams*/
+      queryParams: {
+        name: 'lucy',
+        address: 'NewYork'
+      }
+    });
+  }
+}
+```
+
+#### DEST
+
+```ts
+import {Component} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+
+@Component({
+  selector: 'app-hyberlink',
+  imports: [],
+  templateUrl: './hyberlink.component.html',
+  standalone: true,
+  styleUrl: './hyberlink.component.css'
+})
+export class HyberlinkComponent {
+  /*注入当前活动的路由*/
+  constructor(private router: ActivatedRoute) {
+  }
+
+  checkParams = () => {
+    /*能够拿到对应的路由参数*/
+    this.router.queryParams.subscribe(params => {
+      console.log(params['name']);
+      console.log(params['address']);
+    })
+  }
+}
+```
+
+### 3. Fragement
+
+- 路由参数，会在URL中进行显示
+- 刷新页面，参数不会丢失
+
+```bash
+http://localhost:4200/hyperlink#hello
+```
+
+#### app.route.ts
+
+```ts
+import {Routes} from '@angular/router';
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {HyberlinkComponent} from './hyberlink/hyberlink.component';
+
+/*定义好两个路由*/
+export const routes: Routes = [
+  /*src路由*/
+  {
+    path: 'dashboard', component: DashboardComponent
+  },
+
+  /*dest路由*/
+  {
+    path: 'hyperlink', component: HyberlinkComponent
+  }
+];
+```
+
+####  SRC
+
+```ts
+import {Component} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [],
+  templateUrl: './dashboard.component.html',
+  standalone: true,
+  styleUrl: './dashboard.component.css'
+})
+export class DashboardComponent {
+
+  constructor(private router: Router) {
+  }
+
+  /*带着参数，跳转到指定路由*/
+  gotoDashboard() {
+    this.router.navigate(['hyperlink'], {fragment: 'hello'});
+  }
+}
+```
+
+#### DEST
+
+```ts
+import {Component} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+
+@Component({
+  selector: 'app-hyberlink',
+  imports: [],
+  templateUrl: './hyberlink.component.html',
+  standalone: true,
+  styleUrl: './hyberlink.component.css'
+})
+export class HyberlinkComponent {
+  /*注入当前活动的路由*/
+  constructor(private router: ActivatedRoute) {
+  }
+
+  checkParams = () => {
+    /*能够拿到对应的路由参数*/
+    this.router.fragment.subscribe(params => {
+      console.log(params);
+    })
+  }
+}
+```
+
+### 4. State
+
+
+
+#### app.route.ts
+
+```ts
+import {Routes} from '@angular/router';
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {HyberlinkComponent} from './hyberlink/hyberlink.component';
+
+/*定义好两个路由*/
+export const routes: Routes = [
+  /*src路由*/
+  {
+    path: 'dashboard', component: DashboardComponent
+  },
+
+  /*dest路由*/
+  {
+    path: 'hyperlink', component: HyberlinkComponent
+  }
+];
+```
+
+#### SRC
+
+```ts
+import {Component} from '@angular/core';
+import {Router} from '@angular/router';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [],
+  templateUrl: './dashboard.component.html',
+  standalone: true,
+  styleUrl: './dashboard.component.css'
+})
+export class DashboardComponent {
+
+  constructor(private router: Router) {
+  }
+
+  /*带着参数，跳转到指定路由*/
+  gotoDashboard() {
+    this.router.navigate(['hyperlink'], {
+      state: {
+        name: 'erick',
+        address: 'beijing',
+      }
+    });
+  }
+}
+```
+
+#### DEST
+
+```ts
+import {Component, OnInit} from '@angular/core';
+import {Router} from '@angular/router';
+
+@Component({
+  selector: 'app-hyberlink',
+  imports: [],
+  templateUrl: './hyberlink.component.html',
+  standalone: true,
+  styleUrl: './hyberlink.component.css'
+})
+export class HyberlinkComponent implements OnInit {
+
+  constructor(private router: Router) {
+    /*这里的Router中获取的上次的Router，可以拿到数据*/
+    console.log(`ngInit url=${this.router.url}  state=${this.router.getCurrentNavigation()?.extras.state}`)
+  }
+
+  /*不行*/
+  ngOnInit(): void {
+    console.log(`ngInit url=${this.router.url}  state=${this.router.getCurrentNavigation()?.extras.state}`)
+  }
+
+  /*不行*/
+  checkParams = () => {
+    console.log(`ngInit url=${this.router.url}  state=${this.router.getCurrentNavigation()?.extras.state}`)
+  }
+}
+```
+
+
 
 # 表单
 
