@@ -732,31 +732,414 @@ export class AppComponent implements AfterViewInit {
 <router-outlet/>
 ```
 
-# 模版
+# Template
 
-## 1. 文本插值
+## 1. 文本/HTML属性
 
 ```ts
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'app-apple',
-  standalone: true,
+  selector: 'app-erick',
   imports: [],
-  templateUrl: './apple.component.html',
-  styleUrl: './apple.component.css'
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
 })
-export class AppleComponent {
-  public name: string = 'erick';
-  address: string = 'beijing';
+export class ErickComponent {
+  /*text数据的双向绑定*/
+  title: string = 'Erick';
+  age: number = 10;
+
+  /*properties绑定*/
+  isButtonDisabled: boolean = false;
+
+  change = () => {
+    this.title = 'Lucy';
+    this.age++;
+    this.isButtonDisabled = !this.isButtonDisabled;
+  }
 }
 ```
 
 ```html
-<!--文本插值-->
-<p>{{ name }}</p>
-<p>{{ address }}</p>
+<!--1.文本绑定-->
+{{ title }}
+{{ age }}
+
+<!--2. 用 [] :
+     2.1 html原生properties绑定-->
+<button [disabled]="isButtonDisabled">测试button</button> <br/>
+
+<button (click)="change()">改变</button>
 ```
+
+## 2. 事件监听
+
+```html
+<!--1. 原生事件监听： 输入按键抬起时调用-->
+<input type="text" (keyup)="updateFirstField()"><br>
+
+<!--2. 获取到事件本身: $event-->
+<input type="text" (keyup)="updateSecondField($event)"><br>
+
+<!--3. 直接根据key本身-->
+<input type="text" (keyup.enter)="updateThirdField($event)"><br>
+```
+
+```ts
+import {Component} from '@angular/core';
+
+@Component({
+  selector: 'app-erick',
+  imports: [],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+
+  updateFirstField = () => {
+    console.log('updateField');
+  }
+
+  updateSecondField = (event: KeyboardEvent) => {
+    console.log(event);
+    if (event.key === 'Enter') {
+      console.log('enter');
+    }
+  }
+
+  updateThirdField = (event: KeyboardEvent) => {
+    console.log(event);
+  }
+}
+```
+
+## 3. 双向绑定
+
+### 3.1 表单元素-[(ngModel)]
+
+```ts
+import {Component} from '@angular/core';
+/*会跟着[(ngModel)] 导入*/
+import {FormsModule} from '@angular/forms';
+
+@Component({
+  selector: 'app-erick',
+  imports: [
+    FormsModule
+  ],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+
+  address: string = '';
+
+  /*清空数据的时候，input框也会被清空*/
+  reset = ()=>{
+    this.address = '';
+  }
+}
+```
+
+```html
+<input type="text" [(ngModel)]="address"><br>
+
+{{ address }}
+<button (click)="reset()">清空</button>
+```
+
+### 3.2 父子通信
+
+- 父子共享数据，在父组件和子组件中同步更新值
+- 父为子提供初始值，子组件修改数据，父组件能及时的获取到更新后的最新值
+
+#### 子
+
+```html
+<h2>son === {{money}}</h2>
+<button (click)="updateMoney()">花钱</button>
+```
+
+```ts
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+
+@Component({
+  selector: 'app-son',
+  imports: [],
+  templateUrl: './son.component.html',
+  standalone: true,
+  styleUrl: './son.component.css'
+})
+export class SonComponent {
+
+  /*接收负组件传值*/
+  @Input() money: number = 0;
+
+  /*子组件改变该值后向父组件传值*/
+  @Output() moneyChange = new EventEmitter<number>();
+
+  updateMoney(): void {
+    /*改变值*/
+    this.money--;
+    /*传递值*/
+    this.moneyChange.emit(this.money);
+  }
+}
+```
+
+#### 父
+
+```html
+<!--缩写形式-->
+<h1> father === {{ initialMoney }}</h1>
+<app-son [(money)]="initialMoney"></app-son>
+```
+
+```html
+<!--展开形式-->
+<h1> father === {{ initialMoney }}</h1>
+<!--函数接收： initialMoney=$event-->
+<app-son [money]="initialMoney" (moneyChange)="initialMoney=$event"></app-son>
+```
+
+```ts
+import {Component} from '@angular/core';
+import {SonComponent} from '../son/son.component';
+
+@Component({
+  selector: 'app-father',
+  imports: [
+    /*在html中使用了子组件，就会在这里import*/
+    SonComponent
+  ],
+  templateUrl: './father.component.html',
+  standalone: true,
+  styleUrl: './father.component.css'
+})
+export class FatherComponent {
+  initialMoney: number = 20;
+}
+```
+
+## 4. 流程控制
+
+- 展示，隐藏，重复指定的html元素
+
+### 4.1 @If
+
+```html
+<!--1.基本流程控制-->
+@if (firstNumber > secondNumber) {
+  <h2>{{ firstNumber }} is greater {{ secondNumber }}</h2>
+} @else if (firstNumber < secondNumber) {
+  <h1>{{ firstNumber }} is less than {{ secondNumber }}</h1>
+} @else {
+  {{ firstNumber }} equals {{ secondNumber }}
+}
+
+<!--2.变量取别名：如果不为空，则展示-->
+@if (address; as addressDisplay) {
+  {{ addressDisplay }}
+}
+```
+
+```ts
+import {Component} from '@angular/core';
+
+@Component({
+  selector: 'app-erick',
+  imports: [],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+  firstNumber: number = 10;
+  secondNumber: number = 12;
+
+  address: string = "beijing";
+}
+```
+
+### 4.2 @for
+
+```html
+<!--需要id作为key，提升性能-->
+@for (item of fruits; track item.id) {
+  <h2>{{ item.name }}</h2>
+} @empty {
+  <!--如果为空，则渲染下面的-->
+  <h3>no data</h3>
+}
+```
+
+```ts
+import {Component} from '@angular/core';
+
+@Component({
+  selector: 'app-erick',
+  imports: [],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+  fruits: Fruit[] = [{name: 'apple', id: 1}, {name: 'peach', id: 2}, {name: 'lemon', id: 3}]
+}
+
+export type Fruit = {
+  name: string,
+  id: number,
+}
+```
+
+### 4.3 @switch
+
+```html
+@switch (address) {
+  @case ('beijing') {
+    <h2>北京</h2>
+  }
+  @case ('xian') {
+    <h2>西安</h2>
+  }
+  @default {
+    <h2>默认地区</h2>
+  }
+}
+```
+
+```ts
+import {Component} from '@angular/core';
+
+@Component({
+  selector: 'app-erick',
+  imports: [],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+  address: string = 'beijing';
+}
+```
+
+## 5. Pipes
+
+- 用 ｜ 连接
+
+### 5.1 built-in
+
+```html
+<!--首字母转大写-->
+<h3>{{ company | titlecase }}</h3>
+<!--转大写-->
+<h3>{{ company | uppercase }}</h3>
+<!--转小写-->
+<h3>{{ company | lowercase }}</h3>
+<!-- 转换为货币-->
+<h3>{{ price | currency }}</h3>
+<!-- 转换为日期-->
+<h3>{{ createTime | date }}</h3>
+<!--可多个pipe-->
+<h3>{{ createTime | date | uppercase}}</h3>
+<!--object转json-->
+<h3>{{ fruits | json }}</h3>
+```
+
+```ts
+import {Component} from '@angular/core';
+import {CurrencyPipe, DatePipe, JsonPipe, LowerCasePipe, TitleCasePipe, UpperCasePipe} from '@angular/common';
+
+@Component({
+  selector: 'app-erick',
+  imports: [
+    /*组件导入*/
+    TitleCasePipe,
+    CurrencyPipe,
+    DatePipe,
+    UpperCasePipe,
+    LowerCasePipe,
+    JsonPipe
+  ],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+  company: string = "nike";
+  price: number = 17.2;
+  createTime: string = '2024-09-01';
+
+  fruits = {
+    name: 'apple',
+    brand: 'china',
+  }
+}
+```
+
+### 5.2 自定义
+
+- 对应的数据发生变化的时候，可以检测到
+- 一般只用在基本数据类型中，又称为pure的pipe
+
+#### 定义pipe
+
+```ts
+import {Pipe, PipeTransform} from '@angular/core';
+
+@Pipe({
+  /*名字：其他地方使用的时候用，驼峰命名*/
+  name: 'peopleTransformer',
+  standalone: true,
+})
+export class ErickPipe implements PipeTransform {
+  /*1. value：可以自定义类型
+  * 2. 传递参数*/
+  transform(value: string, prefix: string, suffix: string): string {
+    return prefix + value + suffix;
+  }
+}
+```
+
+#### 使用pipe
+
+```html
+<!--传递多个参数-->
+<h2>{{ name | peopleTransformer:'PREFIX':'SUFFIX' | uppercase }}</h2>
+<button (click)="name='nancy'">修改</button>
+```
+
+```ts
+import {Component} from '@angular/core';
+import {ErickPipe} from '../pipes/customizedPipes';
+import {JsonPipe, UpperCasePipe} from '@angular/common';
+
+@Component({
+  selector: 'app-erick',
+  imports: [
+    ErickPipe,
+    JsonPipe,
+    UpperCasePipe
+  ],
+  templateUrl: './erick.component.html',
+  standalone: true,
+  styleUrl: './erick.component.css'
+})
+export class ErickComponent {
+  name: string = 'erick';
+}
+```
+
+## 6. ng-content
+
+
+
+
 
 ## 2. 模版语句
 
@@ -813,82 +1196,6 @@ export class AppleComponent {
 
 <!--组件传递中可以使用,作用同理-->
 <app-child [name]="erickName"></app-child>
-```
-
-## 4. 双向绑定
-
-- 共享数据的方式，使用双向绑定，来监听事件，并在父组件和子组件中同步更新值
-- 子组件更改了数据，父组件能及时的获取到更新后的最新值
-- 父组件提供初始化值，并在父组件中使用。子组件来更新该值，并在子组件中可以使用，更新后会同步到父组件中
-
-### 子
-
-```ts
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-
-@Component({
-  selector: 'app-brand',
-  standalone: true,
-  imports: [],
-  templateUrl: './brand.component.html',
-  styleUrl: './brand.component.css'
-})
-export class BrandComponent {
-
-  /*初始数据从父获取到*/
-  @Input() number = 0;
-
-  /*子改变了数据后，可以同步到父组件*/
-  @Output() numberChange: EventEmitter<number> = new EventEmitter();
-
-  incr() {
-    this.number++;
-    this.numberChange.emit(this.number);
-  }
-
-  desc() {
-    this.number--;
-    this.numberChange.emit(this.number);
-  }
-}
-```
-
-```html
-<button (click)="incr()">+</button><br/>
-<button (click)="desc()">-</button><br/>
-<p>儿子{{ number }}</p>
-```
-
-### 父
-
-```ts
-import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {BrandComponent} from "../brand/brand.component";
-
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, BrandComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
-})
-export class AppComponent {
-  /*提供初始值*/
-  fatherNumber = 20;
-}
-```
-
-```html
-<p>父亲{{ fatherNumber }}</p>
-<!--双向绑定缩写-->
-<app-brand [(number)]="fatherNumber"></app-brand>
-```
-
-```html
-<p>父亲{{ fatherNumber }}</p>
-<!--双向绑定的展开写法-->
-<app-brand [number]="fatherNumber" (numberChange)="fatherNumber=$event"></app-brand>
 ```
 
 ## 5. 模版引用变量
@@ -1466,7 +1773,7 @@ export class CartComponent {
 
 #### non-class依赖
 
-- 可以注入interface，等，利用@InjectionToken
+- 场景一：可以注入interface，等，利用@InjectionToken
 
 ```ts
 import {InjectionToken} from '@angular/core';
@@ -1538,6 +1845,20 @@ export class CartComponent {
 }
 ```
 
+#### HTML中使用的变量
+
+- 对于一些单独的类或者变量，在一个独立文件中
+- 在HTML中如果要使用这些变量，必须在html中对应的component中，创建一个新的变量来接收
+- 使用useValue的方式，可以将这种变量或者类注入进来，并且在html中可以使用
+
+```ts
+  /*通过这种方式注入的常量依赖，可以在html中直接使用*/
+  constructor(@Inject(GLOBAL_COLUMNS_TOKEN) public globalColumns: ColumnInfo[]) {
+  }
+```
+
+
+
 #### UT中
 
 - 被测试的类，依赖于其他service的类的时候，可以使用jasmi创造的mock的类去替换
@@ -1604,8 +1925,6 @@ export const basicGuard: CanActivateFn = (route, state) => {
   return true;
 };
 ```
-
-
 
 # 独立组件
 
@@ -2255,62 +2574,149 @@ export class HyberlinkComponent implements OnInit {
 
 
 
-# 表单
+# Forms
 
-## 1. 响应式表单
+## Reactive Form
 
-### 1.1 表单组
+- 响应式表单，数据的双向绑定
+
+### 1. 基本表单
 
 ```ts
 import {Component} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-cart',
-  standalone: true,
   imports: [
+    /*响应式表单*/
     ReactiveFormsModule
   ],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.css'
+  standalone: true,
+  styleUrl: './cart.component.css',
 })
 export class CartComponent {
 
-  /*表单数据*/
-  userInfo = new FormGroup({
-    username: new FormControl(''),
-    password: new FormControl(''),
-    address: new FormControl(''),
-  })
+   // FormControl
+  name = new FormControl('');
 
+  check = () => {
+    console.log(this.name.value);
+  }
+
+  update = () => {
+    this.name.setValue("Lucy");
+  }
 }
 ```
 
 ```html
-<!--表单数据收集-->
-<form [formGroup]="userInfo">
-  <input type="text" formControlName="username"><br/>
-  <input type="text" formControlName="password"><br/>
-  <input type="text" formControlName="address"><br/>
-</form>
+姓名：<input type="text" [formControl]="name"/> <br/>
 
-<div>
-  {{ userInfo.value.address }}
-</div>
+<!--1. 在input中修改，查看时候会动态调整： html ==> component -->
+<button (click)="check()">查看姓名</button><br/>
 
-<div>
-  {{ userInfo.value.username }}
-</div>
-
-
-<div>
-  {{ userInfo.value.password }}
-</div>
+<!--2. 修改component，html中动态修改： component ==> html -->
+<button (click)="update()">修改姓名</button>
 ```
 
+### 2. 表单组
 
+- 对应的component，可以有两种写法
 
-##  2. 模版驱动表单
+```ts
+import {Component} from '@angular/core';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+
+@Component({
+  selector: 'app-cart',
+  imports: [
+    /*响应式表单*/
+    ReactiveFormsModule
+  ],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+})
+export class CartComponent {
+
+  condition = new FormGroup(
+    {
+      name: new FormControl(''),
+      address: new FormControl('')
+    }
+  )
+
+  /* check */
+  check = () => {
+    console.log(this.condition.value.name);
+    console.log(this.condition.value.address);
+  }
+
+  update = () => {
+    this.condition.setValue({
+      name: 'lucy',
+      address: 'beijing',
+    })
+  }
+}
+```
+
+```ts
+import {Component, inject} from '@angular/core';
+import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
+
+@Component({
+  selector: 'app-cart',
+  imports: [
+    /*响应式表单*/
+    ReactiveFormsModule
+  ],
+  templateUrl: './cart.component.html',
+  standalone: true,
+  styleUrl: './cart.component.css',
+})
+export class CartComponent {
+
+  /*FormBuilder注入*/
+  private formBuilder= inject(FormBuilder);
+
+  condition = this.formBuilder.group({
+    name: [''],
+    address: [''],
+  })
+
+  /* check */
+  check = () => {
+    console.log(this.condition.value.name);
+    console.log(this.condition.value.address);
+  }
+
+  update = () => {
+    this.condition.setValue({
+      name: 'lucy',
+      address: 'beijing',
+    })
+  }
+}
+```
+
+```html
+<form [formGroup]="condition">
+  <!--指定名字-->
+  姓名：<input type="text" formControlName="name"/> <br/>
+  地址：<input type="text" formControlName="address"/> <br/>
+</form>
+
+<!--1. 在input中修改，查看时会动态调整： html ==> component -->
+<button (click)="check()">查看</button><br/>
+
+<!--2. 修改component，html中动态修改： component ==> html -->
+<button (click)="update()">修改</button>
+```
+
+##  Template-Driven Form
 
 
 
