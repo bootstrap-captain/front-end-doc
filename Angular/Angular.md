@@ -1,4 +1,4 @@
-# 搭建环境
+# StartUp
 
 [Angular Cli依赖](https://www.npmjs.com/package/@angular/cli?activeTab=versions)
 
@@ -21,17 +21,20 @@ npm install @angular-devkit/build-angular --save-dev
 # 5. 开启热更新启动项目
 ng serve --open
 ng serve 
+npm start
 ```
 
-# 组件
+# Signal
+
+
+
+# Component
 
 - 组件就是ts形式的class类，对应的html，css和测试的ts
 
-## 1. 创建组件
+## 创建组件
 
-### Angular Cli
-
-- 比较推荐的方式
+- Angular Cli: 比较推荐的方式
 
 ```bash
 # 进入对应的文件目录
@@ -44,15 +47,13 @@ ng serve
 - 一个 CSS 文件，<component-name>.component.css
 ```
 
-#### home.component.ts
-
 ```ts
 import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-home', /*在html中，可以用该名称来实例化该组件*/
   standalone: true,
-  imports: [],
+  imports: [],   /*在该component对应的html中，使用到其他的组件的时候<app-other-compoent>>*/
   templateUrl: './home.component.html', /*对应的html，两种方式: templateUrl或者template*/
   styleUrl: './home.component.css'   /*对应的css，两种方式：styleUrl或者style，默认组件的样式仅影响该组件模版定义的元素*/
 })
@@ -1135,118 +1136,65 @@ export class ErickComponent {
 }
 ```
 
-## 6. ng-content
+## 6. ng-template
 
+### 6.1 声明
 
-
-
-
-## 2. 模版语句
+- 该标签中的内容不会被渲染到真实的DOM中
 
 ```html
-<!--1 直接传值-->
-<button (click)="delete('12')">箭头函数-带参-直接给</button><br/>
-<!--2 传递ts中的变量-->
-<button (click)="delete(id)">箭头函数-带参-变量</button><br/>
-
-<button (click)="say('shuzhan')">普通函数-带参-直接给</button><br/>
-<button (click)="say(name)">普通函数-带参-变量</button><br/>
-
-<button (click)="work()">无参</button><br/>
+<!--1. 只是起到一个声明的作用，并不会将该模块的内容渲染到DOM中
+    2. 有该内容对应的component-->
+<ng-template>
+  <h3>我是一个自定义的模块</h3>
+</ng-template>
 ```
 
 ```ts
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'app-apple',
-  standalone: true,
+  selector: 'app-common-table',
   imports: [],
-  templateUrl: './apple.component.html',
-  styleUrl: './apple.component.css'
-})
-export class AppleComponent {
-  id: string = '123';
-  name: string = 'erick';
-
-  /*1. 箭头函数*/
-  delete = (id: string) => {
-    console.log(id)
-  }
-
-  /*2. 普通函数和箭头函数没区别*/
-  say(name: string) {
-    console.log(name);
-  }
-
-  work() {
-    console.log('working');
-  }
-}
-```
-
-## 3. Property绑定
-
-```html
-<!--加[], 后面的属性就当作变量来解析，在对应的ts文件中，去找对应的变量-->
-<img alt="item" [title]="erickTitle">
-
-<!--不加[], 后面的属性就当作字符串来解析-->
-<img alt="item" title="erickTitle">
-
-<!--组件传递中可以使用,作用同理-->
-<app-child [name]="erickName"></app-child>
-```
-
-## 5. 模版引用变量
-
-- 作用范围：声明他们的模版中
-
-### 3.1 标准HTML上
-
-- 如果作用在标准的HTML元素上，该变量就会引用该HTML元素
-
-```html
-<!--#Phone：代表该Input结点-->
-<input type="text" #phone>
-<button (click)="collectionInfo(phone.value)">收集信息</button>
-
-<router-outlet/>
-```
-
-```ts
-import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {ChildComponent} from "./child/child.component";
-import {NgForOf, NgOptimizedImage} from "@angular/common";
-
-@Component({
-  selector: 'app-root',
+  templateUrl: './common-table.component.html',
   standalone: true,
-  imports: [RouterOutlet, ChildComponent, NgForOf, NgOptimizedImage],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './common-table.component.css'
 })
-export class AppComponent {
-  phone: string = '';
-
-  collectionInfo(name: string) {
-    this.phone = name;
-    console.log(this.phone);
-  }
+export class CommonTableComponent {
 }
 ```
 
-### 3.2 组件上
+### 6.2 使用
 
-- 如果在组件上声明变量，该变量就会引用该组件元素
-- 可以在该模版内，调用被声明的组件的方法和属性
+## ng-container
+
+- 将一组元素包裹起来
+
+### 1. 基本使用
 
 ```html
-<app-child #child></app-child>
+<div>
+  <!--1. 将一组标签包裹起来，ng-container不会在UI中显示-->
+  <ng-container>
+    <h3>hello</h3>
+    <input type="text">
+  </ng-container>
+</div>
 ```
 
-### 3.3 
+### 2. structure-directive
+
+```html
+<ng-container *ngIf="flag">
+  <h2>hello</h2>
+  <h3>world</h3>
+</ng-container>
+
+<ng-container *ngFor="let item of fruits;">
+  <h2>{{item}}</h2>
+  <h3>次数</h3>
+</ng-container>
+```
 
 
 
