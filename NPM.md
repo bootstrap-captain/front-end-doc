@@ -116,6 +116,22 @@ npm config get registry
 - 固定版本  : 在关键生产环境中，可直接写死版本，避免意外升级
 ```
 
+## 查看某个包
+
+```bash
+# 查看某个依赖的最新版本
+npm view lodash
+```
+
+![image-20251220033432917](https://skillset.oss-cn-shanghai.aliyuncs.com/image-20251220033432917.png)
+
+```bash
+# 查看某个包的所有版本
+npm view lodash versions
+```
+
+![image-20251220033610371](https://skillset.oss-cn-shanghai.aliyuncs.com/image-20251220033610371.png)
+
 ## package-lock.json
 
 - 通过npm install后产生的文件
