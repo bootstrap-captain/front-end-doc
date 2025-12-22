@@ -347,4 +347,282 @@ console.log('Real Dom', realDom);
 
 ![image-20250410215904086](https://skillset.oss-cn-shanghai.aliyuncs.com/image-20250410215904086.png)
 
-# 
+# 函数组件
+
+## 分类
+
+### 普通函数
+
+```tsx
+/*  渲染组件到页面
+   * 1. React解析函数组件标签，找到了Father组件，调用该函数
+   * 2. 将返回的该组件的虚拟DOM转换为真实DOM,随后呈现在页面
+   * 
+   * a：必须要有返回值，值就是该组件的虚拟dom
+   * b：首字母必须大写，否则就会当作html标签来渲染*/
+export default function Father() {
+    return (
+        <div>Father</div>
+    );
+}
+```
+
+### 箭头函数
+
+```tsx
+export const Father = () => {
+    return (
+        <div>Father</div>
+    );
+};
+```
+
+## useState
+
+- 当前组件的部分状态，属性
+- 当属性改变时，就会触发该函数的重新调用，导致组件re-render
+- 浅比较： 基本数据类型(比较值)， 引用数据类型(比较引用值)
+
+### 基本类型
+
+```tsx
+import {useState} from "react";
+
+export const Father = () => {
+    console.log("Father Render");
+    
+    /*解构赋值：参数一：state的名字，参数二：对应的set方法*/
+    const [address, setAddress] = useState<string>('default-value');
+
+    /*state-update-1：依赖原来数据*/
+    const changeAddressFirst = () => {
+        setAddress((prevName: string) => {
+            return prevName + '~'
+        });
+    }
+
+    /*state-update-2：传入新值*/
+    const changeAddressSecond = () => {
+        setAddress("beijing");
+    }
+
+    return (
+        <>
+            <h2>{address}</h2>
+            <button onClick={changeAddressFirst}>first</button>
+            <button onClick={changeAddressSecond}>second</button>
+        </>
+
+    );
+};
+```
+
+### 引用类型
+
+```tsx
+import {type BaseSyntheticEvent, useState} from "react";
+
+export const Father = () => {
+    console.log("Father Render");
+    /*空对象*/
+    const [student, setStudent] = useState({} as Student);
+
+    const studentChange = (type: string) => {
+        return (event: BaseSyntheticEvent) => {
+            setStudent({
+                /*原对象解构赋值*/
+                ...student,
+                /*新属性覆盖*/
+                [type]: event.target.value
+            })
+        }
+    }
+
+    return (
+        <div>
+            {/*每次键盘事件后，页面都会重新渲染*/}
+            <div>{student.name}=={student.email}=={student.phone}</div>
+            姓名：<input onChange={studentChange('name')}/>
+            邮箱：<input onChange={studentChange('email')}/>
+            电话：<input onChange={studentChange('phone')}/>
+        </div>
+    );
+}
+
+export type Student = {
+    name: string;
+    email: string;
+    phone: string;
+}
+```
+
+### 更新方式
+
+- 方法调用是同步的，更新操作是异步的
+
+```bash
+1. state更新操作按钮
+2. state发生改变
+3. 页面重新render
+```
+
+```tsx
+import {useState} from "react";
+
+export const Father = () => {
+    console.log("Father Render");
+
+    const [count, setCount] = useState<number>(0);
+
+    const incr = () => {
+        setCount((preCount: number) => {
+            return preCount + 1;
+        });
+        /*异步更新：原来是0，这里依然是0*/
+        console.log(count);
+    }
+
+    return (
+        <div>
+            {/*进行到return时，已经异步更新完毕*/}
+            <div>{count}</div>
+            <button onClick={incr}>加一</button>
+        </div>
+    );
+}
+```
+
+## props
+
+- 父子组件之间通信，父组件向子组件传递属性，方法
+- 属性状态和对应的方法：保存在父组件中，传递给子组件，允许子组件调用，从而修改属性
+- 父组件每次re-render，会带着子组件一起re-render
+
+### 属性/方法
+
+```tsx
+import type {BaseSyntheticEvent, FC} from "react";
+
+interface SonProps {
+    age: number,
+    username?: string,
+    say: () => void,
+    work: (city: string, year: number) => string;
+    hardWork: (city: string, year: number) => (event: BaseSyntheticEvent) => void;
+}
+
+export const Son: FC<SonProps> = (props) => {
+    console.log("son render")
+    const {age, username, say, work, hardWork} = props;
+
+    return (
+        <>
+            <h2>{age}==={username}</h2>
+            <button onClick={say}>无参数</button>
+            <button onClick={() => {
+                return work('北京', 2025);
+            }}>有参数普通写法
+            </button>
+
+            <button onClick={
+                hardWork("南京", 2024)
+            }>柯里化写法
+            </button>
+        </>
+    );
+};
+
+```
+
+```tsx
+import {type BaseSyntheticEvent, useState} from "react";
+import {Son} from "./Son.tsx";
+
+
+export const Father = () => {
+    console.log("Father Render");
+    const [age, setAge] = useState<number>(0);
+    const [username, setUsername] = useState<string>("lucy");
+
+    const firstMethod = () => {
+        setAge(age + 1);
+        setUsername((prevState) => {
+            return prevState + '~';
+        })
+        console.log("first method");
+    }
+
+    /*普通写法*/
+    const secondMethod = (city: string, year: number): string => {
+        console.log("second method", city, year);
+        return `${city}, ${year}`;
+    }
+
+    /*函数柯里化写法*/
+    const thirdMethod = (city: string, year: number) => {
+        return (event: BaseSyntheticEvent) => {
+            console.log(event)
+            console.log("third method", city, year);
+        }
+    }
+
+    return (
+        <div>
+            <div>
+                <Son age={age} username={username} say={firstMethod} work={secondMethod} hardWork={thirdMethod}/>
+            </div>
+        </div>
+    );
+}
+```
+
+### children
+
+- 组件标签内，嵌套的内容，默认不会渲染，这个数据会被封装到props中
+- 可以嵌套html或者其他组件
+
+```tsx
+import {Son} from "./Son.tsx";
+import {Cat} from "./Cat.tsx";
+
+export const Father = () => {
+    console.log("Father Render");
+
+    return (
+        <div>
+            <div>
+                {/*嵌套html*/}
+                <Son><h2>你好</h2></Son>
+                {/*嵌套组件*/}
+                <Son><Cat/></Son>
+            </div>
+        </div>
+    );
+}
+```
+
+```tsx
+import type {FC, ReactNode} from "react";
+
+interface SonProps {
+    /*组件插槽中的数据，html或者其他组件*/
+    children: ReactNode,
+}
+
+export const Son: FC<SonProps> = (props) => {
+    console.log("son render")
+    const {children} = props;
+
+    return (
+        <>
+            <div>子组件</div>
+            {/*渲染位置*/}
+            {children}
+        </>
+    );
+};
+```
+
+### renderProps
+
+- 子组件用到父组件，顶层组件的方法和属性
