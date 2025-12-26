@@ -625,4 +625,348 @@ export const Son: FC<SonProps> = (props) => {
 
 ### renderProps
 
-- 子组件用到父组件，顶层组件的方法和属性
+- 子组件不仅用到父组件，也要用到爷爷组件的方法和属性
+
+```tsx
+import type {FC} from "react";
+
+interface SonProps {
+    fatherName: string,
+    grandfatherAddress: string
+}
+
+export const Son: FC<SonProps> = (props) => {
+    const {fatherName, grandfatherAddress} = props;
+    return (
+        <>
+            <h2>子组件</h2>
+            <h2>父亲姓名：{fatherName}</h2>
+            <h2>爷爷姓名：{grandfatherAddress}</h2>
+        </>
+    );
+};
+```
+
+```tsx
+import {type FC, type ReactNode, useState} from "react";
+
+interface FatherProps {
+    /*父组件的属性*/
+    fatherRender: (fatherName: string) => ReactNode;
+}
+
+export const Father: FC<FatherProps> = (props) => {
+
+    const [fatherName] = useState<string>("传奇");
+
+    const {fatherRender} = props;
+    return (
+        <>
+            <div>父亲组件开始</div>
+            {fatherRender(fatherName)}
+            <div>父亲组件结束</div>
+        </>
+    );
+}
+```
+
+```tsx
+import {useState} from "react";
+import {Father} from "./Father.tsx";
+import {Son} from "./Son.tsx";
+
+export const GrandFather = () => {
+    /*顶层组件的属性*/
+    const [grandFatherAddress] = useState<string>("甘肃");
+
+    return (
+        <div>
+            <Father fatherRender={(fatherName) => {
+                return <Son grandfatherAddress={grandFatherAddress} fatherName={fatherName}/>
+            }}/>
+        </div>
+    );
+};
+```
+
+## useRef
+
+- 维护组件的属性，状态。ref的变化不会导致页面的re-render，ref也有缓存，不会因为函数的重复调用而失效
+- 如果这种属性不被页面渲染所需要，可以使用ref，比如查询条件
+
+```tsx
+import {useRef, useState} from "react";
+
+export const Home = () => {
+    const queryName = useRef<string>("erick");
+    const [displayAge, setDisplayAge] = useState<number>(20);
+
+    console.log("render", queryName.current, displayAge)
+    return (
+        <>
+            <h2>{displayAge}</h2>
+            <button onClick={() => {
+                queryName.current += "~";
+            }}>改变ref
+            </button>
+            <button onClick={() => {
+                setDisplayAge((prevState) => {
+                    return prevState + 1
+                })
+            }}>改变state
+            </button>
+        </>
+    );
+};
+```
+
+# 性能优化
+
+## 父子组件
+
+### 默认-re-render
+
+- 父组件渲染时，遇到子组件就会渲染子组件，不管子组件是否用到父组件的状态
+- 父组件一旦re-render，所有子组件就会re-rener
+
+```tsx
+export const Son = () => {
+    console.log("son render")
+    return (
+        <>
+            <h2>子组件</h2>
+        </>
+    );
+};
+```
+
+```tsx
+import {Father} from "./components/layout/Father.tsx";
+
+export default function App() {
+    return (
+        <>
+            <Father/>
+        </>
+    )
+}
+```
+
+### memo-函数组件
+
+- 对函数组件的整体缓存
+- 封装子组件：只有组件存在props并且props发生变化时，父组件的re-render才会trigger子组件的re-render（浅比较）
+
+```tsx
+import {type FC, memo} from "react";
+
+interface SonProps {
+    name: string,
+}
+
+export const Son: FC<SonProps> = memo(() => {
+    console.log("son render")
+    return (
+        <>
+            <h2>子组件</h2>
+        </>
+    );
+});
+```
+
+```tsx
+import {Son} from "./Son.tsx";
+import {useState} from "react";
+
+export const Father = () => {
+    console.log('father render')
+    const [age, setAge] = useState<number>(1);
+
+
+    return (
+        <>
+            <div>父组件{age}</div>
+            <button onClick={() => {
+                setAge((pre) => {
+                    return pre + 1
+                })
+            }}>+
+            </button>
+            <Son name={"test"}/>
+        </>
+    );
+}
+```
+
+## useMemo-函数调用
+
+- 缓存函数计算结果callApi(非组件)
+- 只要name和count发生变化，页面就会re-render，则就会每次调用callApi
+- callApi只和count有关，希望只在count发生变化时，才会去重新调用该函数
+
+```bash
+# 缺点：不要大量使用，
+- 缓存值会占用内存，过度使用可能导致性能下降
+
+# 场景
+- 适用于计算成本高（如复杂运算、大数组处理）
+- 需要稳定对象引用的场景，比如在上面memo函数中，比较props中的引用数据类型时候
+```
+
+```tsx
+import {useMemo, useState} from "react";
+
+export const Home = () => {
+
+    const [name, setName] = useState<string>('erick');
+    const [count, setCount] = useState<number>(10);
+
+    /*参数一：回调函数       参数二：监控项目
+    * 1. 组件挂载完毕后，第一次执行
+    * 2. count变化时，才去调用该函数
+    * 3. age变化时候，对该函数结果执行了缓存，不会再次调用 */
+    const countResult = useMemo(() => {
+        return callApi(count);
+    }, [count]);
+
+    return (
+        <>
+            <div>
+                <button onClick={() => setCount(count + 1)}>count加1</button>
+                <button onClick={() => setName(name + '~')}>name加1</button>
+                <div>{countResult}</div>
+            </div>
+        </>
+    );
+};
+
+const callApi = (count: number) => {
+    console.log("call api execute")
+    return count * 3;
+}
+```
+
+## useEffect
+
+- 在组件的生命周期内，进行一些操作，整个过程，没有发生任何的用户操作事件
+
+```bash
+# 场景
+- 发送ajax请求
+- 手动更改真实DOM
+- 设置订阅，启动定时器
+```
+
+### 空监听state
+
+- 依赖项数据为空数组：不监测任何属性，只会在组件整个渲染完毕后，执行一次
+
+```tsx
+import {useEffect, useState} from "react";
+
+export default function App() {
+    console.log('render');
+
+    const [data, setData] = useState<string>('');
+
+    /*1. 检测空数组
+    * 2. 在hook中不修改state属性*/
+    useEffect(() => {
+        console.log("副作用hook");
+    }, [])
+    return (
+        <>
+            <div>{data}</div>
+            <button onClick={() => {
+                setData(previous => previous + '~')
+            }}>修改数据
+            </button>
+        </>
+    )
+}
+```
+
+### 指定监听state
+
+- 页面初始化渲染完毕后调用一次钩子，state改变时继续调用钩子
+
+```tsx
+import {useEffect, useState} from "react";
+
+export default function App() {
+
+    const [data, setData] = useState<number>(1);
+
+    console.log('render', data);
+
+    /*1. 检测state属性-data
+    * 2. 在hook中修改state属性*/
+    useEffect(() => {
+        console.log("副作用hook");
+    }, [data]);
+    return (
+        <>
+            <div>{data}</div>
+            <button onClick={() => {
+                setData(previous => previous + 1)
+            }}>修改数据
+            </button>
+        </>
+    )
+}
+```
+
+### 监听所有state
+
+- 如果不指定监听的state，则默认会监听当前组件的所有state
+
+```tsx
+import {useEffect, useState} from "react";
+
+export default function App() {
+
+    const [data, setData] = useState<number>(1);
+
+    console.log('render', data);
+
+    /*1. 不指定监听的state*/
+    useEffect(() => {
+        console.log("副作用hook");
+    });
+    return (
+        <>
+            <div>{data}</div>
+            <button onClick={() => {
+                setData(previous => previous + 1)
+            }}>修改数据
+            </button>
+        </>
+    )
+}
+```
+
+### 死循环
+
+- 不要在副作用中，监听A-state，同时改变A-state，否则就会触发页面的无限渲染
+
+```tsx
+import {useEffect, useState} from "react";
+
+export default function App() {
+
+    const [data, setData] = useState<number>(1);
+
+    console.log('render', data);
+
+    /*1. 不指定监听的state*/
+    useEffect(() => {
+        setData((prev) => prev + 1);
+    }, [data]);
+    return (
+        <>
+            <div>{data}</div>
+        </>
+    )
+}
+```
+
